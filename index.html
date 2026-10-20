@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Conversation Language Coach</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one phone-width app column centered on a cool "paper" ground; the
+   highlighter marks phrases lifted from real conversations. */
+:root {
+  --paper: #eef1f6;
+  --surface: #ffffff;
+  --sunk: #f5f7fa;
+  --ink: #18223a;
+  --muted: #5a6479;
+  --line: #dbe0e9;
+  --accent: #2f4bd8;
+  --on-accent: #ffffff;
+  --marker: #ffe45c;
+  --on-marker: #2b2500;
+  --casual-bg: #e3f3ea; --casual-fg: #1c6a43;
+  --pro-bg: #e6eafb;    --pro-fg: #2b3f9e;
+  --good: #1d7a4b; --good-bg: #e2f4ea;
+  --coach-bg: #fff8d6; --coach-fg: #4d4100;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0d1220; --surface: #161e31; --sunk: #111829; --ink: #e7ebf4; --muted: #9ba5ba;
+    --line: #283350; --accent: #8fa2ff; --on-accent: #0d1220; --marker: #e8cf3f; --on-marker: #1c1800;
+    --casual-bg: #12342a; --casual-fg: #8fdcb4; --pro-bg: #1c2550; --pro-fg: #b4c1ff;
+    --good: #7fd8a8; --good-bg: #123526; --coach-bg: #2e2a12; --coach-fg: #f2e08a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0d1220; --surface: #161e31; --sunk: #111829; --ink: #e7ebf4; --muted: #9ba5ba;
+  --line: #283350; --accent: #8fa2ff; --on-accent: #0d1220; --marker: #e8cf3f; --on-marker: #1c1800;
+  --casual-bg: #12342a; --casual-fg: #8fdcb4; --pro-bg: #1c2550; --pro-fg: #b4c1ff;
+  --good: #7fd8a8; --good-bg: #123526; --coach-bg: #2e2a12; --coach-fg: #f2e08a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 0;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+p { margin: 0; }
+mark { background: var(--marker); color: var(--on-marker); padding: 0 .15em; border-radius: 2px; }
+
+.proto-note { max-width: 440px; margin: 0 auto 10px; font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); letter-spacing: .02em; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.proto-note button { background: none; border: 0; padding: 0; color: var(--accent); font-family: var(--font-mono); font-size: 11.5px; text-decoration: underline; }
+
+.shell { max-width: 440px; margin: 0 auto; min-height: calc(100% - 40px); background: var(--surface); border: 1px solid var(--line); border-bottom: 0; border-radius: 22px 22px 0 0; display: flex; flex-direction: column; }
+.view { flex: 1; padding: 20px 18px 24px; display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+
+.tabs { position: sticky; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.tabs button { background: none; border: 0; padding: 10px 4px 12px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.tabs button svg { width: 22px; height: 22px; }
+.tabs button[aria-current="page"] { color: var(--accent); font-weight: 700; }
+.tabs .badge { font-family: var(--font-mono); font-size: 10px; background: var(--accent); color: var(--on-accent); border-radius: 99px; padding: 0 6px; margin-left: 2px; }
+
+.eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.meta { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.muted { color: var(--muted); }
+
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.listening { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--muted); background: var(--sunk); border: 1px solid var(--line); border-radius: 99px; padding: 4px 10px 4px 9px; white-space: nowrap; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #e0464e; box-shadow: 0 0 0 0 rgba(224,70,78,.5); animation: pulse 2s infinite; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 7px rgba(224,70,78,0); } 100% { box-shadow: 0 0 0 0 rgba(224,70,78,0); } }
+.hello h1 { font-size: 27px; font-weight: 700; }
+.hello p { color: var(--muted); margin-top: 6px; }
+
+.progress { background: var(--sunk); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 8px; }
+.progress-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.progress-row strong { font-family: var(--font-display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.bar { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .5s ease; }
+
+.section { display: grid; gap: 10px; }
+.section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.section-head h2 { font-size: 17px; font-weight: 700; }
+
+.convo { text-align: left; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 6px; }
+.convo:hover { border-color: var(--accent); }
+.convo h3 { font-size: 16.5px; font-weight: 700; }
+.convo .counts { font-size: 13.5px; color: var(--muted); }
+.row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.spread { justify-content: space-between; }
+
+.tag { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; border-radius: 99px; padding: 2px 9px; }
+.tag.casual { background: var(--casual-bg); color: var(--casual-fg); }
+.tag.professional { background: var(--pro-bg); color: var(--pro-fg); }
+
+.back { background: none; border: 0; padding: 0; color: var(--accent); font-size: 14px; display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; }
+.detail-head { display: grid; gap: 8px; }
+.detail-head h1 { font-size: 24px; font-weight: 700; }
+.summary { background: var(--sunk); border-radius: 12px; padding: 12px 14px; font-size: 14.5px; }
+
+.ctx { display: grid; gap: 6px; }
+.seg { display: inline-grid; grid-template-columns: 1fr 1fr; background: var(--sunk); border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+.seg button { border: 0; background: none; padding: 6px 12px; border-radius: 7px; font-size: 13.5px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+
+.item { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 8px; background: var(--surface); }
+.item.done { background: var(--sunk); }
+.phrase { font-family: var(--font-display); font-size: 19px; font-weight: 700; line-height: 1.2; }
+.quote { font-size: 14px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 10px; }
+.said { font-size: 14px; color: var(--muted); }
+.alt { font-family: var(--font-display); font-size: 18px; font-weight: 700; line-height: 1.25; }
+.why { font-size: 13.5px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { border-radius: 10px; padding: 8px 14px; font-size: 14px; font-weight: 700; border: 1px solid var(--line); background: var(--surface); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.big { width: 100%; padding: 13px 16px; font-size: 15.5px; border-radius: 12px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.pill { font-size: 12.5px; font-weight: 700; border-radius: 99px; padding: 3px 10px; background: var(--sunk); color: var(--muted); }
+.pill.saved { background: var(--pro-bg); color: var(--pro-fg); }
+.pill.learned { background: var(--good-bg); color: var(--good); }
+.undo { background: none; border: 0; padding: 0; font-size: 13px; color: var(--accent); text-decoration: underline; }
+
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.filters button { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 5px 12px; font-size: 13.5px; }
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.empty { text-align: center; color: var(--muted); padding: 24px 12px; border: 1px dashed var(--line); border-radius: 14px; display: grid; gap: 10px; justify-items: center; }
+
+/* Practice */
+.practice-head { display: grid; gap: 6px; }
+.practice-head h1 { font-size: 21px; }
+.targets { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 5px 11px; font-size: 13.5px; }
+.chip.used { background: var(--good-bg); color: var(--good); border-color: transparent; text-decoration: none; font-weight: 700; }
+.chat { display: flex; flex-direction: column; gap: 10px; }
+.msg { max-width: 84%; padding: 9px 13px; border-radius: 16px; font-size: 15px; }
+.msg.ai { align-self: flex-start; background: var(--sunk); border: 1px solid var(--line); border-bottom-left-radius: 5px; }
+.msg.me { align-self: flex-end; background: var(--accent); color: var(--on-accent); border-bottom-right-radius: 5px; }
+.msg.coach { align-self: stretch; max-width: none; background: var(--coach-bg); color: var(--coach-fg); border-radius: 10px; font-size: 13.5px; padding: 8px 12px; }
+.msg .who { display: block; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; opacity: .75; margin-bottom: 2px; }
+.composer { position: sticky; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); padding: 10px 18px calc(12px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; }
+.composer form { display: flex; gap: 8px; }
+.composer input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--sunk); color: var(--ink); border-radius: 12px; padding: 10px 12px; font: inherit; }
+.mic { width: 44px; flex: none; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; }
+.mic.on { background: #e0464e; border-color: #e0464e; color: #fff; }
+.mic svg { width: 20px; height: 20px; }
+.send { flex: none; }
+.composer .hint { font-size: 11.5px; color: var(--muted); font-family: var(--font-mono); }
+
+/* Recap + celebration */
+.celebrate { position: relative; text-align: center; display: grid; gap: 14px; justify-items: center; padding-top: 28px; }
+.celebrate canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.big-num { font-family: var(--font-display); font-size: 96px; font-weight: 700; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.celebrate h1 { font-size: 26px; }
+.learned-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.learned-list span { background: var(--marker); color: var(--on-marker); border-radius: 6px; padding: 3px 9px; font-weight: 700; font-size: 14px; }
+
+/* Progress report */
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.stat { background: var(--sunk); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; }
+.stat strong { font-family: var(--font-display); font-size: 26px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 13px; color: var(--muted); }
+.chart { position: relative; display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; align-items: end; height: 170px; padding-top: 18px; border-bottom: 1px solid var(--line); }
+.chart .goal { position: absolute; left: 0; right: 0; border-top: 1.5px dashed var(--muted); opacity: .6; }
+.chart .goal span { position: absolute; left: 0; top: -17px; font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); }
+.col { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; }
+.col b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+.col i { display: block; width: 100%; max-width: 34px; background: var(--line); border-radius: 6px 6px 0 0; }
+.col.now i { background: var(--accent); }
+.col.now b { color: var(--ink); font-weight: 700; }
+.weeks { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); text-align: center; }
+.split { display: flex; height: 12px; border-radius: 99px; overflow: hidden; background: var(--line); }
+.split .c { background: var(--casual-fg); }
+.split .p { background: var(--pro-fg); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; background: currentColor; }
+.legend .lc { color: var(--casual-fg); } .legend .lp { color: var(--pro-fg); }
+.legend em { font-style: normal; color: var(--ink); font-weight: 700; margin-left: 4px; }
+.term-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.term-row:last-child { border-bottom: 0; }
+.term-row .phrase { font-size: 16px; }
+.linkish { background: none; border: 0; padding: 0; color: var(--accent); font-size: 13.5px; text-decoration: underline; justify-self: start; }
+
+@media (prefers-reduced-motion: reduce) { .dot { animation: none; } .bar span { transition: none; } }
+</style>
+
+<div class="proto-note">
+  <span>Prototype · sample data · voice and AI partner are simulated</span>
+  <button type="button" data-act="reset">Reset demo</button>
+</div>
+<div class="shell">
+  <main class="view" id="view"></main>
+  <div id="composer-slot"></div>
+  <nav class="tabs" id="tabs" aria-label="Main">
+    <button type="button" data-act="tab" data-tab="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>
+      Conversations
+    </button>
+    <button type="button" data-act="tab" data-tab="bank">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>
+      <span>Vocab bank<span class="badge" id="bank-badge" hidden></span></span>
+    </button>
+    <button type="button" data-act="tab" data-tab="practice">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      Practice
+    </button>
+    <button type="button" data-act="tab" data-tab="report">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M7 16v-5M12 16V6M17 16v-8"/></svg>
+      Progress
+    </button>
+  </nav>
+</div>
+
+<script>
+// ---------- Sample data (one casual + one professional conversation) ----------
+const GOAL = 5;
+const USER = "Yuka";
+
+const CONVOS = [
+  {
+    id: "maya", title: "Coffee chat with Maya", context: "casual",
+    when: "Today · 3:40 PM", length: "18 min", people: "Maya (classmate)", place: "Free Speech Café",
+    summary: "You caught up with Maya after class. She's buried in internship recruiting, invited you on a Sunday hike, and pushed your Friday dinner. You talked about her application to a design studio in SF.",
+    partner: "Maya", partnerNote: "plays your classmate, same tone as today",
+    script: [
+      { ai: "Hey! Sorry I'm late, it's been a week. How are you holding up?", hint: "maya-r1",
+        sample: "Honestly, I'm wiped out from all these assignments." },
+      { ai: "Ugh, same. A few of us are doing the Tilden hike Sunday morning. You in?", hint: "maya-p4",
+        sample: "Count me in! What time are you leaving?" },
+      { ai: "Oh wait, I also said Friday dinner with you... I might be swamped. Is that okay?", hint: "maya-p2",
+        sample: "No worries, let's take a rain check on Friday." },
+      { ai: "Thanks. Oh, I applied to that design studio in SF. Total long shot, but fingers crossed. What are you up to Saturday?", hint: "maya-r2",
+        sample: "Not much. I'm going to the farmers market. Want to come with?" }
+    ],
+    closing: "Okay, I gotta run. See you Sunday!"
+  },
+  {
+    id: "sync", title: "Weekly product sync", context: "professional",
+    when: "Mon · 10:00 AM", length: "32 min", people: "Daniel (PM), Lena (design)", place: "Zoom",
+    summary: "Daniel ran the weekly sync. The team triaged a checkout bug, debated whether a fix could ship by Friday, and pushed the pricing discussion to next week. You gave an update on user interviews.",
+    partner: "Daniel", partnerNote: "plays your PM in the same meeting",
+    script: [
+      { ai: "Morning! Before we dive in, any quick updates from your side?", hint: "sync-r1",
+        sample: "If I could add one thing: three interviewees mentioned the checkout bug." },
+      { ai: "Good to know. Can you give me a rough number on how many users hit it?", hint: "sync-p2",
+        sample: "A ballpark figure would be around two hundred a week." },
+      { ai: "Okay. Can we ship the fix by Friday?", hint: "sync-r2",
+        sample: "Friday might be tight. Could we aim for Monday instead?" },
+      { ai: "Fair. Should design be involved before we commit?", hint: "sync-p4",
+        sample: "Yes, let's loop in Lena before we commit to a date." }
+    ],
+    closing: "Great, thanks everyone. Let's circle back on pricing next week."
+  }
+];
+
+// kind "phrase": something the other person said that is likely new.
+// kind "rephrase": something the user said, with a context-fit alternative.
+const ITEMS = [
+  { id: "maya-p1", convo: "maya", kind: "phrase", text: "I'm swamped", meaning: "I'm extremely busy; too much to do.",
+    sentence: "Honestly, I'm swamped this week with recruiting stuff.", hl: "I'm swamped", speaker: "Maya", at: "02:14", match: ["swamped"] },
+  { id: "maya-p2", convo: "maya", kind: "phrase", text: "take a rain check", meaning: "Politely postpone an invitation to another time.",
+    sentence: "Can I take a rain check on Friday dinner?", hl: "take a rain check", speaker: "Maya", at: "09:51", match: ["rain check"] },
+  { id: "maya-p3", convo: "maya", kind: "phrase", text: "a long shot", meaning: "Something unlikely to succeed, but worth trying.",
+    sentence: "Applying there is a long shot, but why not.", hl: "a long shot", speaker: "Maya", at: "12:30", match: ["long shot"] },
+  { id: "maya-p4", convo: "maya", kind: "phrase", text: "count me in", meaning: "Yes, include me; I want to join.",
+    sentence: "If you're doing the hike Sunday, count me in.", hl: "count me in", speaker: "Maya", at: "15:02", match: ["count me in"] },
+  { id: "maya-r1", convo: "maya", kind: "rephrase", said: "I am very tired because of many assignments.", at: "01:40",
+    alt: { casual: "I'm wiped out from all these assignments.", professional: "I've been stretched a bit thin with deadlines this week." },
+    why: { casual: "With a friend, a vivid everyday phrase sounds more relaxed than “very tired because of”.",
+           professional: "At work, this signals a heavy load without sounding like a complaint." },
+    match: { casual: ["wiped out"], professional: ["stretched", "thin"] } },
+  { id: "maya-r2", convo: "maya", kind: "rephrase", said: "Shall we go together?", at: "16:20",
+    alt: { casual: "Want to come with?", professional: "Would you like to join us?" },
+    why: { casual: "“Shall we” is correct but sounds formal between friends.",
+           professional: "A polite question works for colleagues or a manager." },
+    match: { casual: ["come with", "wanna join", "want to join"], professional: ["would you like to join"] } },
+
+  { id: "sync-p1", convo: "sync", kind: "phrase", text: "circle back", meaning: "Return to a topic later.",
+    sentence: "Let's circle back on pricing next week.", hl: "circle back", speaker: "Daniel", at: "28:45", match: ["circle back"] },
+  { id: "sync-p2", convo: "sync", kind: "phrase", text: "a ballpark figure", meaning: "A rough estimate, not an exact number.",
+    sentence: "Can someone give me a ballpark figure on affected users?", hl: "a ballpark figure", speaker: "Daniel", at: "06:12", match: ["ballpark"] },
+  { id: "sync-p3", convo: "sync", kind: "phrase", text: "move the needle", meaning: "Make a noticeable difference to a result.",
+    sentence: "Fixing checkout will actually move the needle on conversion.", hl: "move the needle", speaker: "Lena", at: "11:37", match: ["move the needle"] },
+  { id: "sync-p4", convo: "sync", kind: "phrase", text: "loop in", meaning: "Include someone in a discussion or email thread.",
+    sentence: "Let's loop in the design team before we commit.", hl: "loop in", speaker: "Daniel", at: "19:03", match: ["loop in"] },
+  { id: "sync-r1", convo: "sync", kind: "rephrase", said: "I want to say my opinion.", at: "04:05",
+    alt: { professional: "If I could add one thing...", casual: "Can I jump in for a sec?" },
+    why: { professional: "A softer opener lets you take the floor without sounding abrupt in a meeting.",
+           casual: "Among friends, a quick, light way to cut in." },
+    match: { professional: ["add one thing", "quick thought"], casual: ["jump in"] } },
+  { id: "sync-r2", convo: "sync", kind: "rephrase", said: "This is not possible by Friday.", at: "22:18",
+    alt: { professional: "Friday might be tight. Could we aim for Monday?", casual: "Friday's pushing it. How about Monday?" },
+    why: { professional: "Naming the constraint and offering an option keeps it collaborative.",
+           casual: "Relaxed, but still clear about the timing." },
+    match: { professional: ["tight", "aim for"], casual: ["pushing it", "how about"] } },
+
+  // Learned earlier this week, from a conversation outside the demo.
+  { id: "old-1", convo: null, source: "Lab meeting · Oct 15", kind: "phrase", text: "touch base", meaning: "Check in briefly.", seed: "learned", match: [] },
+  { id: "old-2", convo: null, source: "Lab meeting · Oct 15", kind: "phrase", text: "on the same page", meaning: "In agreement; sharing the same understanding.", seed: "learned", match: [] }
+];
+
+// ---------- State ----------
+const KEY = "clc-demo-v1";
+const byId = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+const convoById = Object.fromEntries(CONVOS.map(c => [c.id, c]));
+
+function fresh() {
+  const status = {};
+  ITEMS.forEach(i => { status[i.id] = i.seed || "new"; });
+  return { v: 1, status, ctx: {}, celebrated: false, sessions: 0 };
+}
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 1) return s; } catch (e) {}
+  return fresh();
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+let S = load();
+let route = { name: "home" };
+let bankFilter = null;
+let session = null;
+let micTimer = null;
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ctxOf = cid => S.ctx[cid] || convoById[cid].context;
+const ctxLabel = c => c === "casual" ? "Casual" : "Professional";
+const statusOf = id => S.status[id];
+const learnedCount = () => ITEMS.filter(i => statusOf(i.id) === "learned").length;
+const itemsIn = cid => ITEMS.filter(i => i.convo === cid);
+const practiceText = i => i.kind === "phrase" ? i.text : i.alt[ctxOf(i.convo)];
+const matchWords = i => i.kind === "phrase" ? i.match : i.match[ctxOf(i.convo)];
+const norm = s => s.toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, " ");
+const uses = (text, i) => matchWords(i).some(w => norm(text).includes(w));
+const tag = c => `<span class="tag ${c}">${ctxLabel(c)}</span>`;
+const highlight = (s, h) => h ? esc(s).replace(esc(h), `<mark>${esc(h)}</mark>`) : esc(s);
+
+function go(r) { route = r; render(); window.scrollTo(0, 0); }
+
+// ---------- Screens ----------
+function homeView() {
+  const n = learnedCount();
+  const pct = Math.min(100, n / GOAL * 100);
+  return `
+    <div class="topbar">
+      <span class="eyebrow">Conversation Coach</span>
+      <span class="listening"><span class="dot"></span>Listening in background</span>
+    </div>
+    <div class="hello">
+      <h1>Hi ${USER}. Two conversations are ready.</h1>
+      <p>Phrases you heard and better ways to say what you said, pulled from your day.</p>
+    </div>
+    <div class="progress">
+      <div class="progress-row"><span class="eyebrow">This week</span><span class="meta">Goal ${GOAL} new terms</span></div>
+      <div class="progress-row"><strong>${n} of ${GOAL}</strong><span class="muted">${n >= GOAL ? "Goal reached" : `${GOAL - n} to go`}</span></div>
+      <div class="bar"><span style="width:${pct}%"></span></div>
+      <button class="linkish" type="button" data-act="tab" data-tab="report">See progress report</button>
+    </div>
+    <section class="section">
+      <div class="section-head"><h2>Recent conversations</h2><span class="meta">${CONVOS.length}</span></div>
+      ${CONVOS.map(c => {
+        const items = itemsIn(c.id);
+        const phrases = items.filter(i => i.kind === "phrase").length;
+        const recs = items.filter(i => i.kind === "rephrase").length;
+        const open = items.filter(i => statusOf(i.id) === "new").length;
+        return `
+        <button class="convo" type="button" data-act="open" data-id="${c.id}">
+          <div class="row spread">${tag(ctxOf(c.id))}<span class="meta">${c.when} · ${c.length}</span></div>
+          <h3>${esc(c.title)}</h3>
+          <span class="counts">${phrases} new phrases · ${recs} ways to say it better${open ? ` · <strong>${open} to review</strong>` : " · reviewed"}</span>
+        </button>`;
+      }).join("")}
+    </section>`;
+}
+
+function itemActions(i) {
+  const s = statusOf(i.id);
+  if (s === "new") return `<div class="actions">
+      <button class="btn primary" type="button" data-act="mark" data-id="${i.id}" data-to="practice">Practice this</button>
+      <button class="btn" type="button" data-act="mark" data-id="${i.id}" data-to="known">I know this</button></div>`;
+  const label = { practice: ["saved", "In vocab bank · to practice"], known: ["", "Marked as known · hidden"], learned: ["learned", "Learned ✓"] }[s];
+  return `<div class="row"><span class="pill ${label[0]}">${label[1]}</span>${s !== "learned" ? `<button class="undo" type="button" data-act="mark" data-id="${i.id}" data-to="new">Undo</button>` : ""}</div>`;
+}
+
+function phraseCard(i, withSource) {
+  const src = withSource ? sourceLine(i) : `<span class="meta">${esc(i.speaker)} · ${i.at}</span>`;
+  return `<article class="item ${statusOf(i.id) === "new" ? "" : "done"}">
+    <div class="row spread"><span class="phrase">${esc(i.text)}</span></div>
+    <p>${esc(i.meaning)}</p>
+    ${i.sentence ? `<p class="quote">“${highlight(i.sentence, i.hl)}”</p>` : ""}
+    ${src}
+    ${itemActions(i)}
+  </article>`;
+}
+
+function rephraseCard(i, withSource) {
+  const c = ctxOf(i.convo);
+  return `<article class="item ${statusOf(i.id) === "new" ? "" : "done"}">
+    <p class="said">You said: “${esc(i.said)}”</p>
+    <p class="eyebrow">You could also say</p>
+    <p class="alt">“${esc(i.alt[c])}”</p>
+    <p class="why">${esc(i.why[c])}</p>
+    ${withSource ? sourceLine(i) : `<span class="meta">You · ${i.at}</span>`}
+    ${itemActions(i)}
+  </article>`;
+}
+
+function sourceLine(i) {
+  if (!i.convo) return `<span class="meta">${esc(i.source)}</span>`;
+  const c = convoById[i.convo];
+  return `<div class="row">${tag(ctxOf(c.id))}<span class="meta">${esc(c.title)}</span></div>`;
+}
+
+function card(i, withSource) { return i.kind === "phrase" ? phraseCard(i, withSource) : rephraseCard(i, withSource); }
+
+function convoView(cid) {
+  const c = convoById[cid];
+  const items = itemsIn(cid);
+  const ctx = ctxOf(cid);
+  const saved = items.filter(i => statusOf(i.id) === "practice").length;
+  return `
+    <button class="back" type="button" data-act="tab" data-tab="home">‹ Conversations</button>
+    <div class="detail-head">
+      <h1>${esc(c.title)}</h1>
+      <span class="meta">${c.when} · ${c.length} · ${esc(c.place)}<br>With ${esc(c.people)}</span>
+    </div>
+    <p class="summary">${esc(c.summary)}</p>
+    <div class="ctx">
+      <span class="eyebrow">Detected context</span>
+      <div class="row">
+        <div class="seg" role="group" aria-label="Conversation context">
+          ${["casual", "professional"].map(k => `<button type="button" data-act="ctx" data-id="${cid}" data-ctx="${k}" aria-pressed="${ctx === k}">${ctxLabel(k)}</button>`).join("")}
+        </div>
+        <span class="meta">${ctx === c.context ? "auto-detected" : "changed by you"}</span>
+      </div>
+      <span class="muted" style="font-size:13px">Suggestions below are tuned to this context. Switch it to see them change.</span>
+    </div>
+    <section class="section">
+      <div class="section-head"><h2>New phrases ${esc(c.partner)} and others used</h2></div>
+      ${items.filter(i => i.kind === "phrase").map(i => phraseCard(i)).join("")}
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>Ways to say it more naturally</h2></div>
+      ${items.filter(i => i.kind === "rephrase").map(i => rephraseCard(i)).join("")}
+    </section>
+    <div class="section">
+      <button class="btn primary big" type="button" data-act="start" data-id="${cid}" ${saved ? "" : "disabled"}>Practice this conversation${saved ? ` · ${saved} saved` : ""}</button>
+      ${saved ? "" : `<span class="muted" style="font-size:13px;text-align:center">Tap “Practice this” on at least one item to start.</span>`}
+    </div>`;
+}
+
+function bankView() {
+  const visible = ITEMS.filter(i => statusOf(i.id) !== "known");
+  const groups = { new: "New to review", practice: "To practice", learned: "Learned" };
+  const counts = Object.fromEntries(Object.keys(groups).map(k => [k, visible.filter(i => statusOf(i.id) === k).length]));
+  const f = bankFilter || (counts.practice ? "practice" : counts.new ? "new" : "learned");
+  const list = visible.filter(i => statusOf(i.id) === f);
+  const known = ITEMS.filter(i => statusOf(i.id) === "known").length;
+  return `
+    <div class="detail-head">
+      <span class="eyebrow">Vocab bank</span>
+      <h1>Your phrases, from your conversations</h1>
+    </div>
+    <div class="filters" role="group" aria-label="Filter">
+      ${Object.entries(groups).map(([k, label]) => `<button type="button" data-act="filter" data-f="${k}" aria-pressed="${f === k}">${label} · ${counts[k]}</button>`).join("")}
+    </div>
+    <section class="section">
+      ${list.length ? list.map(i => card(i, true)).join("") : `<div class="empty">${{
+          new: "Nothing new to review. New phrases arrive after your next conversation.",
+          practice: "No phrases saved yet. Open a conversation and tap “Practice this”.",
+          learned: "Use a saved phrase in a practice session and it lands here."
+        }[f]}</div>`}
+    </section>
+    ${known ? `<p class="meta">${known} marked as known and hidden from review.</p>` : ""}
+    ${counts.practice ? `<button class="btn primary big" type="button" data-act="tab" data-tab="practice">Practice ${counts.practice} saved phrase${counts.practice > 1 ? "s" : ""}</button>` : ""}`;
+}
+
+function practicePickView() {
+  return `
+    <div class="detail-head">
+      <span class="eyebrow">Practice</span>
+      <h1>Replay a real conversation</h1>
+      <p class="muted">The AI plays the other person in a version of the same conversation. Try your saved phrases out loud.</p>
+    </div>
+    <section class="section">
+      ${CONVOS.map(c => {
+        const saved = itemsIn(c.id).filter(i => statusOf(i.id) === "practice");
+        return `<article class="item">
+          <div class="row spread">${tag(ctxOf(c.id))}<span class="meta">${c.when}</span></div>
+          <h3 style="font-size:16.5px">${esc(c.title)}</h3>
+          <p class="muted" style="font-size:13.5px">${esc(c.partner)} ${esc(c.partnerNote)}.</p>
+          ${saved.length
+            ? `<div class="targets">${saved.map(i => `<span class="chip">${esc(practiceText(i))}</span>`).join("")}</div>
+               <button class="btn primary" type="button" data-act="start" data-id="${c.id}">Start practice</button>`
+            : `<button class="btn" type="button" data-act="open" data-id="${c.id}">Pick phrases to practice</button>`}
+        </article>`;
+      }).join("")}
+    </section>`;
+}
+
+function sessionView() {
+  const c = convoById[session.cid];
+  return `
+    <button class="back" type="button" data-act="quit">‹ End practice</button>
+    <div class="practice-head">
+      <div class="row">${tag(ctxOf(c.id))}<span class="meta">Replay · ${esc(c.title)}</span></div>
+      <h1>Talk with ${esc(c.partner)}</h1>
+      <span class="eyebrow">Try to use</span>
+      <div class="targets">
+        ${session.targets.map(id => {
+          const used = session.used.includes(id);
+          return `<button type="button" class="chip ${used ? "used" : ""}" data-act="insert" data-id="${id}" ${used ? "disabled" : ""}>${used ? "✓ " : ""}${esc(practiceText(byId[id]))}</button>`;
+        }).join("")}
+      </div>
+    </div>
+    <div class="chat" id="chat">
+      ${session.log.map(m => `<div class="msg ${m.who}">${m.who === "ai" ? `<span class="who">${esc(c.partner)} · AI</span>` : m.who === "coach" ? `<span class="who">Coach</span>` : ""}${esc(m.text)}</div>`).join("")}
+    </div>
+    ${session.done ? `<button class="btn primary big" type="button" data-act="finish">See how you did</button>` : ""}`;
+}
+
+function composerHTML() {
+  return `<div class="composer">
+    <form id="say" autocomplete="off">
+      <button type="button" class="mic ${micTimer ? "on" : ""}" data-act="mic" aria-label="Speak your reply">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </button>
+      <input id="reply" name="reply" placeholder="${micTimer ? "Listening…" : "Say or type your reply"}" aria-label="Your reply">
+      <button class="btn primary send" type="submit">Send</button>
+    </form>
+    <span class="hint">Tap the mic for a simulated spoken reply, or tap a phrase above.</span>
+  </div>`;
+}
+
+function recapView(r) {
+  const c = convoById[r.cid];
+  return `
+    <div class="detail-head">
+      <span class="eyebrow">Practice recap</span>
+      <h1>You used ${r.used.length} of ${r.targets.length} phrases with ${esc(c.partner)}</h1>
+    </div>
+    <section class="section">
+      ${r.targets.map(id => {
+        const i = byId[id], ok = r.used.includes(id);
+        return `<article class="item ${ok ? "done" : ""}">
+          <div class="row spread"><span class="phrase">${esc(practiceText(i))}</span><span class="pill ${ok ? "learned" : "saved"}">${ok ? "Learned ✓" : "Still practicing"}</span></div>
+          <p class="muted" style="font-size:13.5px">${ok ? "You used it naturally in the replay." : "Saved for your next session."}</p>
+        </article>`;
+      }).join("")}
+    </section>
+    <div class="progress">
+      <div class="progress-row"><span class="eyebrow">This week</span><strong>${learnedCount()} of ${GOAL}</strong></div>
+      <div class="bar"><span style="width:${Math.min(100, learnedCount() / GOAL * 100)}%"></span></div>
+    </div>
+    <div class="actions">
+      ${r.used.length < r.targets.length ? `<button class="btn primary" type="button" data-act="start" data-id="${r.cid}">Practice again</button>` : ""}
+      <button class="btn" type="button" data-act="tab" data-tab="home">Back to conversations</button>
+    </div>`;
+}
+
+// Earlier weeks are sample history; "this week" is live from the demo.
+const HISTORY = [
+  { wk: "Sep 14", n: 1 }, { wk: "Sep 21", n: 3 }, { wk: "Sep 28", n: 2 },
+  { wk: "Oct 5", n: 4 }, { wk: "Oct 12", n: 3 }
+];
+
+function reportView() {
+  const learned = ITEMS.filter(i => statusOf(i.id) === "learned");
+  const weeks = [...HISTORY, { wk: "Oct 19", n: learned.length, now: true }];
+  const max = Math.max(GOAL, ...weeks.map(w => w.n)) + 1;
+  const ctxOfItem = i => i.convo ? ctxOf(i.convo) : "professional";
+  const casual = learned.filter(i => ctxOfItem(i) === "casual").length;
+  const pro = learned.length - casual;
+  const captured = ITEMS.filter(i => i.convo);
+  const reviewed = captured.filter(i => statusOf(i.id) !== "new").length;
+  const known = captured.filter(i => statusOf(i.id) === "known").length;
+  const total = weeks.reduce((a, w) => a + w.n, 0);
+  return `
+    <div class="detail-head">
+      <span class="eyebrow">Progress report · week of Oct 19</span>
+      <h1>${learned.length >= GOAL ? "Goal reached this week" : `${learned.length} of ${GOAL} new terms this week`}</h1>
+      <p class="muted">${total} terms learned in the last 6 weeks, all from your own conversations.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><strong>${learned.length}</strong><span>Terms learned this week</span></div>
+      <div class="stat"><strong>${CONVOS.length}</strong><span>Conversations captured</span></div>
+      <div class="stat"><strong>${reviewed}/${captured.length}</strong><span>Phrases reviewed</span></div>
+      <div class="stat"><strong>${S.sessions || 0}</strong><span>Practice sessions</span></div>
+    </div>
+    <section class="section">
+      <div class="section-head"><h2>Terms learned per week</h2><span class="meta">Goal ${GOAL}</span></div>
+      <div class="chart" role="img" aria-label="Terms learned per week: ${weeks.map(w => `${w.wk} ${w.n}`).join(", ")}">
+        <div class="goal" style="bottom:${GOAL / max * 152}px"><span>goal</span></div>
+        ${weeks.map(w => `<div class="col ${w.now ? "now" : ""}"><b>${w.n}</b><i style="height:${w.n / max * 152}px"></i></div>`).join("")}
+      </div>
+      <div class="weeks">${weeks.map(w => `<span>${w.wk}</span>`).join("")}</div>
+      <span class="meta">Blue bar is this week. Earlier weeks are sample history.</span>
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>Where this week's terms came from</h2></div>
+      <div class="split">${learned.length ? `<span class="c" style="width:${casual / learned.length * 100}%"></span><span class="p" style="width:${pro / learned.length * 100}%"></span>` : ""}</div>
+      <div class="legend"><span class="lc">Casual<em>${casual}</em></span><span class="lp">Professional<em>${pro}</em></span></div>
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>Learned this week</h2><span class="meta">${learned.length}</span></div>
+      <div>${learned.map(i => `<div class="term-row"><span class="phrase">${esc(practiceText(i))}</span><span class="meta">${esc(i.convo ? convoById[i.convo].title : i.source)}</span></div>`).join("")}</div>
+      ${known ? `<span class="meta">Skipped ${known} phrase${known > 1 ? "s" : ""} you already knew.</span>` : ""}
+    </section>
+    ${ITEMS.some(i => statusOf(i.id) === "practice")
+      ? `<button class="btn primary big" type="button" data-act="tab" data-tab="practice">Keep practicing</button>`
+      : `<button class="btn big" type="button" data-act="tab" data-tab="home">Review new phrases</button>`}`;
+}
+
+function celebrateView(r) {
+  const learned = ITEMS.filter(i => statusOf(i.id) === "learned");
+  return `
+    <div class="celebrate">
+      <canvas id="confetti" aria-hidden="true"></canvas>
+      <span class="eyebrow">Nice work, ${USER}</span>
+      <div class="big-num">${learned.length}</div>
+      <h1>You've learned ${learned.length} new terms this week!</h1>
+      <p class="muted">All of them came from your own conversations.</p>
+      <div class="learned-list">${learned.map(i => `<span>${esc(practiceText(i))}</span>`).join("")}</div>
+      <button class="btn primary big" type="button" data-act="recap">See this session</button>
+    </div>`;
+}
+
+// ---------- Render ----------
+function render() {
+  const v = document.getElementById("view");
+  const tab = { home: "home", convo: "home", bank: "bank", practice: "practice", session: "practice", recap: "practice", celebrate: "practice", report: "report" }[route.name];
+  document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-current", b.dataset.tab === tab ? "page" : "false"));
+  const review = ITEMS.filter(i => statusOf(i.id) === "new" || statusOf(i.id) === "practice").length;
+  const badge = document.getElementById("bank-badge");
+  badge.hidden = !review; badge.textContent = review;
+
+  v.innerHTML = {
+    home: homeView, convo: () => convoView(route.id), bank: bankView,
+    practice: practicePickView, session: sessionView, report: reportView,
+    recap: () => recapView(route.r), celebrate: () => celebrateView(route.r)
+  }[route.name]();
+
+  const inSession = route.name === "session" && !session.done;
+  document.getElementById("composer-slot").innerHTML = inSession ? composerHTML() : "";
+  document.getElementById("tabs").hidden = route.name === "session";
+  if (route.name === "session") window.scrollTo(0, document.body.scrollHeight);
+  if (route.name === "celebrate") confetti();
+}
+
+// ---------- Practice logic (keyword match on saved phrases; no model call) ----------
+function startPractice(cid) {
+  const c = convoById[cid];
+  const targets = itemsIn(cid).filter(i => statusOf(i.id) === "practice").map(i => i.id);
+  if (!targets.length) return go({ name: "convo", id: cid });
+  session = { cid, turn: 0, targets, used: [], log: [
+    { who: "coach", text: `${c.partner} is played by AI, based on today's conversation. Reply the way you would in real life, and try to use the phrases above.` },
+    { who: "ai", text: c.script[0].ai }
+  ], done: false };
+  go({ name: "session" });
+}
+
+function reply(text) {
+  const c = convoById[session.cid];
+  const step = c.script[session.turn];
+  session.log.push({ who: "me", text });
+  const hits = session.targets.filter(id => !session.used.includes(id) && uses(text, byId[id]));
+  session.used.push(...hits);
+  if (hits.length) {
+    session.log.push({ who: "coach", text: `Nice, “${hits.map(id => practiceText(byId[id]).replace(/[.?!…]+$/, "")).join("” and “")}” fits a ${ctxLabel(ctxOf(c.id)).toLowerCase()} conversation.` });
+  } else if (session.targets.includes(step.hint) && !session.used.includes(step.hint)) {
+    session.log.push({ who: "coach", text: `Good reply. This was a natural spot for “${practiceText(byId[step.hint]).replace(/[.?!…]+$/, "")}”. Try it next time.` });
+  }
+  session.turn++;
+  if (session.turn < c.script.length) {
+    session.log.push({ who: "ai", text: c.script[session.turn].ai });
+  } else {
+    session.log.push({ who: "ai", text: c.closing });
+    session.done = true;
+  }
+  render();
+}
+
+function finish() {
+  session.used.forEach(id => { S.status[id] = "learned"; });
+  const r = { cid: session.cid, targets: session.targets, used: session.used.slice() };
+  session = null;
+  S.sessions = (S.sessions || 0) + 1;
+  const hitGoal = learnedCount() >= GOAL && !S.celebrated;
+  if (hitGoal) S.celebrated = true;
+  save();
+  go({ name: hitGoal ? "celebrate" : "recap", r });
+}
+
+function simulateMic(btn) {
+  if (micTimer) return;
+  const input = document.getElementById("reply");
+  const text = convoById[session.cid].script[session.turn].sample;
+  let k = 0;
+  input.value = "";
+  btn.classList.add("on");
+  input.placeholder = "Listening…";
+  micTimer = setInterval(() => {
+    k += 2;
+    input.value = text.slice(0, k);
+    if (k >= text.length) { clearInterval(micTimer); micTimer = null; btn.classList.remove("on"); input.focus(); }
+  }, 35);
+}
+
+function confetti() {
+  const cv = document.getElementById("confetti");
+  if (!cv || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const ctx = cv.getContext("2d");
+  const w = cv.width = cv.offsetWidth * devicePixelRatio, h = cv.height = cv.offsetHeight * devicePixelRatio;
+  const styles = getComputedStyle(document.documentElement);
+  const colors = ["--marker", "--accent", "--casual-fg", "--pro-fg"].map(t => styles.getPropertyValue(t).trim());
+  const bits = Array.from({ length: 90 }, () => ({ x: Math.random() * w, y: -Math.random() * h * .5, r: (3 + Math.random() * 4) * devicePixelRatio,
+    vy: (1.5 + Math.random() * 2.5) * devicePixelRatio, vx: (Math.random() - .5) * 1.5 * devicePixelRatio, a: Math.random() * 6, c: colors[Math.floor(Math.random() * colors.length)] }));
+  let frames = 0;
+  (function tick() {
+    ctx.clearRect(0, 0, w, h);
+    bits.forEach(b => { b.y += b.vy; b.x += b.vx; b.a += .1; ctx.fillStyle = b.c; ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.a); ctx.fillRect(-b.r, -b.r / 2, b.r * 2, b.r); ctx.restore(); });
+    if (++frames < 220 && document.getElementById("confetti") === cv) requestAnimationFrame(tick); else ctx.clearRect(0, 0, w, h);
+  })();
+}
+
+// ---------- Events ----------
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]");
+  if (!el) return;
+  const { act, id } = el.dataset;
+  if (act === "tab") { bankFilter = null; go({ name: el.dataset.tab }); }
+  else if (act === "open") go({ name: "convo", id });
+  else if (act === "mark") { S.status[id] = el.dataset.to; save(); render(); }
+  else if (act === "ctx") { S.ctx[id] = el.dataset.ctx; save(); render(); }
+  else if (act === "filter") { bankFilter = el.dataset.f; render(); }
+  else if (act === "start") startPractice(id);
+  else if (act === "quit") { session = null; go({ name: "practice" }); }
+  else if (act === "insert") { const inp = document.getElementById("reply"); if (inp) { inp.value = (inp.value ? inp.value.trim() + " " : "") + practiceText(byId[id]); inp.focus(); } }
+  else if (act === "mic") simulateMic(el);
+  else if (act === "finish") finish();
+  else if (act === "recap") go({ name: "recap", r: route.r });
+  else if (act === "reset") { S = fresh(); save(); session = null; bankFilter = null; go({ name: "home" }); }
+});
+
+document.addEventListener("submit", e => {
+  if (e.target.id !== "say") return;
+  e.preventDefault();
+  const v = document.getElementById("reply").value.trim();
+  if (v && !micTimer) reply(v);
+});
+
+render();
+</script>
+
+</html>
