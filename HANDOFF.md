@@ -3,15 +3,18 @@
 Context for whoever (person or coding agent) picks this up next. Delete or update as it goes stale.
 
 ## What exists
-- `index.html` — the whole clickable prototype in one static file (no build step).
-  Vanilla HTML/CSS/JS; sample data, screens and logic are all inside it.
+- `index.html` + `style.css` + `js/` — the clickable prototype, plain HTML/CSS/JS, no build
+  step. Split one file per screen so teammates can work in parallel (see README table).
+- Visual design taken from the team's Figma Make prototype (sage/cream, Newsreader +
+  DM Sans); behaviour and data from the first build. Figma Make is no longer the
+  source of truth: design changes are made here in `style.css`.
 - `README.md` — golden path, PRD-requirement mapping, list of simulated parts.
 - `docs/PRD.md` — the team PRD draft this was built from.
 - A hosted copy is also published as a private Claude artifact owned by Yuka
   (shared from that page's Share menu). It does **not** update from this repo.
 
 ## Screens (4 tabs)
-Conversations (list + detail with context switch) · Vocab bank · Practice (scripted AI replay
+Home (list + detail with context switch) · Vocab bank · Practice (scripted AI replay
 with coach notes, simulated mic) · Progress (weekly stats, terms/week chart, casual vs
 professional split). Celebration fires when the week reaches 5 learned terms (2 seeded).
 
@@ -24,10 +27,7 @@ professional split). Celebration fires when the week reaches 5 learned terms (2 
   wording, to show FR-4 as a prerequisite for FR-5.
 
 ## Suggested next steps
-1. **Split `index.html` for collaboration** before several people edit it, so each person
-   owns a file and merges don't conflict, e.g. `style.css`, `data.js` (conversations,
-   phrases, scripts), `screens/home.js`, `conversation.js`, `bank.js`, `practice.js`,
-   `progress.js`.
+1. ~~Split for collaboration~~ (done Oct 20).
 2. **Shared preview URL**: when the repo is public, turn on GitHub Pages (Settings → Pages →
    deploy from `main`, root). While private, connect it to Vercel (Hobby) instead.
 3. **Riskiest capability**: whether real conversations yield useful new phrases and
