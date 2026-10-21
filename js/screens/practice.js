@@ -208,7 +208,7 @@ function startPractice(cid, one) {
   if (!plan) return go({ name: "convo", id: cid });
   const mode = AI.status === "live" ? "ai" : "script";
   const opener = mode === "ai" ? suggestionFor(plan).opener : convoById[cid].script[0].ai;
-  UI.session = { cid, targets: plan.targets, used: [], mode, userTurns: 0, turn: 0, done: false, pending: false, peek: null,
+  UI.session = { cid, targets: plan.targets, used: [], mode, userTurns: 0, turn: 0, done: false, pending: false, peek: null, suggested: [],
     log: [{ who: "ai", text: opener }] };
   go({ name: "session" });
 }
@@ -243,14 +243,21 @@ async function reply(text) {
   render();
   try {
     const out = await api({
-      mode: "turn", context: ctxOf(c.id), convo: convoPayload(c), targets: targetPayload(s.targets), used: s.used,
+      mode: "turn", context: ctxOf(c.id), convo: convoPayload(c), targets: targetPayload(s.targets), used: s.used, suggested: s.suggested,
       history: s.log.filter(m => m.who !== "coach").slice(0, -1).map(m => ({ role: m.who === "me" ? "user" : "partner", text: m.text })),
       reply: text, turnsLeft: MAX_TURNS - s.userTurns - 1
     });
     if (UI.session !== s) return;          // the learner left while waiting
     const hits = out.used.filter(id => s.targets.includes(id) && !s.used.includes(id));
     s.used.push(...hits);
-    if (out.feedback) s.log.push({ who: "coach", tone: hits.length ? "good" : "nudge", html: esc(out.feedback) });
+    const f = out.feedback || {};
+    // Praise only a phrase actually used; suggest each phrase at most once, two per session.
+    if (f.type === "praise" && hits.includes(f.id)) s.log.push({ who: "coach", tone: "good", html: esc(f.text) });
+    else if (hits.length) s.log.push(praise(hits, s.cid));
+    else if (f.type === "suggest" && !s.used.includes(f.id) && !s.suggested.includes(f.id) && s.suggested.length < 2) {
+      s.suggested.push(f.id);
+      s.log.push({ who: "coach", tone: "nudge", html: esc(f.text) });
+    }
     s.log.push({ who: "ai", text: out.reply });
     s.userTurns++;
     s.turn = s.userTurns;

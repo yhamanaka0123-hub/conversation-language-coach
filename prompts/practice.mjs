@@ -16,7 +16,7 @@ Write a short suggestion for a practice session in which the AI plays {{partner}
 
 Rules:
 - "message": 1 or 2 sentences, at most 40 words, addressed to {{user}} by name. Mention the real conversation and the phrases by name. Friendly, not like homework. No emoji.
-- "opener": {{partner}}'s first line in the practice, at most 25 words, in {{partner}}'s own voice and in a {{context}} register. It must invite a reply where at least one saved phrase fits. Only refer to facts from the summary; do not invent new events, names or numbers.
+- "opener": {{partner}}'s first line in the practice, at most 25 words, in {{partner}}'s own voice and in a {{context}} register. It must invite a reply where at least one saved phrase would come naturally to the learner. {{partner}} never says the saved phrases (or close variants) and does not start with the learner's name. Only refer to facts from the summary; do not invent new events, names or numbers. Anything the summary describes as planned has not happened yet.
 
 Answer with JSON only: {"message": "...", "opener": "..."}`;
 
@@ -39,11 +39,24 @@ Conversation so far ({{partner}} and the learner):
 
 The learner just said: "{{reply}}"
 
+Timeline: anything the summary describes as planned (an invitation, a meeting, a trip) has not happened yet. Do not ask how it went.
+
+Phrases already suggested to the learner in this practice: {{suggested}}
+
 Do three things:
 1. "used": the ids of saved phrases the learner just used in this last reply in a way that fits the situation. Small variations count ("rain check" for "take a rain check"). A phrase used wrongly or only quoted does not count. Only ids from the list above.
-2. "feedback": one short coach note, at most 25 words, or "" if there is nothing useful to say. If they used a phrase well, say so specifically. If a saved phrase not yet used would have fit naturally here, suggest it as an option, never as a correction. Never say the learner was wrong.
-3. "reply": {{partner}}'s next line, at most 30 words, natural spoken English in a {{context}} register, reacting to what the learner actually said. Stay in character: {{partner}} never mentions practice, phrases, feedback, or AI. Ask something that gives the learner a natural chance to use a phrase not yet used. Only use facts from the summary or what the learner said; do not invent new events, names or numbers. If the learner goes off topic or writes something unclear, respond kindly and steer back to the situation.
+2. "feedback": a coach note as {"type": "...", "id": "...", "text": "..."}. Most turns need no note. Choose one:
+   - "praise" when the learner used a saved phrase well. "id" is that phrase. "text" says specifically why it fit, at most 20 words.
+   - "suggest" only when the learner was clearly trying to say what a saved phrase means, and the phrase would fit this exact reply better. "id" is that phrase. "text" offers it as one more option, at most 20 words. Never suggest a phrase that does not match what the learner meant, and never suggest a phrase listed as already suggested.
+   - "none" in every other case, including when the learner's reply is already natural English. Then "id" and "text" are "".
+   Never say the learner was wrong, and never correct grammar or style that is understandable and natural.
+3. "reply": {{partner}}'s next line, at most 30 words, natural spoken English in a {{context}} register, reacting to what the learner actually said.
+   - Stay in character: {{partner}} never mentions practice, phrases, feedback, or AI.
+   - {{partner}} never says any of the saved phrases, or close variants of them. Those are for the learner to say.
+   - Steer the conversation toward a moment where a phrase not yet used would come naturally to the learner (for example, ask about their week for a phrase about being busy), without hinting at the phrase itself.
+   - Only use facts from the summary or what the learner said; do not invent new events, names or numbers.
+   - If the learner goes off topic or writes something unclear, respond kindly and steer back to the situation.
 
 If "turns left" is 0, the reply wraps up the conversation naturally in one or two sentences and "done" is true. Otherwise "done" is false.
 
-Answer with JSON only: {"used": ["id"], "feedback": "...", "reply": "...", "done": false}`;
+Answer with JSON only: {"used": ["id"], "feedback": {"type": "none", "id": "", "text": ""}, "reply": "...", "done": false}`;

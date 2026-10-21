@@ -1,7 +1,7 @@
 // Vercel serverless function: the only place the Groq API key is used.
 //   GET  /api/practice                  -> { configured, ok, model }   (is the AI partner available?)
 //   POST /api/practice {mode:"suggest"} -> { message, opener }
-//   POST /api/practice {mode:"turn"}    -> { used, feedback, reply, done }
+//   POST /api/practice {mode:"turn"}    -> { used, feedback: {type, id, text}, reply, done }
 // The key comes from the GROQ_API_KEY environment variable set in Vercel. It never reaches
 // the browser. If anything fails, the page falls back to the scripted practice.
 
@@ -131,12 +131,15 @@ async function turn(body) {
   const out = await groq(fill(TURN_PROMPT, {
     ...convo, context: context(body.context), targets: targetLines(targets),
     used: (Array.isArray(body.used) ? body.used : []).filter(id => ids.includes(id)).join(", ") || "none",
+    suggested: (Array.isArray(body.suggested) ? body.suggested : []).filter(id => ids.includes(id)).join(", ") || "none",
     turnsLeft: String(turnsLeft), history, reply: cut(body.reply, 400)
   }));
   if (!out.reply) throw new Error("bad turn");
+  const f = out.feedback && typeof out.feedback === "object" ? out.feedback : {};
+  const type = ["praise", "suggest"].includes(f.type) && ids.includes(f.id) && f.text ? f.type : "none";
   return {
     used: (Array.isArray(out.used) ? out.used : []).filter(id => ids.includes(id)),
-    feedback: cut(out.feedback, 240),
+    feedback: type === "none" ? { type, id: "", text: "" } : { type, id: f.id, text: cut(f.text, 200) },
     reply: cut(out.reply, 300),
     done: turnsLeft === 0 || out.done === true
   };
