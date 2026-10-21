@@ -49,7 +49,10 @@ Practice uses a real model through `api/practice.mjs`:
   up to 3 of them). The AI only words the suggestion and writes the partner's first line.
 - **Each turn** is one model call that returns the partner's next line, a short coach note,
   and which saved phrases the learner used. A session is at most 5 learner replies.
-- **Model:** Groq free tier, `llama-3.3-70b-versatile` (override with `GROQ_MODEL`).
+- **Model:** Groq free tier. The function asks Groq which models exist and uses the first
+  available of `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `llama-3.1-8b-instant`, trying a
+  second model if the first call fails. Set `GROQ_MODEL` in Vercel to put another model first.
+  Failures are logged in Vercel → the deployment → Logs.
 - **Key:** `GROQ_API_KEY` in Vercel → Settings → Environment Variables. Never put it in the
   code, GitHub, or chat.
 - **Fallback:** if the key is missing, the free-tier limit is reached, or the call fails,
