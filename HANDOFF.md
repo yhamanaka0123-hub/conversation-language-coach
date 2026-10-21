@@ -19,8 +19,11 @@ with coach notes, simulated mic) · Progress (weekly stats, terms/week chart, ca
 professional split). Celebration fires when the week reaches 5 learned terms (2 seeded).
 
 ## Decisions made so far
-- Built as a demand/desirability prototype: everything AI-shaped is simulated
-  (detection, suggestions, AI partner, feedback = keyword match, mic = types a sample).
+- Detection and suggestions are still simulated (hand-written sample data).
+- Practice uses a real model (Groq free tier) via `api/practice.mjs`, with the old script as
+  fallback. Chosen over Gemini because Gemini's free tier was cut to very low daily limits;
+  Claude's own artifact AI was ruled out because the team needs it to work on Vercel.
+- Rule picks what to practice; AI only words it (keeps suggestions predictable and testable).
 - Added a Progress tab on request, although the PRD lists "reviewing progress over time"
   as out of scope. Decide whether it stays in the first-phase scope or is cut for testing.
 - Context switch (Casual/Professional) in conversation detail changes the suggested
@@ -31,9 +34,11 @@ professional split). Celebration fires when the week reaches 5 learned terms (2 
 2. **Shared preview URL**: when the repo is public, turn on GitHub Pages (Settings → Pages →
    deploy from `main`, root). While private, connect it to Vercel (Hobby) instead.
 3. **Riskiest capability**: whether real conversations yield useful new phrases and
-   context-fit rephrasings. A capability test would feed a redacted real transcript to a
-   real model call (key server-side, never in browser code or git).
-4. Run the PRD §11 success criteria with real test users and write down what you saw.
+   context-fit rephrasings. Still simulated. Next capability test: feed a redacted or
+   invented transcript to a real model call through the same serverless setup.
+4. **Evaluate the AI partner**: 5 to 10 cases (stays in character, never says "wrong",
+   marks only phrases really used, no invented facts, wraps up on the last turn).
+5. Run the PRD §11 success criteria with real test users and write down what you saw.
 
 ## Team workflow
 Branch per change (`<first-name>/<topic>`), open a pull request, merge into `main`.

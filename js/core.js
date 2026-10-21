@@ -40,7 +40,7 @@ const matchWords = i => i.kind === "phrase" ? i.match : i.match[ctxOf(i.convo)];
 const norm = s => s.toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, " ");
 const uses = (text, i) => matchWords(i).some(w => norm(text).includes(w));
 const highlight = (s, h) => h ? esc(s).replace(esc(h), `<mark>${esc(h)}</mark>`) : esc(s);
-const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+const plural = (n, word, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;
 
 const tag = c => `<span class="tag tag-${c === "casual" ? "sage" : "blue"}">${ctxLabel(c)}</span>`;
 const avatar = (c, small) => `<div class="avatar ${ctxOf(c.id) === "casual" ? "avatar-coral" : "avatar-blue"} ${small ? "small" : ""}" aria-hidden="true">${esc(c.partner[0])}</div>`;
