@@ -1,7 +1,7 @@
 // Sample data for the prototype. Edit freely: conversations, phrases and the AI scripts
 // all live here, so content changes never touch the screen code.
 
-const GOAL = 5;           // weekly goal for learned terms
+const GOAL = 5;           // weekly goal: saved phrases used in practice
 const USER = "Yuka";
 const TODAY = "Tuesday, Oct 20";
 

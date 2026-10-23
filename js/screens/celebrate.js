@@ -6,18 +6,18 @@ SCREENS.celebrate = () => {
     <canvas id="confetti" aria-hidden="true"></canvas>
     <div class="celebration-art" aria-hidden="true">
       <span class="ray ray-one"></span><span class="ray ray-two"></span><span class="ray ray-three"></span>
-      <div class="celebration-icon">${icon("spark", 31)}</div>
+      ${mascot(124, true, "cheer")}
     </div>
     <p class="eyebrow">A WEEK OF REAL PROGRESS</p>
-    <h1>You learned ${learned.length} new terms this week!</h1>
-    <p class="celebration-copy">Each one came from a real moment in your life. That makes them easier to remember, and truly yours.</p>
+    <h1>You practiced ${learned.length} phrases this week!</h1>
+    <p class="celebration-copy">Each one came from a real moment in your day, and now you’ve used it yourself.</p>
     <div class="learned-list">
       ${learned.map((i, k) => `
         <div class="learned-item"><span>${k + 1}</span><p>${esc(bare(practiceText(i)))}</p>${icon("check", 18)}</div>`).join("")}
     </div>
     <div class="celebration-footer">
       <button class="button button-primary full-button" type="button" data-act="recap">See this session ${icon("next", 18)}</button>
-      <p>Small conversations. Lasting confidence.</p>
+      <p>Small conversations, one step at a time.</p>
     </div>`;
 };
 
@@ -27,7 +27,7 @@ afterRender.celebrate = () => {
   const ctx = cv.getContext("2d");
   const dpr = window.devicePixelRatio || 1;
   const w = cv.width = cv.offsetWidth * dpr, h = cv.height = cv.offsetHeight * dpr;
-  const colors = ["#eaa28e", "#315f50", "#86a696", "#d3e2d7"];
+  const colors = ["#7350d6", "#b39cf0", "#f08a5d", "#8fd0b3", "#ffd9c2"];
   const bits = Array.from({ length: 70 }, () => ({
     x: Math.random() * w, y: -Math.random() * h * .4, r: (3 + Math.random() * 3) * dpr,
     vy: (1.2 + Math.random() * 2) * dpr, vx: (Math.random() - .5) * dpr, a: Math.random() * 6,

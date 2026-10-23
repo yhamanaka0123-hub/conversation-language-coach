@@ -7,7 +7,7 @@ function itemActions(i) {
       <button class="button button-secondary" type="button" data-act="mark" data-id="${i.id}" data-status="practice">${icon(i.kind === "phrase" ? "spark" : "bookmark", 16)} ${i.kind === "phrase" ? "Practice this" : "Save to practice"}</button>
       <button class="button button-quiet" type="button" data-act="mark" data-id="${i.id}" data-status="known">${icon("check", 16)} I know this</button>
     </div>`;
-  const label = { practice: ["state-saved", "bookmark", "Saved to practice"], known: ["state-known", "check", "Got it, hidden from review"], learned: ["state-learned", "check", "Learned"] }[s];
+  const label = { practice: ["state-saved", "bookmark", "Saved to practice"], known: ["state-known", "check", "Got it, hidden from review"], learned: ["state-learned", "check", "Practiced"] }[s];
   return `<div class="item-state">
       <span class="state-pill ${label[0]}">${icon(label[1], 14)} ${label[2]}</span>
       ${s !== "learned" ? `<button class="undo" type="button" data-act="mark" data-id="${i.id}" data-status="new">Undo</button>` : ""}
@@ -88,7 +88,7 @@ SCREENS.convo = () => {
     <div class="section-heading suggestion-heading">
       <div><p class="eyebrow">ANOTHER WAY TO SAY IT</p><h2>You could also say</h2></div>
     </div>
-    <p class="section-intro">Not a correction, just another option that might feel natural in a ${ctxLabel(ctx).toLowerCase()} conversation.</p>
+    ${coachSays(`Not a correction, just another option that might feel natural in a <strong>${ctxLabel(ctx).toLowerCase()}</strong> conversation.`)}
     <div class="phrase-list">
       ${items.filter(i => i.kind === "rephrase").map(i => suggestionCard(i)).join("")}
     </div>
