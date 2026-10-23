@@ -1,6 +1,6 @@
 // Vocab bank: every captured phrase, filtered by review state.
 
-const BANK_GROUPS = { new: "New", practice: "To practice", learned: "Learned" };
+const BANK_GROUPS = { new: "New", practice: "To practice", learned: "Practiced" };
 
 SCREENS.bank = () => {
   const visible = ITEMS.filter(i => statusOf(i.id) !== "known");
@@ -15,11 +15,16 @@ SCREENS.bank = () => {
   }[f];
   return `
     ${pageHeader({ eyebrow: "YOUR COLLECTION", title: "Words worth keeping" })}
+    ${coachSays(counts.practice
+      ? `<strong>${plural(counts.practice, "phrase")}</strong> ready to practice. Let’s put ${counts.practice > 1 ? "them" : "it"} to work.`
+      : counts.new
+        ? `<strong>${plural(counts.new, "new find")}</strong> from your conversations. Keep the ones you’d like to use.`
+        : "Everything’s sorted. New phrases arrive after your next conversation.")}
     <div class="tabs tabs-3" role="group" aria-label="Filter">
       ${Object.entries(BANK_GROUPS).map(([k, label]) => `<button type="button" class="${f === k ? "active" : ""}" aria-pressed="${f === k}" data-act="filter" data-f="${k}">${label} <span>${counts[k]}</span></button>`).join("")}
     </div>
     <div class="vocab-list">
-      ${list.length ? list.map(i => i.kind === "phrase" ? phraseCard(i, 0, true) : suggestionCard(i, true)).join("") : `<div class="empty">${empty}</div>`}
+      ${list.length ? list.map(i => i.kind === "phrase" ? phraseCard(i, 0, true) : suggestionCard(i, true)).join("") : `<div class="empty">${mascot(64, false, "think")}<p>${empty}</p></div>`}
     </div>
     ${known ? `<p class="footnote">${plural(known, "phrase")} marked as known and hidden.</p>` : ""}
     ${counts.practice ? `<div class="sticky-action">

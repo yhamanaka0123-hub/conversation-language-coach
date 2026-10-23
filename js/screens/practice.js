@@ -81,7 +81,7 @@ SCREENS.practice = () => {
   ${plan ? `
     <section class="suggest-card ${loading ? "loading" : ""}">
       <div class="suggest-top">
-        <div class="coach-icon">${icon("spark", 17)}</div>
+        ${mascot(44, false, loading ? "think" : "happy")}
         <span class="said-label">Coach suggests</span>
       </div>
       <p class="suggest-message">${loading ? "Looking at what you saved…" : esc(s.message)}</p>
@@ -91,8 +91,8 @@ SCREENS.practice = () => {
         ${plan.targets.length > 1 ? `<button class="button button-quiet" type="button" data-act="start" data-id="${plan.cid}" data-one="1">Just one phrase</button>` : ""}
       </div>
     </section>`
-  : `<div class="empty">Save a few phrases from a conversation first, and the coach will suggest a practice.
-       <br><br><button class="button button-secondary" type="button" data-act="go" data-to="home">Review conversations</button></div>`}
+  : `<div class="empty">${mascot(64, false, "think")}<p>Save a few phrases from a conversation first, and I’ll suggest a practice.</p>
+       <button class="button button-secondary" type="button" data-act="go" data-to="home">Review conversations</button></div>`}
 
   <div class="section-heading compact">
     <div><p class="eyebrow">OR PICK A CONVERSATION</p><h2>Replay a real conversation</h2></div>
@@ -151,7 +151,7 @@ SCREENS.session = () => {
         <div class="message-row">${avatar(c, true)}<div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble">${esc(m.text)}</div></div></div>`
       : m.who === "me" ? `
         <div class="message-row user-row"><div><span class="speaker">YOU</span><div class="bubble user-bubble">${esc(m.text)}</div></div></div>`
-      : `<div class="feedback ${m.tone}">${icon("spark", 17)}<p>${m.html}</p></div>`).join("")}
+      : `<div class="feedback ${m.tone}">${mascot(32, false, m.tone === "good" ? "cheer" : "happy")}<p>${m.html}</p></div>`).join("")}
       ${s.pending ? `<div class="message-row">${avatar(c, true)}<div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble typing" aria-label="${esc(c.partner)} is typing"><i></i><i></i><i></i></div></div></div>` : ""}
     </div>
 
@@ -180,25 +180,25 @@ SCREENS.recap = () => {
   const n = learnedCount();
   return `
     ${pageHeader({ eyebrow: "PRACTICE RECAP", title: `You used ${r.used.length} of ${r.targets.length} with ${esc(c.partner)}` })}
+    ${coachSays(r.used.length === r.targets.length
+      ? `You worked every one into the conversation. <strong>Nicely done.</strong>`
+      : r.used.length
+        ? `<strong>${r.used.length} down.</strong> The rest will be here for next time.`
+        : "No phrases this round, and that’s okay. They’ll be here next time.",
+      r.used.length ? "cheer" : "happy")}
     <div class="learned-list">
       ${r.targets.map((id, k) => {
         const ok = r.used.includes(id);
         return `<div class="learned-item ${ok ? "" : "pending"}">
           <span>${k + 1}</span><p>${esc(bare(practiceText(byId[id])))}</p>
-          <em>${ok ? `${icon("check", 16)} Learned` : "Next time"}</em>
+          <em>${ok ? `${icon("check", 16)} Practiced` : "Next time"}</em>
         </div>`;
       }).join("")}
     </div>
-    <section class="progress-card spaced">
-      <div class="progress-copy">
-        <div class="progress-number">${n}</div>
-        <div><p class="progress-title">of ${GOAL} terms this week</p><p class="subtle">${n >= GOAL ? "Weekly goal reached." : `${GOAL - n} to go.`}</p></div>
-      </div>
-      <div class="progress-track"><div class="progress-fill" style="width:${Math.min(100, n / GOAL * 100)}%"></div></div>
-    </section>
-    <div class="stack">
+    ${weekCard(n)}
+    <div class="stack recap-actions">
       ${r.used.length < r.targets.length ? `<button class="button button-primary full-button" type="button" data-act="start" data-id="${r.cid}">Practice again</button>` : ""}
-      <button class="button button-quiet full-button" type="button" data-act="go" data-to="report">See progress report</button>
+      <button class="button button-quiet full-button" type="button" data-act="go" data-to="home">Back to home</button>
     </div>`;
 };
 

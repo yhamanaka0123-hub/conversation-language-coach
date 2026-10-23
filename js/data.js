@@ -1,14 +1,14 @@
 // Sample data for the prototype. Edit freely: conversations, phrases and the AI scripts
 // all live here, so content changes never touch the screen code.
 
-const GOAL = 5;           // weekly goal for learned terms
+const GOAL = 5;           // weekly goal: saved phrases used in practice
 const USER = "Yuka";
 const TODAY = "Tuesday, Oct 20";
 
 const CONVOS = [
   {
     id: "maya", title: "Coffee chat with Maya", context: "casual",
-    when: "Today · 3:40 PM", length: "18 min", people: "Maya (classmate)", place: "Free Speech Café",
+    when: "Today · 3:40 PM", length: "18 min", short: "coffee chat", art: "coffee", people: "Maya (classmate)", place: "Free Speech Café",
     summary: "You caught up with Maya after class. She's buried in internship recruiting, invited you on a Sunday hike, and pushed your Friday dinner.",
     partner: "Maya", partnerNote: "Plays your classmate, same tone as today",
     scene: ["Free Speech Café, after class.", "Maya is catching up on your week and weekend plans."],
@@ -26,7 +26,7 @@ const CONVOS = [
   },
   {
     id: "sync", title: "Weekly product sync", context: "professional",
-    when: "Mon · 10:00 AM", length: "32 min", people: "Daniel (PM), Lena (design)", place: "Zoom",
+    when: "Mon · 10:00 AM", length: "32 min", short: "meeting", art: "meeting", people: "Daniel (PM), Lena (design)", place: "Zoom",
     summary: "Daniel ran the weekly sync. The team triaged a checkout bug, debated whether a fix could ship by Friday, and pushed the pricing discussion to next week.",
     partner: "Daniel", partnerNote: "Plays your PM in the same meeting",
     scene: ["Monday sync on Zoom.", "Daniel is going around the team for updates."],
