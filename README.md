@@ -1,5 +1,7 @@
 # Conversation Language Coach — clickable prototype
 
+**Live preview:** https://conversation-language-coach.vercel.app/
+
 Built from the team PRD draft in [`docs/PRD.md`](docs/PRD.md) (Oct 20, 2026).
 Visual design comes from the team's Figma Make prototype; behaviour and sample data
 come from the first clickable build. Plain HTML/CSS/JS, no build step:
