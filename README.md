@@ -20,7 +20,7 @@ celebration fires when the week reaches 5 learned terms (2 are seeded as already
 | `js/data.js` | Conversations, phrases, suggestions, AI partner scripts, sample history. No coding needed beyond keeping the format. |
 | `style.css` | All colors, fonts and layout (from the Figma Make design). |
 | `js/core.js` | Shared state, helpers, icons, bottom nav, page header. Change with care: every screen uses it. |
-| `js/screens/home.js` | Home: weekly progress card, conversation list |
+| `js/screens/home.js` | Home: coach greeting, featured conversation, more from your day, weekly nudge |
 | `js/screens/conversation.js` | Conversation detail: new phrases, "You could also say", context switch |
 | `js/screens/bank.js` | Vocab bank |
 | `js/screens/practice.js` | Coach suggestion, AI practice session, recap, scripted fallback |

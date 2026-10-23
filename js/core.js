@@ -64,6 +64,21 @@ const ICONS = {
 const icon = (name, size = 20) =>
   `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
 
+// The coach mascot: a lavender speech bubble with a face. wave: play the one-time hello.
+const mascot = (size = 56, wave = false) => `
+  <svg class="mascot ${wave ? "wave" : ""}" width="${size}" height="${Math.round(size * 64 / 72)}" viewBox="0 0 72 64" aria-hidden="true">
+    <ellipse cx="33" cy="61" rx="20" ry="2.5" fill="#2d2440" opacity=".08"/>
+    <g class="mascot-arm"><path d="M58 30c6-2 9-7 9-13" fill="none" stroke="#a78bec" stroke-width="6" stroke-linecap="round"/></g>
+    <path d="M17 44 13 57l15-10Z" fill="#b39cf0" stroke="#b39cf0" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="5" y="5" width="56" height="45" rx="20" fill="#b39cf0"/>
+    <ellipse cx="22" cy="13" rx="9" ry="3" fill="#fff" opacity=".35"/>
+    <ellipse cx="26" cy="25" rx="3.2" ry="4.2" fill="#2d2440"/>
+    <ellipse cx="41" cy="25" rx="3.2" ry="4.2" fill="#2d2440"/>
+    <circle cx="27" cy="23.5" r="1" fill="#fff"/><circle cx="42" cy="23.5" r="1" fill="#fff"/>
+    <circle cx="19.5" cy="33" r="3.5" fill="#ffb59c" opacity=".75"/><circle cx="47.5" cy="33" r="3.5" fill="#ffb59c" opacity=".75"/>
+    <path d="M28.5 33.5q5 5 10 0" fill="none" stroke="#2d2440" stroke-width="2.4" stroke-linecap="round"/>
+  </svg>`;
+
 // Page header used by most screens. back: route name to return to.
 function pageHeader({ eyebrow, title, back, action = "" }) {
   return `<header class="page-header">
