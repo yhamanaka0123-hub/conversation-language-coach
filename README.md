@@ -73,4 +73,4 @@ Background recording, transcription and speaker ID; phrase detection and "you co
 say" suggestions (hand-written in `js/data.js`); the AI partner whenever it falls back to
 the script. Weeks before Oct 19 in the Progress
 chart are sample history. Progress is kept in the browser's localStorage; *Reset demo*
-clears it.
+clears it
