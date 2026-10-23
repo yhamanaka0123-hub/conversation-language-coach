@@ -10,6 +10,7 @@ Context for whoever (person or coding agent) picks this up next. Delete or updat
   source of truth: design changes are made here in `style.css`.
 - `README.md` — golden path, PRD-requirement mapping, list of simulated parts.
 - `docs/PRD.md` — the team PRD draft this was built from.
+- Shared preview on Vercel: https://conversation-language-coach.vercel.app/
 - A hosted copy is also published as a private Claude artifact owned by Yuka
   (shared from that page's Share menu). It does **not** update from this repo.
 
@@ -31,8 +32,8 @@ professional split). Celebration fires when the week reaches 5 learned terms (2 
 
 ## Suggested next steps
 1. ~~Split for collaboration~~ (done Oct 20).
-2. **Shared preview URL**: when the repo is public, turn on GitHub Pages (Settings → Pages →
-   deploy from `main`, root). While private, connect it to Vercel (Hobby) instead.
+2. ~~Shared preview URL~~ (done Oct 23): https://conversation-language-coach.vercel.app/
+   on Vercel, with the AI partner live.
 3. **Riskiest capability**: whether real conversations yield useful new phrases and
    context-fit rephrasings. Still simulated. Next capability test: feed a redacted or
    invented transcript to a real model call through the same serverless setup.
