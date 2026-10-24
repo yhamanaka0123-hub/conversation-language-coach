@@ -72,49 +72,70 @@ async function fetchSuggestion(p) {
   if (UI.route.name === "practice") render();
 }
 
-SCREENS.practice = () => {
-  const plan = pickPlan();
-  const s = plan && suggestionFor(plan);
-  const loading = plan && AI.status === "live" && !AI.suggestions[planKey(plan)];
-  return `
-  ${pageHeader({ eyebrow: "PRACTICE", title: "Talk it through again", action: aiBadge() })}
-  ${plan ? `
-    <section class="suggest-card ${loading ? "loading" : ""}">
-      <div class="suggest-top">
-        ${mascot(44, false, loading ? "think" : "happy")}
-        <span class="said-label">Coach suggests</span>
-      </div>
-      <p class="suggest-message">${loading ? "Looking at what you saved…" : esc(s.message)}</p>
-      <div class="hint-row">${plan.targets.map(id => `<span class="hint-chip">${icon("spark", 14)} ${esc(bare(practiceText(byId[id])))}</span>`).join("")}</div>
-      <div class="suggest-actions">
-        <button class="button button-primary" type="button" data-act="start" data-id="${plan.cid}">Start with ${esc(convoById[plan.cid].partner)} ${icon("next", 18)}</button>
-        ${plan.targets.length > 1 ? `<button class="button button-quiet" type="button" data-act="start" data-id="${plan.cid}" data-one="1">Just one phrase</button>` : ""}
-      </div>
-    </section>`
-  : `<div class="empty">${mascot(64, false, "think")}<p>Save a few phrases from a conversation first, and I’ll suggest a practice.</p>
-       <button class="button button-secondary" type="button" data-act="go" data-to="home">Review conversations</button></div>`}
+// ---------- Pick who to chat with ----------
+// Each person from your conversations is a character. The cast row at the top lets you pick
+// someone; the stage below shows who you picked (default: the rule's suggestion).
+const pickedId = () => (convoById[UI.pick] && UI.pick) || pickPlan()?.cid || CONVOS[0]?.id;
 
-  <div class="section-heading compact">
-    <div><p class="eyebrow">OR PICK A CONVERSATION</p><h2>Replay a real conversation</h2></div>
-  </div>
-  <div class="phrase-list">
-    ${CONVOS.map(c => {
-      const saved = itemsIn(c.id).filter(i => statusOf(i.id) === "practice");
-      return `<article class="vocab-card">
-        <div class="conversation-top">
-          ${avatar(c)}
-          <div class="conversation-title"><h3 class="sans">${esc(c.title)}</h3><span class="time">${esc(c.partnerNote)}</span></div>
-          ${tag(ctxOf(c.id))}
-        </div>
-        ${saved.length
-          ? `<button class="button button-secondary full-button" type="button" data-act="start" data-id="${c.id}">Practice ${plural(saved.length, "saved phrase")}</button>`
-          : `<button class="button button-quiet full-button" type="button" data-act="go" data-to="convo" data-id="${c.id}">Pick phrases to practice</button>`}
-      </article>`;
-    }).join("")}
-  </div>`;
+function stage(c, p) {
+  const s = p && suggestionFor(p);
+  const loading = p && AI.status === "live" && !AI.suggestions[planKey(p)];
+  return `<section class="stage stage-${ctxOf(c.id)} ${UI.stageIn ? "stage-in" : ""}" aria-labelledby="stage-name">
+    <div class="stage-top">
+      <div class="stage-person">${person(c, 92)}</div>
+      <div class="stage-who">
+        <h2 id="stage-name">${esc(c.partner)}</h2>
+        <p class="card-meta">${homeTag(c)}<span>${esc(c.role || "")}</span></p>
+        <p class="stage-invite">${esc(c.invite || c.title)}</p>
+      </div>
+    </div>
+    ${p ? `
+      <p class="stage-bubble ${loading ? "typing" : ""}" ${loading ? `aria-label="${esc(c.partner)} is getting ready"` : ""}>${loading ? "<i></i><i></i><i></i>" : esc(s.opener)}</p>
+      <p class="feature-label">You’ll try</p>
+      <div class="hint-row">${p.targets.map(id => `<span class="hint-chip">${icon("spark", 14)} ${esc(bare(practiceText(byId[id])))}</span>`).join("")}</div>
+      <div class="suggest-actions">
+        <button class="button button-primary" type="button" data-act="start" data-id="${c.id}">Chat with ${esc(c.partner)} ${icon("next", 18)}</button>
+        ${p.targets.length > 1 ? `<button class="button button-quiet" type="button" data-act="start" data-id="${c.id}" data-one="1">Just one phrase</button>` : ""}
+      </div>`
+    : `<p class="stage-locked">${icon("lock", 14)} Save a phrase from your ${esc(c.short || "conversation")} to chat with ${esc(c.partner)}.</p>
+      <button class="button button-secondary full-button" type="button" data-act="go" data-to="convo" data-id="${c.id}">Open ${esc(c.title)}</button>`}
+  </section>`;
+}
+
+function castCard(c, picked, suggested) {
+  const saved = itemsIn(c.id).filter(i => statusOf(i.id) === "practice").length;
+  const chats = (S.chats || {})[c.id] || 0;
+  return `<button class="cast-card ${picked ? "picked" : ""} ${saved ? "" : "locked"}" type="button" data-act="pick" data-id="${c.id}" aria-pressed="${picked}">
+    ${suggested ? `<span class="cast-star" title="Suggested">★<span class="sr-only"> Suggested</span></span>` : ""}
+    <span class="cast-face face-${ctxOf(c.id)}">${person(c, 52)}</span>
+    <strong>${esc(c.partner)}</strong>
+    <span class="cast-meta">${saved ? `${saved} ready` : `${icon("lock", 11)}<span class="sr-only">Locked</span>`}${chats ? ` · 💬${chats}` : ""}</span>
+  </button>`;
+}
+
+SCREENS.practice = () => {
+  if (!CONVOS.length) return `
+    ${pageHeader({ eyebrow: "PRACTICE", title: "Who do you want to chat with?" })}
+    <div class="empty">${mascot(64, false, "think")}<p>After your next conversation, the people you talked with show up here.</p></div>`;
+  const id = pickedId(), c = convoById[id], suggested = pickPlan()?.cid;
+  return `
+  ${pageHeader({ eyebrow: "PRACTICE", title: "Who do you want to chat with?", action: aiBadge() })}
+  <div class="cast" role="group" aria-label="Your people">${CONVOS.map(x => castCard(x, x.id === id, x.id === suggested)).join("")}</div>
+  ${stage(c, pickPlan(id))}`;
 };
 
-afterRender.practice = () => { const p = pickPlan(); if (p) fetchSuggestion(p); };
+afterRender.practice = () => {
+  UI.stageIn = false;
+  const p = pickPlan(pickedId());
+  if (p) fetchSuggestion(p);
+};
+
+ACTIONS.pick = el => {
+  UI.pick = el.dataset.id;
+  UI.stageIn = true;
+  render();
+  document.querySelector(`.cast-card[data-id="${el.dataset.id}"]`)?.focus({ preventScroll: true });
+};
 
 // ---------- Session screen ----------
 SCREENS.session = () => {
@@ -148,11 +169,11 @@ SCREENS.session = () => {
 
     <div class="chat">
       ${s.log.map(m => m.who === "ai" ? `
-        <div class="message-row">${avatar(c, true)}<div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble">${esc(m.text)}</div></div></div>`
+        <div class="message-row"><span class="chat-face face-${ctxOf(c.id)}">${person(c, 34)}</span><div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble">${esc(m.text)}</div></div></div>`
       : m.who === "me" ? `
         <div class="message-row user-row"><div><span class="speaker">YOU</span><div class="bubble user-bubble">${esc(m.text)}</div></div></div>`
       : `<div class="feedback ${m.tone}">${mascot(32, false, m.tone === "good" ? "cheer" : "happy")}<p>${m.html}</p></div>`).join("")}
-      ${s.pending ? `<div class="message-row">${avatar(c, true)}<div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble typing" aria-label="${esc(c.partner)} is typing"><i></i><i></i><i></i></div></div></div>` : ""}
+      ${s.pending ? `<div class="message-row"><span class="chat-face face-${ctxOf(c.id)}">${person(c, 34)}</span><div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble typing" aria-label="${esc(c.partner)} is typing"><i></i><i></i><i></i></div></div></div>` : ""}
     </div>
 
     <div class="practice-controls">
@@ -294,6 +315,8 @@ function finishPractice() {
   const s = UI.session;
   s.used.forEach(id => { S.status[id] = "learned"; });
   S.sessions = (S.sessions || 0) + 1;
+  S.chats = S.chats || {};
+  S.chats[s.cid] = (S.chats[s.cid] || 0) + 1;
   const r = { cid: s.cid, targets: s.targets, used: s.used.slice() };
   UI.session = null;
   const hitGoal = learnedCount() >= GOAL && !S.celebrated;

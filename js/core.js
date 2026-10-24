@@ -13,7 +13,7 @@ const convoById = Object.fromEntries(CONVOS.map(c => [c.id, c]));
 function freshState() {
   const status = {};
   ITEMS.forEach(i => { status[i.id] = i.seed || "new"; });
-  return { v: 2, status, ctx: {}, celebrated: false, sessions: 0 };
+  return { v: 2, status, ctx: {}, celebrated: false, sessions: 0, chats: {} };
 }
 function loadState() {
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 2) return s; } catch (e) {}
@@ -43,7 +43,6 @@ const highlight = (s, h) => h ? esc(s).replace(esc(h), `<mark>${esc(h)}</mark>`)
 const plural = (n, word, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;
 
 const tag = c => `<span class="tag tag-${c === "casual" ? "sage" : "blue"}">${ctxLabel(c)}</span>`;
-const avatar = (c, small) => `<div class="avatar ${ctxOf(c.id) === "casual" ? "avatar-coral" : "avatar-blue"} ${small ? "small" : ""}" aria-hidden="true">${esc(c.partner[0])}</div>`;
 
 const ICONS = {
   home: '<path d="M3 10.8 12 3l9 7.8"/><path d="M5.5 9.3V21h13V9.3M9 21v-6h6v6"/>',
@@ -89,6 +88,26 @@ const mascot = (size = 56, wave = false, mood = "happy") => `
     ${MASCOT_FACE[mood] || MASCOT_FACE.happy}
     <circle cx="19.5" cy="33" r="3.5" fill="#ffb59c" opacity=".75"/><circle cx="47.5" cy="33" r="3.5" fill="#ffb59c" opacity=".75"/>
   </svg>`;
+
+// A conversation partner drawn from c.look (see data.js): shoulders, head, hair, face.
+const HAIR = {
+  short: '<path d="M24 32c0-13 9-18 16-18 10 0 17 6 16 18-4-7-12-9-18-8-6 1-11 4-14 8Z"/>',
+  bob: '<path d="M22 37c-1-16 9-23 18-23 10 0 19 7 18 23v8c-3 0-4-4-4-10-4-7-12-10-20-9-6 2-8 7-8 13v6c-3 0-4-3-4-8Z"/>',
+  bun: '<circle cx="40" cy="12" r="7"/><path d="M24 33c-1-12 7-17 16-17s17 5 16 17c-4-7-11-10-16-10-6 0-12 4-16 10Z"/>'
+};
+const person = (c, size = 64) => {
+  const k = c.look || { hair: "short", hairColor: "#4a3b5c", skin: "#e9c3a0", shirt: "#b39cf0" };
+  return `<svg class="person" width="${size}" height="${size}" viewBox="0 0 80 80" aria-hidden="true">
+    <path d="M14 80c0-18 12-26 26-26s26 8 26 26Z" fill="${k.shirt}"/>
+    <rect x="35" y="44" width="10" height="12" rx="4" fill="${k.skin}"/>
+    <circle cx="40" cy="33" r="16" fill="${k.skin}"/>
+    <g fill="${k.hairColor}">${HAIR[k.hair] || HAIR.short}</g>
+    <circle cx="34" cy="35" r="1.9" fill="#2d2440"/><circle cx="46" cy="35" r="1.9" fill="#2d2440"/>
+    ${k.glasses ? '<g fill="none" stroke="#2d2440" stroke-width="1.6"><circle cx="34" cy="35" r="4.6"/><circle cx="46" cy="35" r="4.6"/><path d="M38.6 35h2.8"/></g>' : ""}
+    <circle cx="30" cy="40" r="2.4" fill="#ff9f86" opacity=".45"/><circle cx="50" cy="40" r="2.4" fill="#ff9f86" opacity=".45"/>
+    <path d="M35.5 41.5q4.5 4 9 0" fill="none" stroke="#2d2440" stroke-width="1.8" stroke-linecap="round"/>
+  </svg>`;
+};
 
 // The coach talking: small mascot plus a speech bubble. html is trusted markup.
 const coachSays = (html, mood = "happy", size = 46) =>
@@ -142,7 +161,7 @@ const afterRender = {};   // optional per-screen hook, e.g. scroll or animation
 // ---------- Shared actions ----------
 ACTIONS.go = el => { UI.bankFilter = el.dataset.filter || null; go({ name: el.dataset.to, id: el.dataset.id }); };
 ACTIONS.mark = el => { S.status[el.dataset.id] = el.dataset.status; save(); render(); };
-ACTIONS.reset = () => { S = freshState(); save(); UI.session = null; UI.bankFilter = null; UI.moments = {}; UI.flip = null; UI.tip = 0; go({ name: "home" }); };
+ACTIONS.reset = () => { S = freshState(); save(); UI.session = null; UI.bankFilter = null; UI.moments = {}; UI.flip = null; UI.tip = 0; UI.pick = null; go({ name: "home" }); };
 
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-act]");

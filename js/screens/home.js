@@ -15,6 +15,15 @@ const ART = {
     <circle cx="14" cy="16" r="3" fill="#8fd0b3"/><path d="M9.5 24a4.5 4.5 0 0 1 9 0" fill="#8fd0b3"/>
     <circle cx="26" cy="16" r="3" fill="#b9d3f0"/><path d="M21.5 24a4.5 4.5 0 0 1 9 0" fill="#b9d3f0"/>
     <path d="M14 33h12M20 28v5" stroke="#2f6b52" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+  bowl: `<svg viewBox="0 0 40 40" aria-hidden="true">
+    <path d="M14 7c-1.5 2 1.5 3 0 5M20 6c-1.5 2 1.5 3 0 5M26 7c-1.5 2 1.5 3 0 5" fill="none" stroke="#c98a6b" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M6 18h28a14 14 0 0 1-28 0Z" fill="#fff" stroke="#8a4b2e" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M10 21h20" stroke="#f3b597" stroke-width="3" stroke-linecap="round"/>
+    <path d="M14 34h12" stroke="#8a4b2e" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+  book: `<svg viewBox="0 0 40 40" aria-hidden="true">
+    <path d="M6 10c5-2 10-2 14 1v21c-4-3-9-3-14-1V10Z" fill="#fff" stroke="#2f6b52" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M34 10c-5-2-10-2-14 1v21c4-3 9-3 14-1V10Z" fill="#fff" stroke="#2f6b52" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M10 16h6M10 21h6M24 16h6M24 21h6" stroke="#8fd0b3" stroke-width="2.2" stroke-linecap="round"/></svg>`,
   chat: `<svg viewBox="0 0 40 40" aria-hidden="true">
     <path d="M8 9h24a3 3 0 0 1 3 3v13a3 3 0 0 1-3 3H17l-7 6v-6H8a3 3 0 0 1-3-3V12a3 3 0 0 1 3-3Z" fill="#fff" stroke="#5b4a8a" stroke-width="2.2" stroke-linejoin="round"/>
     <path d="M12 16h16M12 21h10" stroke="#b39cf0" stroke-width="2.4" stroke-linecap="round"/></svg>`
