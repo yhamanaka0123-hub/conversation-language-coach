@@ -315,7 +315,9 @@ async function reply(text) {
       reply: text, turnsLeft: MAX_TURNS - s.userTurns - 1
     });
     if (UI.session !== s) return;          // the learner left while waiting
-    const hits = out.used.filter(id => s.targets.includes(id) && !s.used.includes(id));
+    // The model sometimes misses a phrase that is plainly there, so also check its keywords.
+    const said = s.targets.filter(id => !s.used.includes(id) && uses(text, byId[id]));
+    const hits = [...new Set([...out.used.filter(id => s.targets.includes(id) && !s.used.includes(id)), ...said])];
     s.used.push(...hits);
     hits.forEach(id => { s.lines[id] = text; });
     const f = out.feedback || {};
