@@ -89,9 +89,3 @@ const ITEMS = [
   { id: "old-1", convo: null, source: "Lab meeting · Oct 15", sourceContext: "professional", kind: "phrase", text: "touch base", meaning: "Check in briefly.", seed: "learned", match: [] },
   { id: "old-2", convo: null, source: "Lab meeting · Oct 15", sourceContext: "professional", kind: "phrase", text: "on the same page", meaning: "In agreement; sharing the same understanding.", seed: "learned", match: [] }
 ];
-
-// Earlier weeks for the Progress chart (sample history). This week is computed live.
-const HISTORY = [
-  { wk: "Sep 14", n: 1 }, { wk: "Sep 21", n: 3 }, { wk: "Sep 28", n: 2 },
-  { wk: "Oct 5", n: 4 }, { wk: "Oct 12", n: 3 }
-];

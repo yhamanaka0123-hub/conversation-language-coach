@@ -17,7 +17,7 @@ celebration fires when the week reaches 5 learned terms (2 are seeded as already
 
 | File | What it controls |
 |---|---|
-| `js/data.js` | Conversations, phrases, suggestions, AI partner scripts, sample history. No coding needed beyond keeping the format. |
+| `js/data.js` | Conversations, phrases, suggestions, AI partner scripts. No coding needed beyond keeping the format. |
 | `style.css` | All colors, fonts and layout (from the Figma Make design). |
 | `js/core.js` | Shared state, helpers, icons, bottom nav, page header. Change with care: every screen uses it. |
 | `js/screens/home.js` | Home: tappable coach, featured conversation replayed one moment at a time, more from your day |
@@ -26,7 +26,7 @@ celebration fires when the week reaches 5 learned terms (2 are seeded as already
 | `js/screens/practice.js` | Coach suggestion, AI practice session, recap, scripted fallback |
 | `api/practice.mjs` | Vercel serverless function that calls the AI model (Groq). Holds the only use of the API key. |
 | `prompts/practice.mjs` | The live prompts for the coach suggestion and each practice turn |
-| `js/screens/progress.js` | Progress report |
+| `js/screens/progress.js` | Progress: weekly goal ring, sticker collection by person, badges |
 | `js/screens/celebrate.js` | Celebration screen |
 
 Each screen file adds one entry to `SCREENS` and its buttons to `ACTIONS`, so two people
@@ -71,6 +71,5 @@ To run the AI locally: `npx vercel dev` with `GROQ_API_KEY` in `.env.local` (git
 
 Background recording, transcription and speaker ID; phrase detection and "you could also
 say" suggestions (hand-written in `js/data.js`); the AI partner whenever it falls back to
-the script. Weeks before Oct 19 in the Progress
-chart are sample history. Progress is kept in the browser's localStorage; *Reset demo*
+the script. Progress is kept in the browser's localStorage; *Reset demo*
 clears it

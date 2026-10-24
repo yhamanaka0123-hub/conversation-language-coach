@@ -60,6 +60,7 @@ const ICONS = {
   chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20V7"/><path d="M2 20h22"/>',
   trend: '<path d="m4 16 6-6 4 4 6-7"/><path d="M15 7h5v5"/>',
   send: '<path d="M4 12 20 4l-6 16-3-7-7-1Z"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   sound: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4v-5Z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.3 6.5a8 8 0 0 1 0 11"/>'
 };
 const icon = (name, size = 20) =>
