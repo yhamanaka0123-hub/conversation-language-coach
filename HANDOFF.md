@@ -16,7 +16,7 @@ Context for whoever (person or coding agent) picks this up next. Delete or updat
 
 ## Screens (4 tabs)
 Home (list + detail with context switch) · Vocab bank · Practice (scripted AI replay
-with coach notes, simulated mic) · Progress (weekly stats, terms/week chart, casual vs
+with coach notes, simulated mic) · Progress (weekly goal ring, sticker collection by person, badges; was: terms/week chart, casual vs
 professional split). Celebration fires when the week reaches 5 learned terms (2 seeded).
 
 ## Decisions made so far

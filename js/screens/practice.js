@@ -50,18 +50,23 @@ function pickPlan(cid, one) {
 }
 const planKey = p => `${p.cid}:${p.targets.join(",")}:${ctxOf(p.cid)}`;
 
+// Rule for one person: their saved phrases first. With none saved, phrases from that chat
+// not marked as known (new ones, then ones practiced before). No targets means a free replay.
+function planFor(cid, one) {
+  const items = itemsIn(cid);
+  const pool = ["practice", "new", "learned"].map(st => items.filter(i => statusOf(i.id) === st)).find(l => l.length) || [];
+  return { cid, targets: pool.slice(0, one ? 1 : 3).map(i => i.id), saved: Boolean(pool.length) && statusOf(pool[0].id) === "practice" };
+}
+
 function templateSuggestion(p) {
   const c = convoById[p.cid];
-  const names = p.targets.map(id => `“${bare(practiceText(byId[id]))}”`);
-  const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
-  return { message: `${USER}, you saved ${list} from ${c.title}. Want to try ${names.length > 1 ? "them" : "it"} in a quick follow-up with ${c.partner}?`,
-    opener: c.script[0].ai, fromAI: false };
+  return { opener: c.script[0].ai, fromAI: false };
 }
 const suggestionFor = p => AI.suggestions[planKey(p)] || templateSuggestion(p);
 
 async function fetchSuggestion(p) {
   const key = planKey(p);
-  if (AI.status !== "live" || AI.suggestions[key] || AI.fetching[key]) return;
+  if (AI.status !== "live" || !p.targets.length || AI.suggestions[key] || AI.fetching[key]) return;
   AI.fetching[key] = true;
   const c = convoById[p.cid];
   try {
@@ -72,49 +77,68 @@ async function fetchSuggestion(p) {
   if (UI.route.name === "practice") render();
 }
 
-SCREENS.practice = () => {
-  const plan = pickPlan();
-  const s = plan && suggestionFor(plan);
-  const loading = plan && AI.status === "live" && !AI.suggestions[planKey(plan)];
-  return `
-  ${pageHeader({ eyebrow: "PRACTICE", title: "Talk it through again", action: aiBadge() })}
-  ${plan ? `
-    <section class="suggest-card ${loading ? "loading" : ""}">
-      <div class="suggest-top">
-        ${mascot(44, false, loading ? "think" : "happy")}
-        <span class="said-label">Coach suggests</span>
-      </div>
-      <p class="suggest-message">${loading ? "Looking at what you saved…" : esc(s.message)}</p>
-      <div class="hint-row">${plan.targets.map(id => `<span class="hint-chip">${icon("spark", 14)} ${esc(bare(practiceText(byId[id])))}</span>`).join("")}</div>
-      <div class="suggest-actions">
-        <button class="button button-primary" type="button" data-act="start" data-id="${plan.cid}">Start with ${esc(convoById[plan.cid].partner)} ${icon("next", 18)}</button>
-        ${plan.targets.length > 1 ? `<button class="button button-quiet" type="button" data-act="start" data-id="${plan.cid}" data-one="1">Just one phrase</button>` : ""}
-      </div>
-    </section>`
-  : `<div class="empty">${mascot(64, false, "think")}<p>Save a few phrases from a conversation first, and I’ll suggest a practice.</p>
-       <button class="button button-secondary" type="button" data-act="go" data-to="home">Review conversations</button></div>`}
+// ---------- Pick who to chat with ----------
+// Each person from your conversations is a character. The cast row at the top lets you pick
+// someone; the stage below shows who you picked (default: the rule's suggestion).
+const pickedId = () => (convoById[UI.pick] && UI.pick) || pickPlan()?.cid || CONVOS[0]?.id;
 
-  <div class="section-heading compact">
-    <div><p class="eyebrow">OR PICK A CONVERSATION</p><h2>Replay a real conversation</h2></div>
-  </div>
-  <div class="phrase-list">
-    ${CONVOS.map(c => {
-      const saved = itemsIn(c.id).filter(i => statusOf(i.id) === "practice");
-      return `<article class="vocab-card">
-        <div class="conversation-top">
-          ${avatar(c)}
-          <div class="conversation-title"><h3 class="sans">${esc(c.title)}</h3><span class="time">${esc(c.partnerNote)}</span></div>
-          ${tag(ctxOf(c.id))}
-        </div>
-        ${saved.length
-          ? `<button class="button button-secondary full-button" type="button" data-act="start" data-id="${c.id}">Practice ${plural(saved.length, "saved phrase")}</button>`
-          : `<button class="button button-quiet full-button" type="button" data-act="go" data-to="convo" data-id="${c.id}">Pick phrases to practice</button>`}
-      </article>`;
-    }).join("")}
-  </div>`;
+function stage(c, p) {
+  const s = suggestionFor(p);
+  const loading = p.targets.length && AI.status === "live" && !AI.suggestions[planKey(p)];
+  return `<section class="stage stage-${ctxOf(c.id)} ${UI.stageIn ? "stage-in" : ""}" aria-labelledby="stage-name">
+    <div class="stage-top">
+      <div class="stage-person">${person(c, 92)}</div>
+      <div class="stage-who">
+        <h2 id="stage-name">${esc(c.partner)}</h2>
+        <p class="card-meta">${homeTag(c)}<span>${esc(c.role || "")}</span></p>
+        <p class="stage-invite">${esc(c.invite || c.title)}</p>
+      </div>
+    </div>
+    <p class="stage-bubble ${loading ? "typing" : ""}" ${loading ? `aria-label="${esc(c.partner)} is getting ready"` : ""}>${loading ? "<i></i><i></i><i></i>" : esc(s.opener)}</p>
+    ${p.targets.length ? `
+      <p class="feature-label">${p.saved ? "You’ll try your saved phrases" : `From your ${esc(c.short || "conversation")}, you could try`}</p>
+      <div class="hint-row">${p.targets.map(id => `<span class="hint-chip">${icon("spark", 14)} ${esc(bare(practiceText(byId[id])))}</span>`).join("")}</div>`
+    : `<p class="feature-label">No phrases this time. Just chat.</p>`}
+    <div class="suggest-actions">
+      <button class="button button-primary" type="button" data-act="start" data-id="${c.id}">Chat with ${esc(c.partner)} ${icon("next", 18)}</button>
+      ${p.targets.length > 1 ? `<button class="button button-quiet" type="button" data-act="start" data-id="${c.id}" data-one="1">Just one phrase</button>` : ""}
+    </div>
+  </section>`;
+}
+
+function castCard(c, picked, suggested) {
+  const saved = itemsIn(c.id).filter(i => statusOf(i.id) === "practice").length;
+  const chats = (S.chats || {})[c.id] || 0;
+  return `<button class="cast-card ${picked ? "picked" : ""}" type="button" data-act="pick" data-id="${c.id}" aria-pressed="${picked}">
+    ${suggested ? `<span class="cast-star" title="Suggested">★<span class="sr-only"> Suggested</span></span>` : ""}
+    <span class="cast-face face-${ctxOf(c.id)}">${person(c, 52)}</span>
+    <strong>${esc(c.partner)}</strong>
+    <span class="cast-meta ${saved ? "" : "quiet"}">${saved ? `${saved} saved` : "Replay"}${chats ? ` · 💬${chats}` : ""}</span>
+  </button>`;
+}
+
+SCREENS.practice = () => {
+  if (!CONVOS.length) return `
+    ${pageHeader({ eyebrow: "PRACTICE", title: "Who do you want to chat with?" })}
+    <div class="empty">${mascot(64, false, "think")}<p>After your next conversation, the people you talked with show up here.</p></div>`;
+  const id = pickedId(), c = convoById[id], suggested = pickPlan()?.cid;
+  return `
+  ${pageHeader({ eyebrow: "PRACTICE", title: "Who do you want to chat with?", action: aiBadge() })}
+  <div class="cast" role="group" aria-label="Your people">${CONVOS.map(x => castCard(x, x.id === id, x.id === suggested)).join("")}</div>
+  ${stage(c, planFor(id))}`;
 };
 
-afterRender.practice = () => { const p = pickPlan(); if (p) fetchSuggestion(p); };
+afterRender.practice = () => {
+  UI.stageIn = false;
+  fetchSuggestion(planFor(pickedId()));
+};
+
+ACTIONS.pick = el => {
+  UI.pick = el.dataset.id;
+  UI.stageIn = true;
+  render();
+  document.querySelector(`.cast-card[data-id="${el.dataset.id}"]`)?.focus({ preventScroll: true });
+};
 
 // ---------- Session screen ----------
 SCREENS.session = () => {
@@ -136,7 +160,7 @@ SCREENS.session = () => {
     </div>
 
     <div class="target-row">
-      <div class="row-between"><span class="said-label">Try to use</span><span class="turns">${s.done ? "Done" : `${plural(left, "reply", "replies")} left`}</span></div>
+      <div class="row-between"><span class="said-label">${s.targets.length ? "Try to use" : "Free chat"}</span><span class="turns">${s.done ? "Done" : `${plural(left, "reply", "replies")} left`}</span></div>
       <div class="hint-row">
         ${s.targets.map(id => {
           const used = s.used.includes(id), open = s.peek === id, i = byId[id];
@@ -148,11 +172,11 @@ SCREENS.session = () => {
 
     <div class="chat">
       ${s.log.map(m => m.who === "ai" ? `
-        <div class="message-row">${avatar(c, true)}<div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble">${esc(m.text)}</div></div></div>`
+        <div class="message-row"><span class="chat-face face-${ctxOf(c.id)}">${person(c, 34)}</span><div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble">${esc(m.text)}</div></div></div>`
       : m.who === "me" ? `
         <div class="message-row user-row"><div><span class="speaker">YOU</span><div class="bubble user-bubble">${esc(m.text)}</div></div></div>`
       : `<div class="feedback ${m.tone}">${mascot(32, false, m.tone === "good" ? "cheer" : "happy")}<p>${m.html}</p></div>`).join("")}
-      ${s.pending ? `<div class="message-row">${avatar(c, true)}<div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble typing" aria-label="${esc(c.partner)} is typing"><i></i><i></i><i></i></div></div></div>` : ""}
+      ${s.pending ? `<div class="message-row"><span class="chat-face face-${ctxOf(c.id)}">${person(c, 34)}</span><div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble typing" aria-label="${esc(c.partner)} is typing"><i></i><i></i><i></i></div></div></div>` : ""}
     </div>
 
     <div class="practice-controls">
@@ -175,18 +199,61 @@ afterRender.session = () => {
   if (input && !UI.session.pending) input.focus({ preventScroll: true });
 };
 
+// Weekly count on the recap. popped: how many of the filled dots this session just added.
+function weekCard(n, popped = 0) {
+  const filled = Math.min(n, GOAL);
+  return `<section class="week-card">
+    <div class="week-top">
+      <div>
+        <h2>Little by little</h2>
+        <p class="week-count">${n >= GOAL ? `Weekly goal reached · <strong>${n}</strong> of ${GOAL} practiced` : `<strong>${n}</strong> of ${GOAL} phrases practiced this week`}</p>
+      </div>
+      <button class="text-link" type="button" data-act="go" data-to="report">See progress</button>
+    </div>
+    <div class="week-dots" role="img" aria-label="${filled} of ${GOAL} practiced">
+      ${Array.from({ length: GOAL }, (_, k) => `<span class="${k < filled ? "on" : ""}${k < filled && k >= filled - popped ? " pop" : ""}"></span>`).join("")}
+    </div>
+  </section>`;
+}
+
+// How this chat compares: with the last chat with the same person (counts only), and for each
+// phrase you used, what was said in the real conversation next to what you said now.
+function compareLine(r, c) {
+  const n = r.used.length;
+  if (!r.targets.length) return [`Nice chat with ${esc(c.partner)}. Every conversation counts.`, "happy"];
+  if (r.prev && r.prev.targets) {
+    if (n > r.prev.used) return [`<strong>${n}</strong> this time, up from ${r.prev.used} last time with ${esc(c.partner)}. 📈`, "cheer"];
+    if (n === r.prev.used && n) return [`${n} again, same as last time. <strong>Steady!</strong>`, "cheer"];
+    if (n < r.prev.used) return [`${n} this time (${r.prev.used} last time). Some chats are harder, and that’s fine.`, "happy"];
+  }
+  if (n === r.targets.length) return ["You worked every one into the conversation. <strong>Nicely done.</strong>", "cheer"];
+  if (n) return [`<strong>${n} down.</strong> The rest will be here for next time.`, "cheer"];
+  return ["No phrases this round, and that’s okay. They’ll be here next time.", "happy"];
+}
+
+function thenNow(id, line, c) {
+  const i = byId[id];
+  const then = i.kind === "rephrase"
+    ? { who: "You said, in the real chat", text: i.said }
+    : { who: `${i.speaker} said`, text: i.sentence };
+  const low = line.toLowerCase(), w = matchWords(i).find(x => low.includes(x));
+  const hl = w ? line.substr(low.indexOf(w), w.length) : "";
+  return `<div class="then-now">
+    <div class="then"><span>${esc(then.who)}</span><p>“${esc(then.text)}”</p></div>
+    <div class="now"><span>${i.kind === "rephrase" ? "You, today" : "Now you said it"}</span><p>“${highlight(line, hl)}”</p></div>
+  </div>`;
+}
+
 SCREENS.recap = () => {
   const r = UI.route.r, c = convoById[r.cid];
-  const n = learnedCount();
+  const [line, mood] = compareLine(r, c);
+  const shown = r.used.filter(id => r.lines && r.lines[id]);
   return `
-    ${pageHeader({ eyebrow: "PRACTICE RECAP", title: `You used ${r.used.length} of ${r.targets.length} with ${esc(c.partner)}` })}
-    ${coachSays(r.used.length === r.targets.length
-      ? `You worked every one into the conversation. <strong>Nicely done.</strong>`
-      : r.used.length
-        ? `<strong>${r.used.length} down.</strong> The rest will be here for next time.`
-        : "No phrases this round, and that’s okay. They’ll be here next time.",
-      r.used.length ? "cheer" : "happy")}
-    <div class="learned-list">
+    ${pageHeader({ eyebrow: "PRACTICE RECAP", title: r.targets.length ? `You used ${r.used.length} of ${r.targets.length} with ${esc(c.partner)}` : `Chat with ${esc(c.partner)} done` })}
+    ${coachSays(line, mood)}
+    ${shown.length ? `<div class="section-heading compact"><div><p class="eyebrow">THEN AND NOW</p><h2>How you said it today</h2></div></div>
+      <div class="stack">${shown.map(id => thenNow(id, r.lines[id], c)).join("")}</div>` : ""}
+    ${r.targets.length ? `<div class="learned-list recap-list">
       ${r.targets.map((id, k) => {
         const ok = r.used.includes(id);
         return `<div class="learned-item ${ok ? "" : "pending"}">
@@ -194,21 +261,20 @@ SCREENS.recap = () => {
           <em>${ok ? `${icon("check", 16)} Practiced` : "Next time"}</em>
         </div>`;
       }).join("")}
-    </div>
-    ${weekCard(n)}
+    </div>` : ""}
+    ${weekCard(learnedCount(), r.used.length)}
     <div class="stack recap-actions">
-      ${r.used.length < r.targets.length ? `<button class="button button-primary full-button" type="button" data-act="start" data-id="${r.cid}">Practice again</button>` : ""}
+      <button class="button button-primary full-button" type="button" data-act="start" data-id="${r.cid}">Chat with ${esc(c.partner)} again</button>
       <button class="button button-quiet full-button" type="button" data-act="go" data-to="home">Back to home</button>
     </div>`;
 };
 
 // ---------- Session logic ----------
 function startPractice(cid, one) {
-  const plan = pickPlan(cid, one);
-  if (!plan) return go({ name: "convo", id: cid });
+  const plan = planFor(cid, one);
   const mode = AI.status === "live" ? "ai" : "script";
   const opener = mode === "ai" ? suggestionFor(plan).opener : convoById[cid].script[0].ai;
-  UI.session = { cid, targets: plan.targets, used: [], mode, userTurns: 0, turn: 0, done: false, pending: false, peek: null, suggested: [],
+  UI.session = { cid, targets: plan.targets, used: [], lines: {}, mode, userTurns: 0, turn: 0, done: false, pending: false, peek: null, suggested: [],
     log: [{ who: "ai", text: opener }] };
   go({ name: "session" });
 }
@@ -223,6 +289,7 @@ function scriptStep(text) {
   const step = c.script[Math.min(s.turn, c.script.length - 1)];
   const hits = s.targets.filter(id => !s.used.includes(id) && uses(text, byId[id]));
   s.used.push(...hits);
+  hits.forEach(id => { s.lines[id] = text; });
   if (hits.length) s.log.push(praise(hits, s.cid));
   else if (s.targets.includes(step.hint) && !s.used.includes(step.hint))
     s.log.push({ who: "coach", tone: "nudge", html: `<strong>Good reply.</strong> This was a natural spot for “${esc(bare(practiceText(byId[step.hint])))}”. Try it next time.` });
@@ -250,6 +317,7 @@ async function reply(text) {
     if (UI.session !== s) return;          // the learner left while waiting
     const hits = out.used.filter(id => s.targets.includes(id) && !s.used.includes(id));
     s.used.push(...hits);
+    hits.forEach(id => { s.lines[id] = text; });
     const f = out.feedback || {};
     // Praise only a phrase actually used; suggest each phrase at most once, two per session.
     if (f.type === "praise" && hits.includes(f.id)) s.log.push({ who: "coach", tone: "good", html: esc(f.text) });
@@ -277,7 +345,13 @@ function finishPractice() {
   const s = UI.session;
   s.used.forEach(id => { S.status[id] = "learned"; });
   S.sessions = (S.sessions || 0) + 1;
-  const r = { cid: s.cid, targets: s.targets, used: s.used.slice() };
+  S.chats = S.chats || {};
+  S.chats[s.cid] = (S.chats[s.cid] || 0) + 1;
+  // Per-person history, so the recap can compare with the last chat.
+  S.history = S.history || {};
+  const past = S.history[s.cid] || [];
+  const r = { cid: s.cid, targets: s.targets, used: s.used.slice(), lines: { ...s.lines }, prev: past[past.length - 1] || null };
+  S.history[s.cid] = [...past, { used: s.used.length, targets: s.targets.length }].slice(-5);
   UI.session = null;
   const hitGoal = learnedCount() >= GOAL && !S.celebrated;
   if (hitGoal) S.celebrated = true;

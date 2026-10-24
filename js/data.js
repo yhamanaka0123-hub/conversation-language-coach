@@ -1,16 +1,22 @@
 // Sample data for the prototype. Edit freely: conversations, phrases and the AI scripts
 // all live here, so content changes never touch the screen code.
 
-const GOAL = 5;           // weekly goal: saved phrases used in practice
+const GOAL = 5;           // weekly practice goal: saved phrases used in practice
+const USE_GOAL = 3;       // weekly goal: new phrases used in real conversations
 const USER = "Yuka";
 const TODAY = "Tuesday, Oct 20";
 
+// mine: minutes the learner spoke in that conversation (simulated speaker ID).
+// role, invite, look: how the partner appears on the Practice character cards.
+// look.hair is "bob", "short" or "bun"; look.glasses adds glasses.
 const CONVOS = [
   {
     id: "maya", title: "Coffee chat with Maya", context: "casual",
-    when: "Today · 3:40 PM", length: "18 min", short: "coffee chat", art: "coffee", people: "Maya (classmate)", place: "Free Speech Café",
+    when: "Today · 3:40 PM", length: "18 min", mine: 7, short: "coffee chat", art: "coffee", people: "Maya (classmate)", place: "Free Speech Café",
     summary: "You caught up with Maya after class. She's buried in internship recruiting, invited you on a Sunday hike, and pushed your Friday dinner.",
     partner: "Maya", partnerNote: "Plays your classmate, same tone as today",
+    role: "classmate", invite: "Coffee chat after class",
+    look: { hair: "bob", hairColor: "#4a2f25", skin: "#f1c7a3", shirt: "#f08a5d" },
     scene: ["Free Speech Café, after class.", "Maya is catching up on your week and weekend plans."],
     script: [
       { ai: "Hey! Sorry I'm late, it's been a week. How are you holding up?", hint: "maya-r1",
@@ -25,10 +31,52 @@ const CONVOS = [
     closing: "Okay, I gotta run. See you Sunday!"
   },
   {
+    id: "priya", title: "Lunch with Priya", context: "casual",
+    when: "Today · 12:10 PM", length: "15 min", mine: 6, short: "lunch", art: "bowl", people: "Priya (roommate)", place: "Your apartment kitchen",
+    summary: "Priya made too much curry and shared it. She vented about the landlord and the broken heater, and you two planned a grocery run.",
+    partner: "Priya", partnerNote: "Plays your roommate, same easy tone",
+    role: "roommate", invite: "Lunch at home, catching up",
+    look: { hair: "bun", hairColor: "#1f1a24", skin: "#b9805a", shirt: "#b39cf0" },
+    scene: ["Your kitchen, lunchtime.", "Priya just made a big pot of curry."],
+    script: [
+      { ai: "I made way too much curry again. Want some?", hint: "priya-p1",
+        sample: "Yes please! And help yourself to the bread I bought." },
+      { ai: "Thanks! Ugh, the landlord still hasn't fixed the heater.", hint: "priya-p3",
+        sample: "That's so annoying. Let's call it a day on chores and relax." },
+      { ai: "Ha, deal. Oh, we're almost out of rice and eggs.", hint: "priya-r1",
+        sample: "Want to do a grocery run tomorrow?" },
+      { ai: "Yes! I'll drive if you grab coffee on the way.", hint: "priya-p2",
+        sample: "Deal, and the coffee's on me." }
+    ],
+    closing: "Perfect. Okay, back to my problem set!"
+  },
+  {
+    id: "chen", title: "Office hours with Prof. Chen", context: "professional",
+    when: "Mon · 4:00 PM", length: "15 min", mine: 6, short: "office hours", art: "book", people: "Prof. Chen (Marketing)", place: "Faculty office",
+    summary: "You went over your market research draft. Prof. Chen liked the start, asked you to build out the customer section, and suggested about ten interviews.",
+    partner: "Prof. Chen", partnerNote: "Plays your professor, same office hours",
+    role: "professor", invite: "Office hours on your draft",
+    look: { hair: "short", hairColor: "#9a96a3", skin: "#f0cfae", shirt: "#5b6bd6", glasses: true },
+    scene: ["Prof. Chen's office, Monday afternoon.", "You brought your market research draft."],
+    script: [
+      { ai: "Come on in! What would you like to go over today?", hint: "chen-r1",
+        sample: "Could you walk me through the segmentation part?" },
+      { ai: "Sure. Your draft is a good start, but the customer section is thin.", hint: "chen-p2",
+        sample: "Got it. I'll flesh out the customer section this week." },
+      { ai: "Good. How many interviews are you planning?", hint: "chen-p3",
+        sample: "Is ten a good rule of thumb?" },
+      { ai: "Ten is fine. Anything else on your mind?", hint: "chen-p1",
+        sample: "Could you touch on how to size the market?" }
+    ],
+    closing: "Great questions. See you in class Thursday."
+  },
+  {
     id: "sync", title: "Weekly product sync", context: "professional",
-    when: "Mon · 10:00 AM", length: "32 min", short: "meeting", art: "meeting", people: "Daniel (PM), Lena (design)", place: "Zoom",
+    when: "Mon · 10:00 AM", length: "32 min", mine: 5, short: "meeting", art: "meeting", people: "Daniel (PM), Lena (design)", place: "Zoom",
     summary: "Daniel ran the weekly sync. The team triaged a checkout bug, debated whether a fix could ship by Friday, and pushed the pricing discussion to next week.",
     partner: "Daniel", partnerNote: "Plays your PM in the same meeting",
+    role: "PM", invite: "Monday team sync",
+    look: { hair: "short", hairColor: "#2d2440", skin: "#d9a57c", shirt: "#4fae8b", glasses: true },
     scene: ["Monday sync on Zoom.", "Daniel is going around the team for updates."],
     script: [
       { ai: "Morning! Before we dive in, any quick updates from your side?", hint: "sync-r1",
@@ -85,13 +133,37 @@ const ITEMS = [
            casual: "Relaxed, but still clear about the timing." },
     match: { professional: ["tight", "aim for"], casual: ["pushing it", "how about"] } },
 
+  { id: "priya-p1", convo: "priya", kind: "phrase", text: "help yourself", meaning: "Take as much as you like; no need to ask.",
+    sentence: "There's tons of curry, help yourself.", hl: "help yourself", speaker: "Priya", at: "01:12", match: ["help yourself"] },
+  { id: "priya-p2", convo: "priya", kind: "phrase", text: "it's on me", meaning: "I'll pay for it.",
+    sentence: "Next coffee's on me, I owe you.", hl: "on me", speaker: "Priya", at: "11:40", match: ["on me"] },
+  { id: "priya-p3", convo: "priya", kind: "phrase", text: "call it a day", meaning: "Stop working on something for now.",
+    sentence: "I'm going to call it a day on laundry.", hl: "call it a day", speaker: "Priya", at: "06:05", match: ["call it a day"] },
+  { id: "priya-r1", convo: "priya", kind: "rephrase", said: "I want to buy food together tomorrow.", at: "09:30",
+    alt: { casual: "Want to do a grocery run tomorrow?", professional: "Would you like to go grocery shopping together tomorrow?" },
+    why: { casual: "“Grocery run” is the everyday way roommates say it.",
+           professional: "A full, polite question that works with anyone." },
+    match: { casual: ["grocery run"], professional: ["would you like to go"] } },
+
+  { id: "chen-p1", convo: "chen", kind: "phrase", text: "touch on", meaning: "Talk about something briefly.",
+    sentence: "Let me touch on your second question first.", hl: "touch on", speaker: "Prof. Chen", at: "03:20", match: ["touch on"] },
+  { id: "chen-p2", convo: "chen", kind: "phrase", text: "flesh out", meaning: "Add more detail to an idea or draft.",
+    sentence: "You'll want to flesh out the customer section.", hl: "flesh out", speaker: "Prof. Chen", at: "07:48", match: ["flesh out"] },
+  { id: "chen-p3", convo: "chen", kind: "phrase", text: "a good rule of thumb", meaning: "A practical guideline, not an exact rule.",
+    sentence: "A good rule of thumb is about ten interviews.", hl: "a good rule of thumb", speaker: "Prof. Chen", at: "10:15", match: ["rule of thumb"] },
+  { id: "chen-r1", convo: "chen", kind: "rephrase", said: "I don't understand this part.", at: "01:05",
+    alt: { professional: "Could you walk me through this part?", casual: "Wait, can you explain this bit again?" },
+    why: { professional: "Asks for help in a way that sounds engaged, not lost.",
+           casual: "Light and friendly when you're among peers." },
+    match: { professional: ["walk me through"], casual: ["explain this bit", "explain that again"] } },
+
   // Learned earlier this week, from a conversation outside the demo.
   { id: "old-1", convo: null, source: "Lab meeting · Oct 15", sourceContext: "professional", kind: "phrase", text: "touch base", meaning: "Check in briefly.", seed: "learned", match: [] },
   { id: "old-2", convo: null, source: "Lab meeting · Oct 15", sourceContext: "professional", kind: "phrase", text: "on the same page", meaning: "In agreement; sharing the same understanding.", seed: "learned", match: [] }
 ];
 
-// Earlier weeks for the Progress chart (sample history). This week is computed live.
-const HISTORY = [
-  { wk: "Sep 14", n: 1 }, { wk: "Sep 21", n: 3 }, { wk: "Sep 28", n: 2 },
-  { wk: "Oct 5", n: 4 }, { wk: "Oct 12", n: 3 }
+// Times the learner used a phrase they picked up earlier, in a later real conversation.
+// Simulated detection: the prototype does not analyse the learner's own speech yet.
+const USES = [
+  { item: "old-1", convo: "sync", at: "24:10", said: "Can we touch base before Friday?" }
 ];

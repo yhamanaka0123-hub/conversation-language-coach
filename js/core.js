@@ -13,7 +13,7 @@ const convoById = Object.fromEntries(CONVOS.map(c => [c.id, c]));
 function freshState() {
   const status = {};
   ITEMS.forEach(i => { status[i.id] = i.seed || "new"; });
-  return { v: 2, status, ctx: {}, celebrated: false, sessions: 0 };
+  return { v: 2, status, ctx: {}, celebrated: false, sessions: 0, chats: {}, history: {}, cards: {} };
 }
 function loadState() {
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 2) return s; } catch (e) {}
@@ -43,11 +43,8 @@ const highlight = (s, h) => h ? esc(s).replace(esc(h), `<mark>${esc(h)}</mark>`)
 const plural = (n, word, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;
 
 const tag = c => `<span class="tag tag-${c === "casual" ? "sage" : "blue"}">${ctxLabel(c)}</span>`;
-const avatar = (c, small) => `<div class="avatar ${ctxOf(c.id) === "casual" ? "avatar-coral" : "avatar-blue"} ${small ? "small" : ""}" aria-hidden="true">${esc(c.partner[0])}</div>`;
 
 const ICONS = {
-  home: '<path d="M3 10.8 12 3l9 7.8"/><path d="M5.5 9.3V21h13V9.3M9 21v-6h6v6"/>',
-  book: '<path d="M4 4.8A3.8 3.8 0 0 1 7.8 1H11v18H7.5A3.5 3.5 0 0 0 4 22.5V4.8Z"/><path d="M20 4.8A3.8 3.8 0 0 0 16.2 1H13v18h3.5a3.5 3.5 0 0 1 3.5 3.5V4.8Z"/>',
   spark: '<path d="m12 2 1.3 5.1A5 5 0 0 0 17 10.7L22 12l-5 1.3a5 5 0 0 0-3.7 3.7L12 22l-1.3-5A5 5 0 0 0 7 13.3L2 12l5-1.3A5 5 0 0 0 10.7 7L12 2Z"/>',
   back: '<path d="m15 18-6-6 6-6"/><path d="M9 12h11"/>',
   next: '<path d="m9 18 6-6-6-6"/><path d="M15 12H4"/>',
@@ -57,21 +54,24 @@ const ICONS = {
   bookmark: '<path d="M6 3h12v18l-6-4-6 4V3Z"/>',
   message: '<path d="M20 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v8Z"/>',
   chevron: '<path d="m9 6 6 6-6 6"/>',
-  chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20V7"/><path d="M2 20h22"/>',
-  trend: '<path d="m4 16 6-6 4 4 6-7"/><path d="M15 7h5v5"/>',
-  send: '<path d="M4 12 20 4l-6 16-3-7-7-1Z"/>'
+  send: '<path d="M4 12 20 4l-6 16-3-7-7-1Z"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  sound: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4v-5Z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.3 6.5a8 8 0 0 1 0 11"/>'
 };
 const icon = (name, size = 20) =>
   `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
 
 // The coach mascot: a lavender speech bubble with a face. wave: play the one-time hello.
-// mood: "happy" (default), "cheer" (closed happy eyes, open smile, both arms up), "think".
+// mood: "happy" (default), "cheer" (closed happy eyes, open smile, both arms up), "think", "talk".
 const MASCOT_FACE = {
   happy: `<ellipse cx="26" cy="25" rx="3.2" ry="4.2" fill="#2d2440"/><ellipse cx="41" cy="25" rx="3.2" ry="4.2" fill="#2d2440"/>
     <circle cx="27" cy="23.5" r="1" fill="#fff"/><circle cx="42" cy="23.5" r="1" fill="#fff"/>
     <path d="M28.5 33.5q5 5 10 0" fill="none" stroke="#2d2440" stroke-width="2.4" stroke-linecap="round"/>`,
   cheer: `<path d="M22.5 26q3.5-5 7 0M37.5 26q3.5-5 7 0" fill="none" stroke="#2d2440" stroke-width="2.4" stroke-linecap="round"/>
     <path d="M27 31.5h13q-1 8-6.5 8T27 31.5Z" fill="#2d2440"/><path d="M30 36.5q3.5-2 7 0q-1.5 3-3.5 3t-3.5-3Z" fill="#ff8f7a"/>`,
+  talk: `<ellipse cx="26" cy="24" rx="3.2" ry="4" fill="#2d2440"/><ellipse cx="41" cy="24" rx="3.2" ry="4" fill="#2d2440"/>
+    <circle cx="27" cy="22.5" r="1" fill="#fff"/><circle cx="42" cy="22.5" r="1" fill="#fff"/>
+    <ellipse cx="33.5" cy="35" rx="4" ry="3.4" fill="#2d2440"/><ellipse cx="33.5" cy="36.6" rx="2.4" ry="1.4" fill="#ff8f7a"/>`,
   think: `<ellipse cx="27" cy="23" rx="3" ry="3.8" fill="#2d2440"/><ellipse cx="42" cy="23" rx="3" ry="3.8" fill="#2d2440"/>
     <circle cx="28" cy="21.5" r="1" fill="#fff"/><circle cx="43" cy="21.5" r="1" fill="#fff"/>
     <ellipse cx="34" cy="35" rx="2.6" ry="2.2" fill="#2d2440"/>`
@@ -87,6 +87,26 @@ const mascot = (size = 56, wave = false, mood = "happy") => `
     ${MASCOT_FACE[mood] || MASCOT_FACE.happy}
     <circle cx="19.5" cy="33" r="3.5" fill="#ffb59c" opacity=".75"/><circle cx="47.5" cy="33" r="3.5" fill="#ffb59c" opacity=".75"/>
   </svg>`;
+
+// A conversation partner drawn from c.look (see data.js): shoulders, head, hair, face.
+const HAIR = {
+  short: '<path d="M24 32c0-13 9-18 16-18 10 0 17 6 16 18-4-7-12-9-18-8-6 1-11 4-14 8Z"/>',
+  bob: '<path d="M22 37c-1-16 9-23 18-23 10 0 19 7 18 23v8c-3 0-4-4-4-10-4-7-12-10-20-9-6 2-8 7-8 13v6c-3 0-4-3-4-8Z"/>',
+  bun: '<circle cx="40" cy="12" r="7"/><path d="M24 33c-1-12 7-17 16-17s17 5 16 17c-4-7-11-10-16-10-6 0-12 4-16 10Z"/>'
+};
+const person = (c, size = 64) => {
+  const k = c.look || { hair: "short", hairColor: "#4a3b5c", skin: "#e9c3a0", shirt: "#b39cf0" };
+  return `<svg class="person" width="${size}" height="${size}" viewBox="0 0 80 80" aria-hidden="true">
+    <path d="M14 80c0-18 12-26 26-26s26 8 26 26Z" fill="${k.shirt}"/>
+    <rect x="35" y="44" width="10" height="12" rx="4" fill="${k.skin}"/>
+    <circle cx="40" cy="33" r="16" fill="${k.skin}"/>
+    <g fill="${k.hairColor}">${HAIR[k.hair] || HAIR.short}</g>
+    <circle cx="34" cy="35" r="1.9" fill="#2d2440"/><circle cx="46" cy="35" r="1.9" fill="#2d2440"/>
+    ${k.glasses ? '<g fill="none" stroke="#2d2440" stroke-width="1.6"><circle cx="34" cy="35" r="4.6"/><circle cx="46" cy="35" r="4.6"/><path d="M38.6 35h2.8"/></g>' : ""}
+    <circle cx="30" cy="40" r="2.4" fill="#ff9f86" opacity=".45"/><circle cx="50" cy="40" r="2.4" fill="#ff9f86" opacity=".45"/>
+    <path d="M35.5 41.5q4.5 4 9 0" fill="none" stroke="#2d2440" stroke-width="1.8" stroke-linecap="round"/>
+  </svg>`;
+};
 
 // The coach talking: small mascot plus a speech bubble. html is trusted markup.
 const coachSays = (html, mood = "happy", size = 46) =>
@@ -106,14 +126,33 @@ function pageHeader({ eyebrow, title, back, action = "" }) {
 
 // ---------- Navigation ----------
 const NAV = [
-  { key: "home", label: "Home", icon: "home" },
-  { key: "bank", label: "Vocab", icon: "book" },
-  { key: "practice", label: "Practice", icon: "spark" },
-  { key: "report", label: "Progress", icon: "chart" }
+  { key: "home", label: "Home" },
+  { key: "bank", label: "Vocab" },
+  { key: "practice", label: "Practice" },
+  { key: "report", label: "Progress" }
 ];
+// Bottom-nav icons in the mascot's style: soft shapes, little faces. Colors come from CSS
+// (.ni-body, .ni-accent, .ni-face) so the active tab lights up and the rest stay muted.
+const NAV_ICONS = {
+  home: `<path class="ni-body" d="M5.5 15 16 6l10.5 9v10a3 3 0 0 1-3 3h-15a3 3 0 0 1-3-3Z"/>
+    <path class="ni-roof" d="M3.5 15.5 16 4.8l12.5 10.7"/>
+    <rect class="ni-accent" x="13" y="20" width="6" height="8" rx="3"/>
+    <circle class="ni-face" cx="12.3" cy="15.3" r="1.4"/><circle class="ni-face" cx="19.7" cy="15.3" r="1.4"/>`,
+  bank: `<rect class="ni-accent" x="10" y="4" width="16" height="21" rx="4" transform="rotate(12 18 14.5)"/>
+    <rect class="ni-body" x="5.5" y="7" width="16" height="21" rx="4" transform="rotate(-6 13.5 17.5)"/>
+    <circle class="ni-face" cx="11" cy="16.5" r="1.4"/><circle class="ni-face" cx="16.6" cy="15.9" r="1.4"/>
+    <path class="ni-smile" d="M11.6 20.4q2.6 2 5.2-.5"/>`,
+  practice: `<path class="ni-body" d="M7.5 5.5h17a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H14l-5.5 4.3V23.5h-1a5 5 0 0 1-5-5v-8a5 5 0 0 1 5-5Z"/>
+    <circle class="ni-face" cx="12.6" cy="13.6" r="1.6"/><circle class="ni-face" cx="19.4" cy="13.6" r="1.6"/>
+    <circle class="ni-accent" cx="9.6" cy="17.4" r="1.7"/><circle class="ni-accent" cx="22.4" cy="17.4" r="1.7"/>
+    <path class="ni-smile" d="M13.6 17.6q2.4 2.4 4.8 0"/>`,
+  report: `<circle class="ni-track" cx="16" cy="16" r="11"/>
+    <path class="ni-ring" d="M16 5a11 11 0 1 1-10.4 14.6"/>
+    <path class="ni-star" d="m16 10.4 1.8 3.5 3.9.6-2.8 2.7.7 3.9-3.6-1.9-3.6 1.9.7-3.9-2.8-2.7 3.9-.6Z"/>`
+};
 // Which bottom-nav item is highlighted for each route.
-const NAV_FOR = { home: "home", convo: "home", bank: "bank", practice: "practice", session: "practice", recap: "practice", celebrate: "practice", report: "report" };
-const NO_NAV = ["session", "celebrate"];
+const NAV_FOR = { home: "home", convo: "home", bank: "bank", cards: "bank", practice: "practice", session: "practice", recap: "practice", celebrate: "practice", report: "report" };
+const NO_NAV = ["session", "celebrate", "cards"];
 
 function go(route) { UI.route = route; UI.enter = true; render(); UI.enter = false; window.scrollTo(0, 0); }
 
@@ -121,10 +160,15 @@ function renderNav() {
   const nav = document.getElementById("nav");
   nav.hidden = NO_NAV.includes(UI.route.name);
   const review = ITEMS.filter(i => ["new", "practice"].includes(statusOf(i.id))).length;
+  const active = NAV_FOR[UI.route.name];
+  // The icon hops only when the active tab changes, not on every re-render.
+  const hop = active !== UI.navActive;
+  UI.navActive = active;
   nav.innerHTML = NAV.map(n => `
-    <button type="button" class="nav-item ${NAV_FOR[UI.route.name] === n.key ? "active" : ""}" data-act="go" data-to="${n.key}"
-      ${NAV_FOR[UI.route.name] === n.key ? 'aria-current="page"' : ""}>
-      ${icon(n.icon, 21)}<span>${n.label}${n.key === "bank" && review ? ` <b class="nav-badge">${review}</b>` : ""}</span>
+    <button type="button" class="nav-item nav-${n.key} ${active === n.key ? `active${hop ? " hop" : ""}` : ""}" data-act="go" data-to="${n.key}"
+      ${active === n.key ? 'aria-current="page"' : ""}>
+      <svg class="nav-icon" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">${NAV_ICONS[n.key]}</svg>
+      <span>${n.label}${n.key === "bank" && review ? ` <b class="nav-badge">${review}</b>` : ""}</span>
     </button>`).join("");
 }
 
@@ -140,7 +184,7 @@ const afterRender = {};   // optional per-screen hook, e.g. scroll or animation
 // ---------- Shared actions ----------
 ACTIONS.go = el => { UI.bankFilter = el.dataset.filter || null; go({ name: el.dataset.to, id: el.dataset.id }); };
 ACTIONS.mark = el => { S.status[el.dataset.id] = el.dataset.status; save(); render(); };
-ACTIONS.reset = () => { S = freshState(); save(); UI.session = null; UI.bankFilter = null; go({ name: "home" }); };
+ACTIONS.reset = () => { S = freshState(); save(); UI.session = null; UI.bankFilter = null; UI.moments = {}; UI.flip = null; UI.tip = 0; UI.pick = null; UI.deck = null; go({ name: "home" }); };
 
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-act]");

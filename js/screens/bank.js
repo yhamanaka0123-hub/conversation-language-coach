@@ -1,4 +1,4 @@
-// Vocab bank: every captured phrase, filtered by review state.
+// Vocab bank: a flashcard review entry on top, then every captured phrase, filtered by state.
 
 const BANK_GROUPS = { new: "New", practice: "To practice", learned: "Practiced" };
 
@@ -15,11 +15,7 @@ SCREENS.bank = () => {
   }[f];
   return `
     ${pageHeader({ eyebrow: "YOUR COLLECTION", title: "Words worth keeping" })}
-    ${coachSays(counts.practice
-      ? `<strong>${plural(counts.practice, "phrase")}</strong> ready to practice. Let’s put ${counts.practice > 1 ? "them" : "it"} to work.`
-      : counts.new
-        ? `<strong>${plural(counts.new, "new find")}</strong> from your conversations. Keep the ones you’d like to use.`
-        : "Everything’s sorted. New phrases arrive after your next conversation.")}
+    ${reviewCard()}
     <div class="tabs tabs-3" role="group" aria-label="Filter">
       ${Object.entries(BANK_GROUPS).map(([k, label]) => `<button type="button" class="${f === k ? "active" : ""}" aria-pressed="${f === k}" data-act="filter" data-f="${k}">${label} <span>${counts[k]}</span></button>`).join("")}
     </div>
@@ -34,3 +30,20 @@ SCREENS.bank = () => {
 };
 
 ACTIONS.filter = el => { UI.bankFilter = el.dataset.f; render(); };
+
+// Entry to flashcard review (js/screens/cards.js): how many cards, and how familiar they are.
+function reviewCard() {
+  const deck = deckItems();
+  if (!deck.length) return "";
+  const n = Math.min(ROUND, deck.length);
+  const count = f => deck.filter(i => famOf(i.id) === f).length;
+  return `<section class="review-card">
+    <div class="review-stack" aria-hidden="true"><span></span><span></span><span>${mascot(40, false, "happy")}</span></div>
+    <div class="review-copy">
+      <h2>${plural(n, "card")} ready</h2>
+      <p>About ${Math.max(1, Math.round(n / 5))} min · no talking needed</p>
+      <p class="review-fam">${Object.entries(FAM).map(([k, [leaf, label]]) => `<span title="${label}">${leaf} ${count(k)}<span class="sr-only"> ${label}</span></span>`).join("")}</p>
+    </div>
+    <button class="button button-primary review-start" type="button" data-act="cards">Start review ${icon("next", 16)}</button>
+  </section>`;
+}
