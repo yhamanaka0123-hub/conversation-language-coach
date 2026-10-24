@@ -334,6 +334,51 @@ button.hint-chip[aria-expanded="true"] { background: var(--lavender); }
 .feature-card.calm { animation: none; }
 .feature-card.calm p { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.45; }
 
+/* Moments carousel (Home featured card) */
+.moments { display: grid; gap: 12px; }
+.moment-stage { display: grid; align-content: start; gap: 8px; min-height: 168px; padding: 14px; border-radius: 18px; background: rgba(255, 255, 255, 0.72); touch-action: pan-y; user-select: none; }
+.moment-who { display: flex; align-items: center; gap: 8px; color: var(--plum-muted); font-size: 12px; }
+.moment-who strong { color: var(--plum); }
+.moment-who .speak { margin-left: auto; }
+.speak { display: grid; flex: none; width: 36px; height: 36px; place-items: center; border: 1px solid var(--lavender-deep); border-radius: 50%; color: var(--violet-ink); background: var(--white); cursor: pointer; transition: transform 120ms ease; }
+.speak:active { transform: scale(.92); }
+.speak.speaking { color: var(--white); background: var(--violet); border-color: var(--violet); }
+.moment-bubble { display: grid; gap: 6px; width: 100%; padding: 12px 14px; border: 1px solid var(--lavender-deep); border-radius: 6px 20px 20px 20px; color: var(--plum); background: var(--white); text-align: left; font-size: 15px; line-height: 1.45; cursor: pointer; transition: transform 120ms ease, box-shadow 120ms ease; box-shadow: 0 3px 0 var(--lavender-deep); }
+.moment-bubble:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--lavender-deep); }
+.moment-bubble mark { background: linear-gradient(transparent 50%, var(--highlight) 50%); font-weight: 700; }
+.moment-bubble.flipped { border-color: transparent; color: var(--white); background: var(--violet); box-shadow: 0 3px 0 var(--violet-dark); }
+.moment-bubble.alt { border-radius: 20px 6px 20px 20px; }
+.moment-phrase { font-size: 16px; font-weight: 700; }
+.moment-back { font-size: 14px; opacity: .92; }
+.moment-hint { color: var(--violet-ink); font-size: 11.5px; font-weight: 700; }
+.moment-said { margin: 0 0 4px; color: var(--plum-muted); font-size: 14px; }
+.you-chip, .alt-chip { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 12px; font-size: 10.5px; font-weight: 700; }
+.you-chip { color: var(--plum-muted); background: #f1eef4; }
+.alt-chip { color: var(--violet-ink); background: var(--lavender); }
+.moment-ctx { justify-self: start; margin-top: 2px; background: #f4f0fb; }
+.moment-done { display: grid; justify-items: center; align-content: center; gap: 8px; min-height: 140px; text-align: center; }
+.moment-done p { margin: 0; font-size: 15px; font-weight: 700; }
+.moment-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.round-button { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid var(--lavender-deep); border-radius: 50%; color: var(--violet-ink); background: var(--white); cursor: pointer; transition: transform 120ms ease; }
+.round-button:active:not(:disabled) { transform: scale(.92); }
+.round-button:disabled { opacity: .35; cursor: default; }
+.moment-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.moment-dots span[aria-hidden] { width: 8px; height: 8px; border-radius: 99px; background: var(--lavender-deep); transition: width 200ms ease, background 200ms ease; }
+.moment-dots span.seen { background: #b9a6ee; }
+.moment-dots span.on { width: 22px; background: var(--violet); }
+.anim-next { animation: slide-next 260ms ease-out both; }
+.anim-prev { animation: slide-prev 260ms ease-out both; }
+.anim-flip .flipped, .anim-flip .moment-bubble { animation: flip-in 280ms ease-out both; }
+@keyframes slide-next { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes slide-prev { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+@keyframes flip-in { from { transform: perspective(600px) rotateX(70deg); opacity: .3; } to { transform: none; opacity: 1; } }
+
+/* Tappable coach */
+.mascot-button { flex: none; padding: 0; border: 0; border-radius: 18px; background: none; cursor: pointer; }
+.mascot-button.wiggle .mascot { animation: wiggle 500ms ease-in-out both; }
+.tip-in { animation: msg-in 260ms ease-out both; }
+@keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-8deg) scale(1.05); } 60% { transform: rotate(6deg); } }
+
 .button-cta { display: flex; width: 100%; min-height: 52px; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border: 0; border-radius: 16px; color: var(--white); background: var(--violet); box-shadow: 0 4px 0 var(--violet-dark); font-size: 15px; font-weight: 700; cursor: pointer; transition: transform 90ms ease, box-shadow 90ms ease, background 150ms ease; }
 .button-cta:hover { background: #6844cc; }
 .button-cta:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--violet-dark); }
@@ -357,7 +402,7 @@ button.hint-chip[aria-expanded="true"] { background: var(--lavender); }
 .week-dots { display: flex; gap: 7px; margin: 12px 0 2px; }
 .week-dots span { width: 26px; height: 10px; border-radius: 99px; background: rgba(138, 75, 46, 0.14); }
 .week-dots span.on { background: var(--orange); }
-.week-dots span.pop { animation: dot-pop 600ms cubic-bezier(.2, .9, .3, 1.4) both; }
+.week-dots span.pop { animation: dot-pop 600ms cubic-bezier(.2, .9, .3, 1.4) 350ms both; }
 @keyframes dot-pop { 0% { transform: scale(.4); background: rgba(138, 75, 46, 0.14); } 60% { transform: scale(1.25); } 100% { transform: none; } }
 
 .empty-home { display: grid; justify-items: center; gap: 10px; padding: 26px 18px; border-radius: 24px; background: var(--lavender); text-align: center; }

@@ -175,6 +175,23 @@ afterRender.session = () => {
   if (input && !UI.session.pending) input.focus({ preventScroll: true });
 };
 
+// Weekly count on the recap. popped: how many of the filled dots this session just added.
+function weekCard(n, popped = 0) {
+  const filled = Math.min(n, GOAL);
+  return `<section class="week-card">
+    <div class="week-top">
+      <div>
+        <h2>Little by little</h2>
+        <p class="week-count">${n >= GOAL ? `Weekly goal reached · <strong>${n}</strong> of ${GOAL} practiced` : `<strong>${n}</strong> of ${GOAL} phrases practiced this week`}</p>
+      </div>
+      <button class="text-link" type="button" data-act="go" data-to="report">See progress</button>
+    </div>
+    <div class="week-dots" role="img" aria-label="${filled} of ${GOAL} practiced">
+      ${Array.from({ length: GOAL }, (_, k) => `<span class="${k < filled ? "on" : ""}${k < filled && k >= filled - popped ? " pop" : ""}"></span>`).join("")}
+    </div>
+  </section>`;
+}
+
 SCREENS.recap = () => {
   const r = UI.route.r, c = convoById[r.cid];
   const n = learnedCount();
@@ -195,7 +212,7 @@ SCREENS.recap = () => {
         </div>`;
       }).join("")}
     </div>
-    ${weekCard(n)}
+    ${weekCard(n, r.used.length)}
     <div class="stack recap-actions">
       ${r.used.length < r.targets.length ? `<button class="button button-primary full-button" type="button" data-act="start" data-id="${r.cid}">Practice again</button>` : ""}
       <button class="button button-quiet full-button" type="button" data-act="go" data-to="home">Back to home</button>

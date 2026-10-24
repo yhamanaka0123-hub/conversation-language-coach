@@ -1,6 +1,6 @@
-// Home: a coach greeting, one featured conversation, the rest of the day, and a weekly nudge.
-// Featured: the latest conversation with unexplored items; else saved items waiting for
-// practice; else a calm "all caught up" card.
+// Home: a coach greeting, one featured conversation, and the rest of the day.
+// Featured: the latest conversation with unexplored items, replayed one moment at a time;
+// else saved items waiting for practice; else a calm "all caught up" card.
 
 // Small illustrations for conversation cards, keyed by CONVOS[].art.
 const ART = {
@@ -44,7 +44,7 @@ function quoteChips(list) {
   </ul>`;
 }
 
-function featureCard(c, { label, chips, cta }) {
+function featureCard(c, body, cta) {
   return `<section class="feature-card" aria-labelledby="feature-title">
     <div class="feature-top">
       ${artTile(c)}
@@ -53,24 +53,67 @@ function featureCard(c, { label, chips, cta }) {
         <p class="card-meta">${homeTag(c)}<span>${whenLine(c)}</span></p>
       </div>
     </div>
-    <div class="feature-preview">
-      <p class="feature-label">${label}</p>
-      ${chips}
-    </div>
+    ${body}
     ${cta}
   </section>`;
 }
 
+// ---------- Moments: the featured conversation, one bubble at a time ----------
+// Phrases the other person said come first, then another way to say the learner's own words.
+UI.moments = UI.moments || {};   // conversation id -> slide index
+const momentsFor = c => {
+  const open = itemsWith(c.id, "new");
+  return [...open.filter(i => i.kind === "phrase"), ...open.filter(i => i.kind === "rephrase")];
+};
+const canSpeak = "speechSynthesis" in window;
+const speakButton = text => canSpeak
+  ? `<button class="speak" type="button" data-act="speak" data-text="${esc(text)}" aria-label="Listen">${icon("sound", 17)}</button>` : "";
+const speakerAvatar = (c, name) =>
+  `<span class="avatar small ${ctxOf(c.id) === "casual" ? "avatar-coral" : "avatar-blue"}" aria-hidden="true">${esc(name[0])}</span>`;
+
+function momentSlide(i, c) {
+  const open = UI.flip === i.id;
+  if (i.kind === "phrase") return `
+    <div class="moment-who">${speakerAvatar(c, i.speaker)}<span><strong>${esc(i.speaker)}</strong> · ${i.at}</span>${speakButton(i.sentence)}</div>
+    <button class="moment-bubble ${open ? "flipped" : ""}" type="button" data-act="flip" data-id="${i.id}" aria-expanded="${open}">
+      ${open
+        ? `<span class="moment-phrase">“${esc(i.text)}”</span><span class="moment-back">${esc(i.meaning)}</span>`
+        : `<span class="moment-quote">${highlight(i.sentence, i.hl)}</span><span class="moment-hint">Tap for meaning</span>`}
+    </button>`;
+  const ctx = ctxOf(c.id);
+  return `
+    <div class="moment-who"><span class="you-chip" aria-hidden="true">You</span><span><strong>You said</strong> · ${i.at}</span></div>
+    <p class="moment-said">“${esc(i.said)}”</p>
+    <div class="moment-who alt-who"><span class="alt-chip" aria-hidden="true">${icon("spark", 14)}</span><span><strong>Another way</strong></span>${speakButton(i.alt[ctx])}</div>
+    <button class="moment-bubble alt ${open ? "flipped" : ""}" type="button" data-act="flip" data-id="${i.id}" aria-expanded="${open}">
+      ${open
+        ? `<span class="moment-phrase">“${esc(i.alt[ctx])}”</span><span class="moment-back">${esc(i.why[ctx])}</span>`
+        : `<span class="moment-quote">“${esc(i.alt[ctx])}”</span><span class="moment-hint">Tap for why</span>`}
+    </button>
+    <div class="tabs tabs-small moment-ctx" role="group" aria-label="Context for this suggestion">
+      ${["casual", "professional"].map(k => `<button type="button" class="${ctx === k ? "active" : ""}" aria-pressed="${ctx === k}" data-act="ctx" data-id="${c.id}" data-ctx="${k}">${ctxLabel(k)}</button>`).join("")}
+    </div>`;
+}
+
 // State A: something new to explore in this conversation.
 function exploreFeature(c) {
-  const heard = itemsWith(c.id, "new").filter(i => i.kind === "phrase").slice(0, 2);
-  const speakers = [...new Set(heard.map(i => i.speaker))];
-  return featureCard(c, {
-    label: !heard.length ? "Phrases and fresh ways to say things" : speakers.length === 1 ? `${esc(speakers[0])} said` : "You heard",
-    chips: heard.length ? quoteChips(heard.map(i => ({ text: i.text, note: speakers.length > 1 ? i.speaker : "" }))) : "",
-    cta: `<button class="button-cta" type="button" data-act="go" data-to="convo" data-id="${c.id}">
-      ${c.short ? `Explore my ${esc(c.short)}` : "Explore conversation"} ${icon("next", 18)}</button>`
-  });
+  const list = momentsFor(c);
+  const k = Math.min(UI.moments[c.id] || 0, list.length);
+  const slide = k < list.length ? momentSlide(list[k], c)
+    : `<div class="moment-done">${mascot(52, false, "cheer")}<p>That’s everything new from your ${esc(c.short || "conversation")}.</p></div>`;
+  const body = `<div class="moments" role="group" aria-roledescription="carousel" aria-label="Moments from ${esc(c.title)}">
+      <div class="moment-stage ${UI.momentAnim ? `anim-${UI.momentAnim}` : ""}" data-cid="${c.id}">${slide}</div>
+      <div class="moment-nav">
+        <button class="round-button" type="button" data-act="moment" data-id="${c.id}" data-step="-1" aria-label="Previous moment" ${k === 0 ? "disabled" : ""}>${icon("back", 18)}</button>
+        <div class="moment-dots" aria-live="polite">
+          <span class="sr-only">${k < list.length ? `Moment ${k + 1} of ${list.length}` : "All moments seen"}</span>
+          ${list.map((_, n) => `<span class="${n === k ? "on" : n < k ? "seen" : ""}" aria-hidden="true"></span>`).join("")}
+        </div>
+        <button class="round-button" type="button" data-act="moment" data-id="${c.id}" data-step="1" aria-label="Next moment" ${k === list.length ? "disabled" : ""}>${icon("next", 18)}</button>
+      </div>
+    </div>`;
+  return featureCard(c, body, `<button class="button-cta" type="button" data-act="go" data-to="convo" data-id="${c.id}">
+      ${c.short ? `Explore my ${esc(c.short)}` : "Explore conversation"} ${icon("next", 18)}</button>`);
 }
 
 // State B: everything explored, but saved items are waiting for practice.
@@ -78,11 +121,11 @@ function practiceFeature(c) {
   const saved = itemsWith(c.id, "practice");
   const shown = saved.slice(0, 2);
   const more = saved.length - shown.length;
-  return featureCard(c, {
-    label: "Saved",
-    chips: quoteChips(shown.map(i => ({ text: practiceText(i) }))).replace("</ul>", more ? `<li class="more-chip">+${more} more</li></ul>` : "</ul>"),
-    cta: `<button class="button-cta" type="button" data-act="go" data-to="practice">Practice my saved phrases ${icon("next", 18)}</button>`
-  });
+  return featureCard(c, `<div class="feature-preview">
+      <p class="feature-label">Saved</p>
+      ${quoteChips(shown.map(i => ({ text: practiceText(i) }))).replace("</ul>", more ? `<li class="more-chip">+${more} more</li></ul>` : "</ul>")}
+    </div>`,
+    `<button class="button-cta" type="button" data-act="go" data-to="practice">Practice my saved phrases ${icon("next", 18)}</button>`);
 }
 
 function smallCard(c) {
@@ -97,20 +140,12 @@ function smallCard(c) {
   </button>`;
 }
 
-function weekCard(n) {
-  const filled = Math.min(n, GOAL);
-  return `<section class="week-card">
-    <div class="week-top">
-      <div>
-        <h2>Little by little</h2>
-        <p class="week-count">${n >= GOAL ? `Weekly goal reached · <strong>${n}</strong> of ${GOAL} practiced` : `<strong>${n}</strong> of ${GOAL} phrases practiced this week`}</p>
-      </div>
-      <button class="text-link" type="button" data-act="go" data-to="report">See progress</button>
-    </div>
-    <div class="week-dots" role="img" aria-label="${filled} of ${GOAL} practiced">
-      ${Array.from({ length: GOAL }, (_, k) => `<span class="${k < filled ? "on" : ""}"></span>`).join("")}
-    </div>
-  </section>`;
+// What the coach says when you tap it, by Home state. The first line is the default.
+function coachLines(fresh, featured) {
+  if (fresh) return ["New phrases from your day.", `${fresh.summary.split(". ")[0].replace(/\.$/, "")}.`,
+    "Tap a bubble to see what it means.", ...(canSpeak ? ["Tap the speaker to hear it."] : [])];
+  if (featured) return ["Saved phrases, ready when you are.", `About 3 minutes with ${featured.partner}, played by AI.`];
+  return [CONVOS.length ? "All caught up." : "Ready when you are.", "New phrases show up after your next conversation."];
 }
 
 SCREENS.home = () => {
@@ -118,6 +153,7 @@ SCREENS.home = () => {
   const plan = !fresh && pickPlan();
   const featured = fresh || (plan && convoById[plan.cid]);
   const rest = CONVOS.filter(c => c !== featured);
+  const lines = coachLines(fresh, featured);
   const wave = !UI.waved;
 
   let main;
@@ -139,12 +175,10 @@ SCREENS.home = () => {
     </header>
 
     <div class="greeting">
-      ${mascot(60, wave)}
+      <button class="mascot-button ${UI.wiggle ? "wiggle" : ""}" type="button" data-act="tip" aria-label="Ask the coach">${mascot(60, wave)}</button>
       <div>
         <h1>Hey ${esc(USER)}!</h1>
-        <p>${fresh ? "New phrases from your day."
-          : featured ? "Saved phrases, ready when you are."
-          : CONVOS.length ? "All caught up." : "Ready when you are."}</p>
+        <p class="${UI.wiggle ? "tip-in" : ""}" aria-live="polite">${esc(lines[(UI.tip || 0) % lines.length])}</p>
       </div>
     </div>
 
@@ -152,17 +186,53 @@ SCREENS.home = () => {
 
     ${rest.length ? `
       <h2 class="home-section">${featured ? "More from your day" : "Your conversations"}</h2>
-      <div class="small-list">${rest.map(smallCard).join("")}</div>` : ""}
-
-    ${weekCard(learnedCount())}`;
+      <div class="small-list">${rest.map(smallCard).join("")}</div>` : ""}`;
 };
 
-// Animate the weekly dots only when the practiced count went up since Home was last shown.
+// One-shot flags are cleared after each render; swipe and focus are wired here.
 afterRender.home = () => {
-  const n = learnedCount();
-  if (UI.homeSeen != null && n > UI.homeSeen) {
-    document.querySelectorAll(".week-dots span.on").forEach((d, k) => { if (k >= UI.homeSeen) d.classList.add("pop"); });
-  }
-  UI.homeSeen = n;
   UI.waved = true;
+  UI.wiggle = false;
+  UI.momentAnim = null;
+  if (UI.refocus) { document.querySelector(UI.refocus)?.focus({ preventScroll: true }); UI.refocus = null; }
+  const stage = document.querySelector(".moment-stage");
+  if (!stage) return;
+  let x0 = null;
+  stage.addEventListener("pointerdown", e => { x0 = e.clientX; });
+  stage.addEventListener("pointerup", e => {
+    if (x0 === null) return;
+    const dx = e.clientX - x0;
+    x0 = null;
+    if (Math.abs(dx) > 45) document.querySelector(`.moment-nav [data-step="${dx < 0 ? 1 : -1}"]:not(:disabled)`)?.click();
+  });
+};
+
+ACTIONS.moment = el => {
+  const step = Number(el.dataset.step);
+  UI.moments[el.dataset.id] = Math.max(0, (UI.moments[el.dataset.id] || 0) + step);
+  UI.flip = null;
+  UI.momentAnim = step > 0 ? "next" : "prev";
+  UI.refocus = `.moment-nav [data-step="${step}"]:not(:disabled)`;
+  render();
+};
+ACTIONS.flip = el => {
+  UI.flip = UI.flip === el.dataset.id ? null : el.dataset.id;
+  UI.momentAnim = "flip";
+  UI.refocus = `[data-act="flip"][data-id="${el.dataset.id}"]`;
+  render();
+};
+ACTIONS.speak = el => {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(el.dataset.text);
+  u.lang = "en-US";
+  u.rate = 0.95;
+  el.classList.add("speaking");
+  u.onend = u.onerror = () => el.classList.remove("speaking");
+  speechSynthesis.speak(u);
+};
+ACTIONS.tip = () => {
+  UI.tip = (UI.tip || 0) + 1;
+  UI.wiggle = true;
+  UI.refocus = ".mascot-button";
+  render();
 };
