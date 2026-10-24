@@ -334,44 +334,43 @@ button.hint-chip[aria-expanded="true"] { background: var(--lavender); }
 .feature-card.calm { animation: none; }
 .feature-card.calm p { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.45; }
 
-/* Moments carousel (Home featured card) */
-.moments { display: grid; gap: 12px; }
-.moment-stage { display: grid; align-content: start; gap: 8px; min-height: 168px; padding: 14px; border-radius: 18px; background: rgba(255, 255, 255, 0.72); touch-action: pan-y; user-select: none; }
-.moment-who { display: flex; align-items: center; gap: 8px; color: var(--plum-muted); font-size: 12px; }
-.moment-who strong { color: var(--plum); }
-.moment-who .speak { margin-left: auto; }
+/* Moments carousel (Home featured card): one bubble, a peeking coach, dots and Next */
+.moments { display: grid; gap: 10px; }
+.moment-stage { position: relative; display: grid; align-content: center; min-height: 128px; padding: 22px 12px 12px; border-radius: 20px; background: rgba(255, 255, 255, 0.6); touch-action: pan-y; user-select: none; }
+.moment-peek { position: absolute; top: -18px; right: 12px; pointer-events: none; }
+.moment-bubble { display: grid; gap: 4px; width: 100%; padding: 14px 52px 14px 16px; border: 1px solid var(--lavender-deep); border-radius: 6px 22px 22px 22px; color: var(--plum); background: var(--white); text-align: left; font-size: 16px; line-height: 1.4; cursor: pointer; box-shadow: 0 4px 0 var(--lavender-deep); transition: transform 110ms ease, box-shadow 110ms ease; }
+.moment-bubble:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--lavender-deep); }
+.moment-bubble.rephrase { border-radius: 22px 6px 22px 22px; }
+.moment-bubble mark { background: linear-gradient(transparent 50%, var(--highlight) 50%); font-weight: 700; }
+.moment-bubble.flipped { border-color: transparent; color: var(--white); background: var(--violet); box-shadow: 0 4px 0 var(--violet-dark); }
+.moment-label { color: var(--violet-ink); font-size: 11.5px; font-weight: 700; }
+.moment-bubble.flipped .moment-label { color: #e4dafb; }
+.moment-quote { font-weight: 500; }
+.moment-stage .speak { position: absolute; right: 22px; bottom: 26px; }
+.flipped ~ .speak { border-color: transparent; }
 .speak { display: grid; flex: none; width: 36px; height: 36px; place-items: center; border: 1px solid var(--lavender-deep); border-radius: 50%; color: var(--violet-ink); background: var(--white); cursor: pointer; transition: transform 120ms ease; }
 .speak:active { transform: scale(.92); }
 .speak.speaking { color: var(--white); background: var(--violet); border-color: var(--violet); }
-.moment-bubble { display: grid; gap: 6px; width: 100%; padding: 12px 14px; border: 1px solid var(--lavender-deep); border-radius: 6px 20px 20px 20px; color: var(--plum); background: var(--white); text-align: left; font-size: 15px; line-height: 1.45; cursor: pointer; transition: transform 120ms ease, box-shadow 120ms ease; box-shadow: 0 3px 0 var(--lavender-deep); }
-.moment-bubble:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--lavender-deep); }
-.moment-bubble mark { background: linear-gradient(transparent 50%, var(--highlight) 50%); font-weight: 700; }
-.moment-bubble.flipped { border-color: transparent; color: var(--white); background: var(--violet); box-shadow: 0 3px 0 var(--violet-dark); }
-.moment-bubble.alt { border-radius: 20px 6px 20px 20px; }
-.moment-phrase { font-size: 16px; font-weight: 700; }
-.moment-back { font-size: 14px; opacity: .92; }
-.moment-hint { color: var(--violet-ink); font-size: 11.5px; font-weight: 700; }
-.moment-said { margin: 0 0 4px; color: var(--plum-muted); font-size: 14px; }
-.you-chip, .alt-chip { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 12px; font-size: 10.5px; font-weight: 700; }
-.you-chip { color: var(--plum-muted); background: #f1eef4; }
-.alt-chip { color: var(--violet-ink); background: var(--lavender); }
-.moment-ctx { justify-self: start; margin-top: 2px; background: #f4f0fb; }
-.moment-done { display: grid; justify-items: center; align-content: center; gap: 8px; min-height: 140px; text-align: center; }
+.moment-done { display: grid; justify-items: center; gap: 6px; text-align: center; }
 .moment-done p { margin: 0; font-size: 15px; font-weight: 700; }
-.moment-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.round-button { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid var(--lavender-deep); border-radius: 50%; color: var(--violet-ink); background: var(--white); cursor: pointer; transition: transform 120ms ease; }
-.round-button:active:not(:disabled) { transform: scale(.92); }
-.round-button:disabled { opacity: .35; cursor: default; }
-.moment-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
-.moment-dots span[aria-hidden] { width: 8px; height: 8px; border-radius: 99px; background: var(--lavender-deep); transition: width 200ms ease, background 200ms ease; }
-.moment-dots span.seen { background: #b9a6ee; }
-.moment-dots span.on { width: 22px; background: var(--violet); }
-.anim-next { animation: slide-next 260ms ease-out both; }
-.anim-prev { animation: slide-prev 260ms ease-out both; }
-.anim-flip .flipped, .anim-flip .moment-bubble { animation: flip-in 280ms ease-out both; }
+.moment-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; }
+.moment-dots { display: flex; gap: 2px; }
+.moment-dots button { display: grid; width: 28px; height: 32px; place-items: center; padding: 0; border: 0; background: none; cursor: pointer; }
+.moment-dots button::after { content: ""; width: 9px; height: 9px; border-radius: 99px; background: var(--lavender-deep); transition: width 200ms ease, background 200ms ease; }
+.moment-dots button.seen::after { background: #b9a6ee; }
+.moment-dots button.on::after { width: 22px; background: var(--violet); }
+.next-pill { display: inline-flex; min-height: 40px; align-items: center; gap: 5px; padding: 8px 14px; border: 1px solid var(--lavender-deep); border-radius: 999px; color: var(--violet-ink); background: var(--white); font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 3px 0 var(--lavender-deep); transition: transform 110ms ease, box-shadow 110ms ease; }
+.next-pill:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--lavender-deep); }
+.anim-next .moment-bubble, .anim-next .moment-done { animation: slide-next 260ms ease-out both; }
+.anim-prev .moment-bubble, .anim-prev .moment-done { animation: slide-prev 260ms ease-out both; }
+.anim-flip .moment-bubble { animation: flip-in 280ms ease-out both; }
+.anim-next .moment-peek, .anim-prev .moment-peek, .anim-flip .moment-peek { animation: peek-pop 360ms cubic-bezier(.2, .9, .3, 1.4) both; }
 @keyframes slide-next { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
 @keyframes slide-prev { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
 @keyframes flip-in { from { transform: perspective(600px) rotateX(70deg); opacity: .3; } to { transform: none; opacity: 1; } }
+@keyframes peek-pop { from { transform: translateY(8px) scale(.8); } to { transform: none; } }
+
+.cheer-line strong { color: var(--violet-ink); }
 
 /* Tappable coach */
 .mascot-button { flex: none; padding: 0; border: 0; border-radius: 18px; background: none; cursor: pointer; }

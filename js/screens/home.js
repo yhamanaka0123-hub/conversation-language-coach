@@ -60,56 +60,49 @@ function featureCard(c, body, cta) {
 
 // ---------- Moments: the featured conversation, one bubble at a time ----------
 // Phrases the other person said come first, then another way to say the learner's own words.
+// Home shows a few (two heard phrases and one rephrase when both exist); the rest wait in
+// the conversation detail.
+const HOME_MOMENTS = 3;
 UI.moments = UI.moments || {};   // conversation id -> slide index
 const momentsFor = c => {
   const open = itemsWith(c.id, "new");
-  return [...open.filter(i => i.kind === "phrase"), ...open.filter(i => i.kind === "rephrase")];
+  const heard = open.filter(i => i.kind === "phrase"), ways = open.filter(i => i.kind === "rephrase");
+  const shown = [...heard.slice(0, HOME_MOMENTS - Math.min(ways.length, 1)), ...ways].slice(0, HOME_MOMENTS);
+  return { shown, total: open.length };
 };
 const canSpeak = "speechSynthesis" in window;
 const speakButton = text => canSpeak
   ? `<button class="speak" type="button" data-act="speak" data-text="${esc(text)}" aria-label="Listen">${icon("sound", 17)}</button>` : "";
-const speakerAvatar = (c, name) =>
-  `<span class="avatar small ${ctxOf(c.id) === "casual" ? "avatar-coral" : "avatar-blue"}" aria-hidden="true">${esc(name[0])}</span>`;
 
+// Front: what was said. Back (after a tap): what it means, or why the other way works.
 function momentSlide(i, c) {
   const open = UI.flip === i.id;
-  if (i.kind === "phrase") return `
-    <div class="moment-who">${speakerAvatar(c, i.speaker)}<span><strong>${esc(i.speaker)}</strong> · ${i.at}</span>${speakButton(i.sentence)}</div>
-    <button class="moment-bubble ${open ? "flipped" : ""}" type="button" data-act="flip" data-id="${i.id}" aria-expanded="${open}">
-      ${open
-        ? `<span class="moment-phrase">“${esc(i.text)}”</span><span class="moment-back">${esc(i.meaning)}</span>`
-        : `<span class="moment-quote">${highlight(i.sentence, i.hl)}</span><span class="moment-hint">Tap for meaning</span>`}
-    </button>`;
   const ctx = ctxOf(c.id);
-  return `
-    <div class="moment-who"><span class="you-chip" aria-hidden="true">You</span><span><strong>You said</strong> · ${i.at}</span></div>
-    <p class="moment-said">“${esc(i.said)}”</p>
-    <div class="moment-who alt-who"><span class="alt-chip" aria-hidden="true">${icon("spark", 14)}</span><span><strong>Another way</strong></span>${speakButton(i.alt[ctx])}</div>
-    <button class="moment-bubble alt ${open ? "flipped" : ""}" type="button" data-act="flip" data-id="${i.id}" aria-expanded="${open}">
-      ${open
-        ? `<span class="moment-phrase">“${esc(i.alt[ctx])}”</span><span class="moment-back">${esc(i.why[ctx])}</span>`
-        : `<span class="moment-quote">“${esc(i.alt[ctx])}”</span><span class="moment-hint">Tap for why</span>`}
+  const [label, front, backLabel, back, say] = i.kind === "phrase"
+    ? [`${esc(i.speaker)} said`, highlight(i.sentence, i.hl), `“${esc(i.text)}” means`, esc(i.meaning), i.sentence]
+    : ["Another way to say it", `“${esc(i.alt[ctx])}”`, `Instead of “${esc(bare(i.said))}”`, esc(i.why[ctx]), i.alt[ctx]];
+  return `${mascot(40, false, open ? "cheer" : "think").replace('class="mascot', 'class="moment-peek mascot')}
+    <button class="moment-bubble ${i.kind} ${open ? "flipped" : ""}" type="button" data-act="flip" data-id="${i.id}" aria-expanded="${open}">
+      <span class="moment-label">${open ? backLabel : label}</span>
+      <span class="moment-quote">${open ? back : front}</span>
     </button>
-    <div class="tabs tabs-small moment-ctx" role="group" aria-label="Context for this suggestion">
-      ${["casual", "professional"].map(k => `<button type="button" class="${ctx === k ? "active" : ""}" aria-pressed="${ctx === k}" data-act="ctx" data-id="${c.id}" data-ctx="${k}">${ctxLabel(k)}</button>`).join("")}
-    </div>`;
+    ${speakButton(say)}`;
 }
 
 // State A: something new to explore in this conversation.
 function exploreFeature(c) {
-  const list = momentsFor(c);
+  const { shown: list, total } = momentsFor(c);
   const k = Math.min(UI.moments[c.id] || 0, list.length);
+  const more = total - list.length;
   const slide = k < list.length ? momentSlide(list[k], c)
-    : `<div class="moment-done">${mascot(52, false, "cheer")}<p>That’s everything new from your ${esc(c.short || "conversation")}.</p></div>`;
+    : `<div class="moment-done">${mascot(48, false, "cheer")}<p>${more ? `${plural(more, "more thing")} inside your ${esc(c.short || "conversation")}.` : `That’s everything new from your ${esc(c.short || "conversation")}.`}</p></div>`;
   const body = `<div class="moments" role="group" aria-roledescription="carousel" aria-label="Moments from ${esc(c.title)}">
       <div class="moment-stage ${UI.momentAnim ? `anim-${UI.momentAnim}` : ""}" data-cid="${c.id}">${slide}</div>
       <div class="moment-nav">
-        <button class="round-button" type="button" data-act="moment" data-id="${c.id}" data-step="-1" aria-label="Previous moment" ${k === 0 ? "disabled" : ""}>${icon("back", 18)}</button>
-        <div class="moment-dots" aria-live="polite">
-          <span class="sr-only">${k < list.length ? `Moment ${k + 1} of ${list.length}` : "All moments seen"}</span>
-          ${list.map((_, n) => `<span class="${n === k ? "on" : n < k ? "seen" : ""}" aria-hidden="true"></span>`).join("")}
+        <div class="moment-dots">
+          ${list.map((_, n) => `<button type="button" class="${n === k ? "on" : n < k ? "seen" : ""}" data-act="moment" data-id="${c.id}" data-to="${n}" aria-label="Moment ${n + 1} of ${list.length}" ${n === k ? 'aria-current="true"' : ""}></button>`).join("")}
         </div>
-        <button class="round-button" type="button" data-act="moment" data-id="${c.id}" data-step="1" aria-label="Next moment" ${k === list.length ? "disabled" : ""}>${icon("next", 18)}</button>
+        ${k < list.length ? `<button class="next-pill" type="button" data-act="moment" data-id="${c.id}" data-to="${k + 1}">Next ${icon("next", 15)}</button>` : ""}
       </div>
     </div>`;
   return featureCard(c, body, `<button class="button-cta" type="button" data-act="go" data-to="convo" data-id="${c.id}">
@@ -140,12 +133,27 @@ function smallCard(c) {
   </button>`;
 }
 
-// What the coach says when you tap it, by Home state. The first line is the default.
-function coachLines(fresh, featured) {
-  if (fresh) return ["New phrases from your day.", `${fresh.summary.split(". ")[0].replace(/\.$/, "")}.`,
-    "Tap a bubble to see what it means.", ...(canSpeak ? ["Tap the speaker to hear it."] : [])];
-  if (featured) return ["Saved phrases, ready when you are.", `About 3 minutes with ${featured.partner}, played by AI.`];
-  return [CONVOS.length ? "All caught up." : "Ready when you are.", "New phrases show up after your next conversation."];
+// The first line on Home: a warm, factual note about today; a cheer only at milestones.
+// The sample conversations all fall in the current week.
+function cheerLine() {
+  const today = CONVOS.filter(c => c.when.startsWith("Today"));
+  const mins = today.reduce((a, c) => a + parseInt(c.length, 10), 0);
+  if (learnedCount() >= GOAL) return { html: "Wow, weekly goal reached! 🎉", milestone: true };
+  if (CONVOS.length && CONVOS.length % 5 === 0) return { html: `Wow, ${CONVOS.length} conversations this week! 🎉`, milestone: true };
+  if (mins >= 60) return { html: `Wow, ${mins} minutes of conversation today! 🎉`, milestone: true };
+  if (today.length === 1) return { html: `You talked with ${esc(today[0].partner)} for <strong>${mins} minutes</strong> today.` };
+  if (today.length > 1) return { html: `<strong>${today.length} conversations</strong> today, ${mins} minutes in all.` };
+  return null;
+}
+
+// What the coach says, in order, as you tap it. Lines are trusted markup.
+function coachLines(fresh, featured, cheer) {
+  const first = cheer ? cheer.html : fresh ? "New phrases from your day."
+    : featured ? "Saved phrases, ready when you are." : CONVOS.length ? "All caught up." : "Ready when you are.";
+  if (fresh) return [first, esc(`${fresh.summary.split(". ")[0].replace(/\.$/, "")}.`),
+    "Tap a bubble to flip it.", ...(canSpeak ? ["Tap the speaker to hear it."] : [])];
+  if (featured) return [first, esc(`About 3 minutes with ${featured.partner}, played by AI.`)];
+  return [first, "New phrases show up after your next conversation."];
 }
 
 SCREENS.home = () => {
@@ -153,7 +161,8 @@ SCREENS.home = () => {
   const plan = !fresh && pickPlan();
   const featured = fresh || (plan && convoById[plan.cid]);
   const rest = CONVOS.filter(c => c !== featured);
-  const lines = coachLines(fresh, featured);
+  const cheer = cheerLine();
+  const lines = coachLines(fresh, featured, cheer);
   const wave = !UI.waved;
 
   let main;
@@ -175,10 +184,10 @@ SCREENS.home = () => {
     </header>
 
     <div class="greeting">
-      <button class="mascot-button ${UI.wiggle ? "wiggle" : ""}" type="button" data-act="tip" aria-label="Ask the coach">${mascot(60, wave)}</button>
+      <button class="mascot-button ${UI.wiggle ? "wiggle" : ""}" type="button" data-act="tip" aria-label="Ask the coach">${mascot(60, wave, cheer?.milestone ? "cheer" : "happy")}</button>
       <div>
         <h1>Hey ${esc(USER)}!</h1>
-        <p class="${UI.wiggle ? "tip-in" : ""}" aria-live="polite">${esc(lines[(UI.tip || 0) % lines.length])}</p>
+        <p class="${UI.wiggle ? "tip-in" : ""} ${cheer && !((UI.tip || 0) % lines.length) ? "cheer-line" : ""}" aria-live="polite">${lines[(UI.tip || 0) % lines.length]}</p>
       </div>
     </div>
 
@@ -203,17 +212,21 @@ afterRender.home = () => {
     if (x0 === null) return;
     const dx = e.clientX - x0;
     x0 = null;
-    if (Math.abs(dx) > 45) document.querySelector(`.moment-nav [data-step="${dx < 0 ? 1 : -1}"]:not(:disabled)`)?.click();
+    const k = UI.moments[stage.dataset.cid] || 0;
+    const to = dx < 0 ? document.querySelector(".next-pill") : document.querySelector(`.moment-dots [data-to="${k - 1}"]`);
+    if (Math.abs(dx) > 45 && to) to.click();
   });
 };
 
 ACTIONS.moment = el => {
-  const step = Number(el.dataset.step);
-  UI.moments[el.dataset.id] = Math.max(0, (UI.moments[el.dataset.id] || 0) + step);
+  const from = UI.moments[el.dataset.id] || 0, to = Math.max(0, Number(el.dataset.to));
+  UI.moments[el.dataset.id] = to;
   UI.flip = null;
-  UI.momentAnim = step > 0 ? "next" : "prev";
-  UI.refocus = `.moment-nav [data-step="${step}"]:not(:disabled)`;
+  UI.momentAnim = to >= from ? "next" : "prev";
   render();
+  // Keep keyboard focus on what was pressed; past the last moment, Next is gone, so use the dots.
+  const pill = el.classList.contains("next-pill") && document.querySelector(".next-pill");
+  (pill || document.querySelector(`.moment-dots [data-to="${Math.min(to, UI.moments[el.dataset.id] - 1)}"]`) || document.querySelector(".moment-dots button"))?.focus({ preventScroll: true });
 };
 ACTIONS.flip = el => {
   UI.flip = UI.flip === el.dataset.id ? null : el.dataset.id;
