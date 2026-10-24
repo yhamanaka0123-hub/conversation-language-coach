@@ -20,7 +20,6 @@ const ART = {
     <path d="M12 16h16M12 21h10" stroke="#b39cf0" stroke-width="2.4" stroke-linecap="round"/></svg>`
 };
 const artTile = c => `<div class="art-tile art-${ctxOf(c.id)}">${ART[c.art] || ART.chat}</div>`;
-const shortName = c => c.short || "conversation";
 const whenLine = c => `${esc(c.when.replace(" · ", ", "))} · ${esc(c.length)}`;
 const homeTag = c => `<span class="home-tag home-tag-${ctxOf(c.id)}">${ctxLabel(ctxOf(c.id))}</span>`;
 const itemsWith = (cid, status) => itemsIn(cid).filter(i => statusOf(i.id) === status);
@@ -45,20 +44,18 @@ function quoteChips(list) {
   </ul>`;
 }
 
-function featureCard(c, { eyebrow, lead, chips, body, cta }) {
+function featureCard(c, { label, chips, cta }) {
   return `<section class="feature-card" aria-labelledby="feature-title">
     <div class="feature-top">
       ${artTile(c)}
       <div class="feature-heading">
-        <p class="feature-eyebrow">${eyebrow}</p>
         <h2 id="feature-title">${esc(c.title)}</h2>
         <p class="card-meta">${homeTag(c)}<span>${whenLine(c)}</span></p>
       </div>
     </div>
     <div class="feature-preview">
-      <p class="feature-lead">${lead}</p>
+      <p class="feature-label">${label}</p>
       ${chips}
-      <p class="feature-body">${body}</p>
     </div>
     ${cta}
   </section>`;
@@ -69,12 +66,8 @@ function exploreFeature(c) {
   const heard = itemsWith(c.id, "new").filter(i => i.kind === "phrase").slice(0, 2);
   const speakers = [...new Set(heard.map(i => i.speaker))];
   return featureCard(c, {
-    eyebrow: "Fresh from your day",
-    lead: `A little something from your ${esc(shortName(c))}`,
+    label: !heard.length ? "Phrases and fresh ways to say things" : speakers.length === 1 ? `${esc(speakers[0])} said` : "You heard",
     chips: heard.length ? quoteChips(heard.map(i => ({ text: i.text, note: speakers.length > 1 ? i.speaker : "" }))) : "",
-    body: heard.length
-      ? `${speakers.length === 1 ? `You heard ${esc(speakers[0])} say ${heard.length > 1 ? "these" : "this"}.` : "You heard these today."} Let’s make ${heard.length > 1 ? "them" : "it"} yours.`
-      : "Explore phrases and fresh ways to express yourself.",
     cta: `<button class="button-cta" type="button" data-act="go" data-to="convo" data-id="${c.id}">
       ${c.short ? `Explore my ${esc(c.short)}` : "Explore conversation"} ${icon("next", 18)}</button>`
   });
@@ -84,11 +77,10 @@ function exploreFeature(c) {
 function practiceFeature(c) {
   const saved = itemsWith(c.id, "practice");
   const shown = saved.slice(0, 2);
+  const more = saved.length - shown.length;
   return featureCard(c, {
-    eyebrow: "Ready when you are",
-    lead: `Saved from your ${esc(shortName(c))}`,
-    chips: quoteChips(shown.map(i => ({ text: practiceText(i), note: "saved" }))),
-    body: `${saved.length > shown.length ? `Plus ${saved.length - shown.length} more. ` : ""}Try ${saved.length > 1 ? "them" : "it"} in a short replay with ${esc(c.partner)}.`,
+    label: "Saved",
+    chips: quoteChips(shown.map(i => ({ text: practiceText(i) }))).replace("</ul>", more ? `<li class="more-chip">+${more} more</li></ul>` : "</ul>"),
     cta: `<button class="button-cta" type="button" data-act="go" data-to="practice">Practice my saved phrases ${icon("next", 18)}</button>`
   });
 }
@@ -111,14 +103,13 @@ function weekCard(n) {
     <div class="week-top">
       <div>
         <h2>Little by little</h2>
-        <p class="week-count">${n <= GOAL ? `<strong>${n}</strong> of ${GOAL}` : `<strong>${n}</strong>`} phrases practiced this week</p>
+        <p class="week-count">${n >= GOAL ? `Weekly goal reached · <strong>${n}</strong> of ${GOAL} practiced` : `<strong>${n}</strong> of ${GOAL} phrases practiced this week`}</p>
       </div>
       <button class="text-link" type="button" data-act="go" data-to="report">See progress</button>
     </div>
     <div class="week-dots" role="img" aria-label="${filled} of ${GOAL} practiced">
       ${Array.from({ length: GOAL }, (_, k) => `<span class="${k < filled ? "on" : ""}"></span>`).join("")}
     </div>
-    <p class="week-note">${n >= GOAL ? "Weekly goal reached. Nice rhythm." : n ? "A little practice goes a long way." : "Ready when you are."}</p>
   </section>`;
 }
 
@@ -138,11 +129,7 @@ SCREENS.home = () => {
   } else if (featured) {
     main = fresh ? exploreFeature(fresh) : practiceFeature(featured);
   } else {
-    main = `<section class="feature-card calm">
-      <p class="feature-eyebrow">All caught up</p>
-      <h2>You’ve explored everything from your recent conversations.</h2>
-      <p class="feature-body">New phrases will show up here after your next one. Your conversations are below whenever you want to look back.</p>
-    </section>`;
+    main = `<section class="feature-card calm"><p>You’ve explored everything. New phrases show up after your next conversation.</p></section>`;
   }
 
   return `
@@ -155,9 +142,9 @@ SCREENS.home = () => {
       ${mascot(60, wave)}
       <div>
         <h1>Hey ${esc(USER)}!</h1>
-        <p>${fresh ? "Your conversations have a little something for you."
-          : featured ? "Your saved phrases are ready when you are."
-          : CONVOS.length ? "You’re all caught up for now." : "Ready when you are."}</p>
+        <p>${fresh ? "New phrases from your day."
+          : featured ? "Saved phrases, ready when you are."
+          : CONVOS.length ? "All caught up." : "Ready when you are."}</p>
       </div>
     </div>
 
