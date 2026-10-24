@@ -279,14 +279,6 @@ button.hint-chip[aria-expanded="true"] { background: var(--lavender); }
 .stage-key span { display: inline-flex; align-items: center; gap: 4px; }
 .sticker.gold { flex-direction: column; align-items: flex-start; gap: 1px; color: #7a5208; background: linear-gradient(150deg, #fff4cf 0%, #ffd97a 100%); box-shadow: 0 3px 0 #e8b94a, 0 6px 14px rgba(240, 170, 60, 0.25); }
 .sticker.gold small { color: #8a6416; font-size: 10.5px; font-weight: 600; }
-.feel-card { margin-top: 6px; }
-.feel-list { display: grid; gap: 8px; }
-.feel-item { display: flex; width: 100%; align-items: center; gap: 12px; padding: 10px 14px 10px 10px; border: 1px solid var(--line); border-radius: 18px; color: var(--plum); background: var(--white); text-align: left; cursor: pointer; }
-.feel-item .art-tile { width: 40px; height: 40px; border-radius: 13px; }
-.feel-item .art-tile svg { width: 26px; height: 26px; }
-.feel-title { flex: 1; font-size: 13.5px; font-weight: 700; }
-.feel-face { font-size: 24px; }
-.feel-ask { padding: 4px 10px; border-radius: 99px; color: var(--violet-ink); background: var(--lavender); font-size: 11.5px; font-weight: 700; }
 .feel-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 12px; padding: 10px 10px 10px 14px; border: 1px solid var(--line); border-radius: 18px; background: var(--white); font-size: 13px; font-weight: 700; }
 .feel-buttons { display: flex; gap: 6px; }
 .feel-buttons button { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid var(--line); border-radius: 14px; background: #faf8fc; font-size: 22px; cursor: pointer; filter: grayscale(.6); transition: transform 120ms ease; }
@@ -444,7 +436,7 @@ button.hint-chip[aria-expanded="true"] { background: var(--lavender); }
 .enter .coach-says, .enter .feature-card:not(.calm), .enter .suggest-card, .enter .ring-card,
 .enter .phrase-card, .enter .suggestion-card, .enter .vocab-card, .enter .learned-item { animation: card-in 360ms ease-out both; }
 .enter .phrase-list > :nth-child(2), .enter .vocab-list > :nth-child(2), .enter .learned-item:nth-child(2) { animation-delay: 80ms; }
-.enter .week-card, .enter .badges, .enter .feel-card, .enter .phrase-list > :nth-child(n+3), .enter .vocab-list > :nth-child(n+3), .enter .learned-item:nth-child(n+3) { animation: card-in 360ms ease-out 150ms both; }
+.enter .week-card, .enter .badges, .enter .phrase-list > :nth-child(n+3), .enter .vocab-list > :nth-child(n+3), .enter .learned-item:nth-child(n+3) { animation: card-in 360ms ease-out 150ms both; }
 .enter .small-card, .enter .collection { animation: card-in 360ms ease-out 80ms both; }
 .enter .ring-fill { animation: ring-fill 1100ms cubic-bezier(.3, .8, .3, 1) 200ms both; }
 .enter .badge.got .badge-icon { animation: badge-pop 480ms cubic-bezier(.2, .9, .3, 1.4) 500ms both; }

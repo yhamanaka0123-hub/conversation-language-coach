@@ -1,7 +1,6 @@
 // Progress: the goal is new phrases used in real conversations, not practice.
 // Ring: new phrases used for real this week. Then time you spoke, a sticker collection where
-// each phrase moves saved -> practiced -> used for real, how conversations felt (self-reported),
-// and badges for real actions. Home is "what's new today"; this is "how you're growing".
+// each phrase moves saved -> practiced -> used for real, and badges for real actions. Home is "what's new today"; this is "how you're growing".
 
 const RING_C = 2 * Math.PI * 58;   // circumference of the ring (r = 58)
 const usesOf = id => USES.filter(u => u.item === id);
@@ -89,26 +88,6 @@ function collection() {
   </section>`;
 }
 
-// ---------- How conversations felt: the learner's own one-tap rating ----------
-function feelings() {
-  const feel = S.feel || {};
-  return `<section class="feel-card">
-    <div class="section-heading compact">
-      <div><p class="eyebrow">IN YOUR WORDS</p><h2>How your conversations felt</h2></div>
-    </div>
-    <div class="feel-list">
-      ${CONVOS.map(c => {
-        const f = FEELS.find(x => x[0] === feel[c.id]);
-        return `<button class="feel-item" type="button" data-act="go" data-to="convo" data-id="${c.id}">
-          ${artTile(c)}
-          <span class="feel-title">${esc(c.title)}</span>
-          ${f ? `<span class="feel-face" aria-label="Felt ${f[2].toLowerCase()}">${f[1]}</span>` : `<span class="feel-ask">Rate it</span>`}
-        </button>`;
-      }).join("")}
-    </div>
-  </section>`;
-}
-
 // ---------- Badges: each one tied to something you actually did ----------
 function badges() {
   const realCtx = USES.map(u => ctxOf(u.convo));
@@ -139,6 +118,5 @@ SCREENS.report = () => {
     ${goalRing(n)}
     ${weekStats()}
     ${collection()}
-    ${feelings()}
     ${badges()}`;
 };

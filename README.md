@@ -26,7 +26,7 @@ celebration fires when the week reaches 5 learned terms (2 are seeded as already
 | `js/screens/practice.js` | Coach suggestion, AI practice session, recap, scripted fallback |
 | `api/practice.mjs` | Vercel serverless function that calls the AI model (Groq). Holds the only use of the API key. |
 | `prompts/practice.mjs` | The live prompts for the coach suggestion and each practice turn |
-| `js/screens/progress.js` | Progress: ring for new phrases used in real conversations, talk time, sticker collection (saved → practiced → used for real), how conversations felt, badges |
+| `js/screens/progress.js` | Progress: ring for new phrases used in real conversations, talk time, sticker collection (saved → practiced → used for real), badges |
 | `js/screens/celebrate.js` | Celebration screen |
 
 Each screen file adds one entry to `SCREENS` and its buttons to `ACTIONS`, so two people
