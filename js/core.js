@@ -13,7 +13,7 @@ const convoById = Object.fromEntries(CONVOS.map(c => [c.id, c]));
 function freshState() {
   const status = {};
   ITEMS.forEach(i => { status[i.id] = i.seed || "new"; });
-  return { v: 2, status, ctx: {}, celebrated: false, sessions: 0, chats: {}, history: {} };
+  return { v: 2, status, ctx: {}, celebrated: false, sessions: 0, chats: {}, history: {}, cards: {} };
 }
 function loadState() {
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 2) return s; } catch (e) {}
@@ -133,8 +133,8 @@ const NAV = [
   { key: "report", label: "Progress", icon: "chart" }
 ];
 // Which bottom-nav item is highlighted for each route.
-const NAV_FOR = { home: "home", convo: "home", bank: "bank", practice: "practice", session: "practice", recap: "practice", celebrate: "practice", report: "report" };
-const NO_NAV = ["session", "celebrate"];
+const NAV_FOR = { home: "home", convo: "home", bank: "bank", cards: "bank", practice: "practice", session: "practice", recap: "practice", celebrate: "practice", report: "report" };
+const NO_NAV = ["session", "celebrate", "cards"];
 
 function go(route) { UI.route = route; UI.enter = true; render(); UI.enter = false; window.scrollTo(0, 0); }
 
@@ -161,7 +161,7 @@ const afterRender = {};   // optional per-screen hook, e.g. scroll or animation
 // ---------- Shared actions ----------
 ACTIONS.go = el => { UI.bankFilter = el.dataset.filter || null; go({ name: el.dataset.to, id: el.dataset.id }); };
 ACTIONS.mark = el => { S.status[el.dataset.id] = el.dataset.status; save(); render(); };
-ACTIONS.reset = () => { S = freshState(); save(); UI.session = null; UI.bankFilter = null; UI.moments = {}; UI.flip = null; UI.tip = 0; UI.pick = null; go({ name: "home" }); };
+ACTIONS.reset = () => { S = freshState(); save(); UI.session = null; UI.bankFilter = null; UI.moments = {}; UI.flip = null; UI.tip = 0; UI.pick = null; UI.deck = null; go({ name: "home" }); };
 
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-act]");

@@ -210,6 +210,53 @@ button.hint-chip:disabled { cursor: default; }
 .ai-live .ai-dot { background: #3fb07f; }
 .ai-checking .ai-dot { animation: pulse 1.4s infinite; }
 .suggest-actions .button-primary { flex: 1 1 auto; min-height: 50px; font-size: 14.5px; }
+/* Vocab: flashcard review entry + card screen */
+.review-card { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 6px 14px; margin-bottom: 16px; padding: 16px; border: 1px solid #e2d8f7; border-radius: 24px; background: linear-gradient(160deg, #f6f1fe 0%, var(--lavender) 100%); box-shadow: var(--shadow); }
+.review-stack { position: relative; width: 70px; height: 76px; }
+.review-stack span { position: absolute; inset: 6px 4px 0 4px; display: grid; place-items: center; border: 1px solid var(--lavender-deep); border-radius: 14px; background: var(--white); }
+.review-stack span:nth-child(1) { transform: rotate(-10deg) translateX(-4px); background: var(--peach); }
+.review-stack span:nth-child(2) { transform: rotate(7deg) translateX(4px); background: var(--mint); }
+.review-copy h2 { margin-bottom: 2px; font-size: 18px; }
+.review-copy p { margin: 0; color: var(--plum-muted); font-size: 12.5px; }
+.review-fam { display: flex; gap: 10px; margin-top: 6px !important; color: var(--plum) !important; font-weight: 700; }
+.review-start { grid-column: 1 / -1; min-height: 48px; font-size: 14.5px; }
+
+.screen-cards { display: flex; flex-direction: column; padding-top: 16px; }
+.cards-top { display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 12px; margin-bottom: 22px; }
+.cards-progress { height: 12px; overflow: hidden; border-radius: 99px; background: var(--lavender); }
+.cards-progress span { display: block; height: 100%; border-radius: inherit; background: var(--violet); transition: width 300ms ease; }
+.cards-count { color: var(--plum-muted); font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.fc-wrap { position: relative; }
+.flashcard { display: grid; align-content: center; justify-items: center; gap: 12px; width: 100%; min-height: 300px; padding: 28px 22px; border: 1px solid var(--lavender-deep); border-radius: 28px; color: var(--plum); background: var(--white); text-align: center; cursor: pointer; touch-action: pan-y; user-select: none; box-shadow: 0 6px 0 var(--lavender-deep), 0 18px 34px rgba(91, 62, 196, 0.12); }
+.flashcard.flipped { background: linear-gradient(160deg, #f6f1fe 0%, var(--lavender) 100%); }
+.fc-where { padding: 4px 11px; border-radius: 99px; color: var(--violet-ink); background: var(--lavender); font-size: 11.5px; font-weight: 700; }
+.flashcard.flipped .fc-where { background: var(--white); }
+.fc-label { margin: 0; color: var(--plum-muted); font-size: 12px; font-weight: 700; }
+.fc-meaning { margin: 0; font-size: 19px; font-weight: 600; line-height: 1.35; }
+.fc-ask { margin: 0; color: var(--plum-muted); font-size: 14px; }
+.fc-hint { color: var(--violet-ink); font-size: 12px; font-weight: 700; }
+.fc-phrase { margin: 0; font-size: 26px; font-weight: 700; line-height: 1.2; }
+.fc-sentence { margin: 0; color: var(--plum-muted); font-size: 14.5px; line-height: 1.5; }
+.fc-wrap .speak { position: absolute; right: 14px; bottom: 16px; }
+.fc-fam { margin: 14px 0 0; color: var(--plum-muted); font-size: 12.5px; font-weight: 700; text-align: center; }
+.fc-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.fc-btn { min-height: 54px; border: 0; border-radius: 18px; font-size: 15.5px; font-weight: 700; cursor: pointer; transition: transform 90ms ease, box-shadow 90ms ease; }
+.fc-btn:active { transform: translateY(3px); }
+.fc-btn.flip { grid-column: 1 / -1; color: var(--white); background: var(--violet); box-shadow: 0 4px 0 var(--violet-dark); }
+.fc-btn.again { color: var(--peach-ink); background: var(--peach); box-shadow: 0 4px 0 #f3c3a5; }
+.fc-btn.got { color: var(--mint-ink); background: var(--mint); box-shadow: 0 4px 0 #a9d9c1; }
+.fc-btn:active { box-shadow: none; }
+.fc-tip { margin: 12px 0 0; color: var(--plum-muted); font-size: 11.5px; text-align: center; }
+.fc-flip .flashcard { animation: fc-flip 320ms ease-out both; }
+.fc-right .flashcard { animation: fc-in-right 300ms ease-out both; }
+.fc-left .flashcard { animation: fc-in-left 300ms ease-out both; }
+@keyframes fc-flip { from { transform: perspective(900px) rotateY(80deg); } to { transform: none; } }
+@keyframes fc-in-right { from { opacity: 0; transform: translateX(-30px) rotate(-3deg); } to { opacity: 1; transform: none; } }
+@keyframes fc-in-left { from { opacity: 0; transform: translateX(30px) rotate(3deg); } to { opacity: 1; transform: none; } }
+.fc-nudge { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; padding: 14px; border: 1px solid var(--line); border-radius: 20px; background: var(--white); }
+.fc-nudge p { margin: 0 0 2px; font-size: 13.5px; line-height: 1.45; }
+.fc-nudge-face { display: grid; flex: none; width: 56px; height: 56px; place-items: end center; overflow: hidden; border-radius: 50%; }
+
 /* Practice: character stage + cast */
 .stage { display: grid; gap: 12px; padding: 18px; border: 1px solid #e2d8f7; border-radius: 26px; background: linear-gradient(160deg, #f6f1fe 0%, var(--lavender) 100%); box-shadow: var(--shadow); }
 .stage-casual { background: linear-gradient(160deg, #fff6ef 0%, var(--peach) 100%); border-color: #f6dcc8; }
@@ -459,7 +506,7 @@ button.hint-chip[aria-expanded="true"] { background: var(--lavender); }
 @keyframes card-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 /* ---------- Entrance motion: only when a screen is opened (core.js adds .enter), not on re-render ---------- */
-.enter .coach-says, .enter .feature-card:not(.calm), .enter .stage, .enter .ring-card,
+.enter .coach-says, .enter .feature-card:not(.calm), .enter .stage, .enter .ring-card, .enter .review-card, .enter .flashcard,
 .enter .phrase-card, .enter .suggestion-card, .enter .vocab-card, .enter .learned-item { animation: card-in 360ms ease-out both; }
 .enter .phrase-list > :nth-child(2), .enter .vocab-list > :nth-child(2), .enter .learned-item:nth-child(2) { animation-delay: 80ms; }
 .enter .week-card, .enter .badges, .enter .phrase-list > :nth-child(n+3), .enter .vocab-list > :nth-child(n+3), .enter .learned-item:nth-child(n+3) { animation: card-in 360ms ease-out 150ms both; }
