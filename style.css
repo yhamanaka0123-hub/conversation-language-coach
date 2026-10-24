@@ -349,8 +349,10 @@ button.hint-chip[aria-expanded="true"] { background: var(--lavender); }
 .week-facts { margin: 10px 0 0; color: var(--plum-muted); font-size: 12px; text-align: center; }
 
 .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-.stat { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); border-radius: 18px; background: var(--white); }
-.stat > span { grid-row: span 2; font-size: 22px; }
+.stat { display: grid; grid-template-columns: auto 1fr; column-gap: 6px; align-items: center; padding: 10px 12px 10px 6px; border: 1px solid var(--line); border-radius: 18px; background: var(--white); }
+.stat > .scene { grid-row: span 2; }
+.stat-spoke { background: linear-gradient(160deg, #fff8f2 0%, var(--peach-soft) 100%); }
+.stat-practiced { background: linear-gradient(160deg, #f8f5fe 0%, var(--lavender) 100%); }
 .stat strong { font-size: 18px; line-height: 1.1; }
 .stat small { color: var(--plum-muted); font-size: 11.5px; }
 .stage-key { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: -4px 0 10px; color: var(--plum-muted); font-size: 11.5px; font-weight: 600; }
@@ -377,11 +379,14 @@ button.hint-chip[aria-expanded="true"] { background: var(--lavender); }
 
 .badge-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .badge { display: grid; justify-items: center; gap: 3px; padding: 14px 10px; border: 1.5px dashed #d9d1e6; border-radius: 20px; background: #faf8fc; text-align: center; }
-.badge-icon { display: grid; width: 52px; height: 52px; margin-bottom: 4px; place-items: center; border-radius: 50%; background: #efebf4; font-size: 22px; filter: grayscale(1); opacity: .55; }
+.badge-art { position: relative; display: grid; width: 92px; height: 84px; margin-bottom: 4px; place-items: center; border-radius: 46% 54% 50% 50% / 52% 50% 50% 48%; background: #efebf4; }
+.badge-art .scene { filter: grayscale(1); opacity: .45; }
+.badge-lock { position: absolute; left: 2px; top: 4px; display: grid; width: 24px; height: 24px; place-items: center; border-radius: 50%; color: var(--plum-muted); background: var(--white); box-shadow: 0 2px 6px rgba(45, 36, 64, 0.12); }
 .badge strong { font-size: 13px; }
 .badge small { color: var(--plum-muted); font-size: 11px; line-height: 1.3; }
 .badge.got { border: 1px solid #f3d9a8; background: linear-gradient(160deg, #fffaf0 0%, #fff1d6 100%); box-shadow: 0 6px 16px rgba(240, 170, 60, 0.15); }
-.badge.got .badge-icon { background: var(--white); filter: none; opacity: 1; box-shadow: 0 0 0 4px #ffe3a8; }
+.badge.got .badge-art { background: radial-gradient(circle at 50% 40%, #fff 0%, #fff4d6 70%); box-shadow: 0 0 0 4px #ffe3a8; }
+.badge.got .badge-art .scene { filter: none; opacity: 1; }
 .badge.got small { color: #8a6416; font-weight: 700; }
 
 @keyframes msg-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -512,7 +517,7 @@ button.hint-chip[aria-expanded="true"] { background: var(--lavender); }
 .enter .week-card, .enter .badges, .enter .phrase-list > :nth-child(n+3), .enter .vocab-list > :nth-child(n+3), .enter .learned-item:nth-child(n+3) { animation: card-in 360ms ease-out 150ms both; }
 .enter .small-card, .enter .collection, .enter .cast-card { animation: card-in 360ms ease-out 80ms both; }
 .enter .ring-fill { animation: ring-fill 1100ms cubic-bezier(.3, .8, .3, 1) 200ms both; }
-.enter .badge.got .badge-icon { animation: badge-pop 480ms cubic-bezier(.2, .9, .3, 1.4) 500ms both; }
+.enter .badge.got .badge-art { animation: badge-pop 480ms cubic-bezier(.2, .9, .3, 1.4) 500ms both; }
 .chat > :nth-last-child(-n+2) { animation: msg-in 260ms ease-out both; }
 
 /* ---------- Bottom nav ---------- */

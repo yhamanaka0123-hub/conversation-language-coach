@@ -62,13 +62,16 @@ const icon = (name, size = 20) =>
   `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
 
 // The coach mascot: a lavender speech bubble with a face. wave: play the one-time hello.
-// mood: "happy" (default), "cheer" (closed happy eyes, open smile, both arms up), "think".
+// mood: "happy" (default), "cheer" (closed happy eyes, open smile, both arms up), "think", "talk".
 const MASCOT_FACE = {
   happy: `<ellipse cx="26" cy="25" rx="3.2" ry="4.2" fill="#2d2440"/><ellipse cx="41" cy="25" rx="3.2" ry="4.2" fill="#2d2440"/>
     <circle cx="27" cy="23.5" r="1" fill="#fff"/><circle cx="42" cy="23.5" r="1" fill="#fff"/>
     <path d="M28.5 33.5q5 5 10 0" fill="none" stroke="#2d2440" stroke-width="2.4" stroke-linecap="round"/>`,
   cheer: `<path d="M22.5 26q3.5-5 7 0M37.5 26q3.5-5 7 0" fill="none" stroke="#2d2440" stroke-width="2.4" stroke-linecap="round"/>
     <path d="M27 31.5h13q-1 8-6.5 8T27 31.5Z" fill="#2d2440"/><path d="M30 36.5q3.5-2 7 0q-1.5 3-3.5 3t-3.5-3Z" fill="#ff8f7a"/>`,
+  talk: `<ellipse cx="26" cy="24" rx="3.2" ry="4" fill="#2d2440"/><ellipse cx="41" cy="24" rx="3.2" ry="4" fill="#2d2440"/>
+    <circle cx="27" cy="22.5" r="1" fill="#fff"/><circle cx="42" cy="22.5" r="1" fill="#fff"/>
+    <ellipse cx="33.5" cy="35" rx="4" ry="3.4" fill="#2d2440"/><ellipse cx="33.5" cy="36.6" rx="2.4" ry="1.4" fill="#ff8f7a"/>`,
   think: `<ellipse cx="27" cy="23" rx="3" ry="3.8" fill="#2d2440"/><ellipse cx="42" cy="23" rx="3" ry="3.8" fill="#2d2440"/>
     <circle cx="28" cy="21.5" r="1" fill="#fff"/><circle cx="43" cy="21.5" r="1" fill="#fff"/>
     <ellipse cx="34" cy="35" rx="2.6" ry="2.2" fill="#2d2440"/>`
