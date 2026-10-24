@@ -138,7 +138,8 @@ function smallCard(c) {
 function cheerLine() {
   const today = CONVOS.filter(c => c.when.startsWith("Today"));
   const mins = today.reduce((a, c) => a + parseInt(c.length, 10), 0);
-  if (learnedCount() >= GOAL) return { html: "Wow, weekly goal reached! 🎉", milestone: true };
+  const used = new Set(USES.map(u => u.item)).size;
+  if (used >= USE_GOAL) return { html: `Wow, ${used} new phrases used in real conversations this week! 🎉`, milestone: true };
   if (CONVOS.length && CONVOS.length % 5 === 0) return { html: `Wow, ${CONVOS.length} conversations this week! 🎉`, milestone: true };
   if (mins >= 60) return { html: `Wow, ${mins} minutes of conversation today! 🎉`, milestone: true };
   if (today.length === 1) return { html: `You talked with ${esc(today[0].partner)} for <strong>${mins} minutes</strong> today.` };

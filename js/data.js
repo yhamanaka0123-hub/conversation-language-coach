@@ -1,14 +1,16 @@
 // Sample data for the prototype. Edit freely: conversations, phrases and the AI scripts
 // all live here, so content changes never touch the screen code.
 
-const GOAL = 5;           // weekly goal: saved phrases used in practice
+const GOAL = 5;           // weekly practice goal: saved phrases used in practice
+const USE_GOAL = 3;       // weekly goal: new phrases used in real conversations
 const USER = "Yuka";
 const TODAY = "Tuesday, Oct 20";
 
+// mine: minutes the learner spoke in that conversation (simulated speaker ID).
 const CONVOS = [
   {
     id: "maya", title: "Coffee chat with Maya", context: "casual",
-    when: "Today · 3:40 PM", length: "18 min", short: "coffee chat", art: "coffee", people: "Maya (classmate)", place: "Free Speech Café",
+    when: "Today · 3:40 PM", length: "18 min", mine: 7, short: "coffee chat", art: "coffee", people: "Maya (classmate)", place: "Free Speech Café",
     summary: "You caught up with Maya after class. She's buried in internship recruiting, invited you on a Sunday hike, and pushed your Friday dinner.",
     partner: "Maya", partnerNote: "Plays your classmate, same tone as today",
     scene: ["Free Speech Café, after class.", "Maya is catching up on your week and weekend plans."],
@@ -26,7 +28,7 @@ const CONVOS = [
   },
   {
     id: "sync", title: "Weekly product sync", context: "professional",
-    when: "Mon · 10:00 AM", length: "32 min", short: "meeting", art: "meeting", people: "Daniel (PM), Lena (design)", place: "Zoom",
+    when: "Mon · 10:00 AM", length: "32 min", mine: 5, short: "meeting", art: "meeting", people: "Daniel (PM), Lena (design)", place: "Zoom",
     summary: "Daniel ran the weekly sync. The team triaged a checkout bug, debated whether a fix could ship by Friday, and pushed the pricing discussion to next week.",
     partner: "Daniel", partnerNote: "Plays your PM in the same meeting",
     scene: ["Monday sync on Zoom.", "Daniel is going around the team for updates."],
@@ -88,4 +90,10 @@ const ITEMS = [
   // Learned earlier this week, from a conversation outside the demo.
   { id: "old-1", convo: null, source: "Lab meeting · Oct 15", sourceContext: "professional", kind: "phrase", text: "touch base", meaning: "Check in briefly.", seed: "learned", match: [] },
   { id: "old-2", convo: null, source: "Lab meeting · Oct 15", sourceContext: "professional", kind: "phrase", text: "on the same page", meaning: "In agreement; sharing the same understanding.", seed: "learned", match: [] }
+];
+
+// Times the learner used a phrase they picked up earlier, in a later real conversation.
+// Simulated detection: the prototype does not analyse the learner's own speech yet.
+const USES = [
+  { item: "old-1", convo: "sync", at: "24:10", said: "Can we touch base before Friday?" }
 ];

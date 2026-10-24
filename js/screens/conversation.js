@@ -78,6 +78,13 @@ SCREENS.convo = () => {
       </div>
     </div>
 
+    <div class="feel-row">
+      <span>How did this one feel?</span>
+      <div class="feel-buttons" role="group" aria-label="How did this conversation feel?">
+        ${FEELS.map(([k, face, label]) => `<button type="button" class="${(S.feel || {})[c.id] === k ? "active" : ""}" aria-pressed="${(S.feel || {})[c.id] === k}" aria-label="${label}" data-act="feel" data-id="${c.id}" data-feel="${k}">${face}</button>`).join("")}
+      </div>
+    </div>
+
     <div class="section-heading compact">
       <div><p class="eyebrow">PICKED UP FOR YOU</p><h2>New phrases you heard</h2></div>
     </div>
@@ -102,3 +109,9 @@ SCREENS.convo = () => {
 };
 
 ACTIONS.ctx = el => { S.ctx[el.dataset.id] = el.dataset.ctx; save(); render(); };
+// One-tap, self-reported feeling about the conversation; tap again to clear. Shown on Progress.
+ACTIONS.feel = el => {
+  S.feel = S.feel || {};
+  S.feel[el.dataset.id] = S.feel[el.dataset.id] === el.dataset.feel ? undefined : el.dataset.feel;
+  save(); render();
+};
