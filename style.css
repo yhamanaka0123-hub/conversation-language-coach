@@ -227,19 +227,27 @@ button.hint-chip:disabled { cursor: default; }
 .stage-bubble.typing i:nth-child(3) { animation-delay: .3s; }
 .stage .feature-label { margin: 0 0 -4px; }
 .stage .suggest-actions > * { flex: 1 1 100%; }
-.stage-locked { display: flex; align-items: center; gap: 6px; margin: 0; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.75); color: var(--plum-muted); font-size: 13px; font-weight: 600; }
 .cast { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; margin-bottom: 14px; }
 .cast-card { position: relative; display: grid; justify-items: center; gap: 2px; padding: 10px 4px 8px; border: 1.5px solid var(--line); border-radius: 22px; color: var(--plum); background: var(--white); text-align: center; cursor: pointer; box-shadow: 0 4px 0 var(--line); transition: transform 110ms ease, box-shadow 110ms ease, border-color 150ms ease; }
 .cast-card:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
 .cast-card.picked { border-color: var(--violet); box-shadow: 0 4px 0 var(--violet-dark); }
 .cast-card strong { max-width: 100%; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
-.cast-card.locked .cast-face { filter: grayscale(.7); opacity: .7; }
 .cast-face { display: grid; width: 56px; height: 56px; margin-bottom: 2px; place-items: end center; overflow: hidden; border-radius: 50%; }
 .face-casual { background: var(--peach); }
 .face-professional { background: var(--mint); }
 .cast-meta { display: inline-flex; align-items: center; gap: 3px; margin-top: 2px; padding: 2px 8px; border-radius: 99px; color: var(--violet-ink); background: var(--lavender); font-size: 11px; font-weight: 700; }
-.cast-card.locked .cast-meta { color: var(--plum-muted); background: #f1eef4; }
 .cast-star { position: absolute; top: 4px; right: 6px; color: #f0a020; font-size: 14px; }
+.cast-meta.quiet { color: var(--plum-muted); background: #f1eef4; }
+.then-now { overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: var(--white); }
+.then-now > div { padding: 11px 14px; }
+.then-now span { display: block; margin-bottom: 3px; color: var(--plum-muted); font-size: 11px; font-weight: 700; }
+.then-now p { margin: 0; font-size: 14px; line-height: 1.45; }
+.then { border-bottom: 1px dashed var(--line); }
+.then p { color: var(--plum-muted); }
+.now { background: linear-gradient(160deg, #eefaf4 0%, var(--mint) 100%); }
+.now span { color: var(--mint-ink); }
+.now mark { background: linear-gradient(transparent 50%, #b5e6cd 50%); font-weight: 700; }
+.recap-list { margin-top: 14px; }
 .chat-face { display: grid; width: 34px; height: 34px; place-items: end center; overflow: hidden; border-radius: 12px; }
 @keyframes person-hop { 0% { transform: translateY(14px); } 60% { transform: translateY(-4px); } 100% { transform: none; } }
 

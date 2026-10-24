@@ -23,7 +23,7 @@ celebration fires when the week reaches 5 learned terms (2 are seeded as already
 | `js/screens/home.js` | Home: tappable coach, featured conversation replayed one moment at a time, more from your day |
 | `js/screens/conversation.js` | Conversation detail: new phrases, "You could also say", context switch |
 | `js/screens/bank.js` | Vocab bank |
-| `js/screens/practice.js` | Pick a person to chat with (character cards drawn from `look` in data.js), AI practice session, recap, scripted fallback |
+| `js/screens/practice.js` | Pick anyone to chat with (character cards drawn from `look` in data.js; saved phrases first, otherwise phrases from that chat, or a free chat), AI practice session, recap (then vs now, compared with your last chat with that person), scripted fallback |
 | `api/practice.mjs` | Vercel serverless function that calls the AI model (Groq). Holds the only use of the API key. |
 | `prompts/practice.mjs` | The live prompts for the coach suggestion and each practice turn |
 | `js/screens/progress.js` | Progress: ring for new phrases used in real conversations, talk time, sticker collection (saved → practiced → used for real), badges |
