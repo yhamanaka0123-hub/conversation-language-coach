@@ -13,7 +13,7 @@ const convoById = Object.fromEntries(CONVOS.map(c => [c.id, c]));
 function freshState() {
   const status = {};
   ITEMS.forEach(i => { status[i.id] = i.seed || "new"; });
-  return { v: 2, status, ctx: {}, celebrated: false, sessions: 0, feel: {} };
+  return { v: 2, status, ctx: {}, celebrated: false, sessions: 0 };
 }
 function loadState() {
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 2) return s; } catch (e) {}

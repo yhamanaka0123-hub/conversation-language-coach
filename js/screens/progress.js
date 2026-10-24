@@ -5,7 +5,6 @@
 const RING_C = 2 * Math.PI * 58;   // circumference of the ring (r = 58)
 const usesOf = id => USES.filter(u => u.item === id);
 const usedIds = () => [...new Set(USES.map(u => u.item))];
-const FEELS = [["tense", "😬", "Tense"], ["okay", "🙂", "Okay"], ["great", "😄", "Great"]];
 
 function goalRing(n) {
   const p = Math.min(1, n / USE_GOAL);
