@@ -9,7 +9,7 @@ Context for whoever (person or coding agent) picks this up next. Delete or updat
   DM Sans); behaviour and data from the first build. Figma Make is no longer the
   source of truth: design changes are made here in `style.css`.
 - `README.md` — golden path, PRD-requirement mapping, list of simulated parts.
-- `docs/PRD.md` — the team PRD draft this was built from.
+- `docs/PRD.md` — PRD v2 (Nov 12), after user testing; guides the next version. `docs/PRD-v1.md` is the Oct 20 draft the v1 prototype was built from.
 - Shared preview on Vercel: https://conversation-language-coach.vercel.app/
 - A hosted copy is also published as a private Claude artifact owned by Yuka
   (shared from that page's Share menu). It does **not** update from this repo.

@@ -5,7 +5,7 @@
 
 `v1/` is an archived copy: don't edit it. New work happens in the root files. v1 keeps its own demo progress (`clc-proto-v1` in localStorage) and shares `/api/practice` with the latest version.
 
-Built from the team PRD draft in [`docs/PRD.md`](docs/PRD.md) (Oct 20, 2026).
+The current PRD is v2 (Nov 12, 2026): [`docs/PRD.md`](docs/PRD.md). The v1 prototype was built from [`docs/PRD-v1.md`](docs/PRD-v1.md) (Oct 20, 2026).
 Visual design comes from the team's Figma Make prototype; behaviour and sample data
 come from the first clickable build. Plain HTML/CSS/JS, no build step:
 open `index.html` in a browser (the AI practice partner needs the Vercel deploy; opened
