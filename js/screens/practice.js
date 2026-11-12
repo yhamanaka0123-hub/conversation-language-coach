@@ -43,7 +43,7 @@ function pickPlan(cid, one) {
   const pool = cid ? [convoById[cid]] : CONVOS;
   let best = null;
   pool.forEach(c => {
-    const saved = itemsIn(c.id).filter(i => statusOf(i.id) === "practice");
+    const saved = itemsIn(c.id).filter(i => statusOf(i.id) === "practice" && !isPron(i));
     if (saved.length && (!best || saved.length > best.saved.length)) best = { c, saved };
   });
   return best && { cid: best.c.id, targets: best.saved.slice(0, one ? 1 : 3).map(i => i.id) };
@@ -53,7 +53,7 @@ const planKey = p => `${p.cid}:${p.targets.join(",")}:${ctxOf(p.cid)}`;
 // Rule for one person: their saved phrases first. With none saved, phrases from that chat
 // not marked as known (new ones, then ones practiced before). No targets means a free replay.
 function planFor(cid, one) {
-  const items = itemsIn(cid);
+  const items = itemsIn(cid).filter(i => !isPron(i));   // pronunciation can't be judged in a text chat
   const pool = ["practice", "new", "learned"].map(st => items.filter(i => statusOf(i.id) === st)).find(l => l.length) || [];
   return { cid, targets: pool.slice(0, one ? 1 : 3).map(i => i.id), saved: Boolean(pool.length) && statusOf(pool[0].id) === "practice" };
 }
@@ -199,23 +199,6 @@ afterRender.session = () => {
   if (input && !UI.session.pending) input.focus({ preventScroll: true });
 };
 
-// Weekly count on the recap. popped: how many of the filled dots this session just added.
-function weekCard(n, popped = 0) {
-  const filled = Math.min(n, GOAL);
-  return `<section class="week-card">
-    <div class="week-top">
-      <div>
-        <h2>Little by little</h2>
-        <p class="week-count">${n >= GOAL ? `Weekly goal reached · <strong>${n}</strong> of ${GOAL} practiced` : `<strong>${n}</strong> of ${GOAL} phrases practiced this week`}</p>
-      </div>
-      <button class="text-link" type="button" data-act="go" data-to="report">See progress</button>
-    </div>
-    <div class="week-dots" role="img" aria-label="${filled} of ${GOAL} practiced">
-      ${Array.from({ length: GOAL }, (_, k) => `<span class="${k < filled ? "on" : ""}${k < filled && k >= filled - popped ? " pop" : ""}"></span>`).join("")}
-    </div>
-  </section>`;
-}
-
 // How this chat compares: with the last chat with the same person (counts only), and for each
 // phrase you used, what was said in the real conversation next to what you said now.
 function compareLine(r, c) {
@@ -262,7 +245,7 @@ SCREENS.recap = () => {
         </div>`;
       }).join("")}
     </div>` : ""}
-    ${weekCard(learnedCount(), r.used.length)}
+    <button class="text-link recap-report" type="button" data-act="reportAi">See your practice report ${icon("next", 15)}</button>
     <div class="stack recap-actions">
       <button class="button button-primary full-button" type="button" data-act="start" data-id="${r.cid}">Chat with ${esc(c.partner)} again</button>
       <button class="button button-quiet full-button" type="button" data-act="go" data-to="home">Back to home</button>
@@ -270,8 +253,9 @@ SCREENS.recap = () => {
 };
 
 // ---------- Session logic ----------
-function startPractice(cid, one) {
-  const plan = planFor(cid, one);
+// targets: practice exactly these items (e.g. one feedback point), instead of the rule's pick.
+function startPractice(cid, one, targets) {
+  const plan = targets ? { cid, targets } : planFor(cid, one);
   const mode = AI.status === "live" ? "ai" : "script";
   const opener = mode === "ai" ? suggestionFor(plan).opener : convoById[cid].script[0].ai;
   UI.session = { cid, targets: plan.targets, used: [], lines: {}, mode, userTurns: 0, turn: 0, done: false, pending: false, peek: null, suggested: [],
@@ -355,10 +339,8 @@ function finishPractice() {
   const r = { cid: s.cid, targets: s.targets, used: s.used.slice(), lines: { ...s.lines }, prev: past[past.length - 1] || null };
   S.history[s.cid] = [...past, { used: s.used.length, targets: s.targets.length }].slice(-5);
   UI.session = null;
-  const hitGoal = learnedCount() >= GOAL && !S.celebrated;
-  if (hitGoal) S.celebrated = true;
   save();
-  go({ name: hitGoal ? "celebrate" : "recap", r });
+  go({ name: "recap", r });
 }
 
 // ---------- Mic: real speech-to-text where the browser supports it, otherwise a sample ----------
@@ -399,6 +381,8 @@ function typeSample(btn, input) {
 }
 
 ACTIONS.start = el => startPractice(el.dataset.id, el.dataset.one === "1");
+ACTIONS.practiceItem = el => { const i = byId[el.dataset.id]; UI.pick = i.convo; startPractice(i.convo, false, [i.id]); };
+ACTIONS.reportAi = () => { UI.report = "ai"; go({ name: "report" }); };
 ACTIONS.quit = () => { UI.micTimer?.stop?.(); UI.session = null; go({ name: "practice" }); };
 ACTIONS.finish = () => { UI.micTimer?.stop?.(); finishPractice(); };
 ACTIONS.mic = el => listen(el);

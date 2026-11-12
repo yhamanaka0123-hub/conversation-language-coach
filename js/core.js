@@ -6,24 +6,27 @@ const ACTIONS = {};   // data-act value -> (element) => void
 const FORMS = {};     // form id -> (form) => void
 
 // ---------- State (saved in this browser only) ----------
-const KEY = "clc-demo-v2";
+const KEY = "clc-demo-v3";   // v3: prototype v2 (onboarding, Top 3, reports)
 const byId = Object.fromEntries(ITEMS.map(i => [i.id, i]));
 const convoById = Object.fromEntries(CONVOS.map(c => [c.id, c]));
 
 function freshState() {
   const status = {};
   ITEMS.forEach(i => { status[i.id] = i.seed || "new"; });
-  return { v: 2, status, ctx: {}, celebrated: false, sessions: 0, chats: {}, history: {}, cards: {} };
+  // recording: "on" | "paused" (simulated; a pause lasts until Resume). seen: conversations
+  // whose feedback was opened. profile: onboarding answers.
+  return { v: 3, status, ctx: {}, sessions: 0, chats: {}, history: {}, cards: {},
+    onboarded: false, profile: {}, recording: "on", notify: true, seen: {} };
 }
 function loadState() {
-  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 2) return s; } catch (e) {}
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 3) return s; } catch (e) {}
   return freshState();
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
 let S = loadState();
 // UI-only state that is not saved.
-const UI = { route: { name: "home" }, bankFilter: null, session: null, micTimer: null };
+const UI = { route: { name: S.onboarded ? "home" : "onboard" }, bankFilter: null, session: null, micTimer: null };
 
 // ---------- Helpers ----------
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -41,6 +44,15 @@ const norm = s => s.toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, " ");
 const uses = (text, i) => matchWords(i).some(w => norm(text).includes(w));
 const highlight = (s, h) => h ? esc(s).replace(esc(h), `<mark>${esc(h)}</mark>`) : esc(s);
 const plural = (n, word, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;
+// Improvement points: the skill each belongs to, and a conversation's Top 3 (FDB-02).
+const AREA = { expression: "Expression", grammar: "Grammar", structure: "Structure", pronunciation: "Pronunciation", culture: "Culture" };
+const topOf = cid => itemsIn(cid).filter(i => i.top && statusOf(i.id) !== "known").sort((a, b) => a.top - b.top).slice(0, 3);
+const isPron = i => i.area === "pronunciation";
+// Read text aloud with the browser's synthetic voice (model pronunciation, or the prototype's
+// stand-in for the learner's own recording). Plays only when the user taps (PRO-05).
+const canSpeak = "speechSynthesis" in window;
+const speakButton = (text, label = "Listen") => canSpeak
+  ? `<button class="speak" type="button" data-act="speak" data-text="${esc(text)}" aria-label="${esc(label)}">${icon("sound", 17)}</button>` : "";
 
 const tag = c => `<span class="tag tag-${c === "casual" ? "sage" : "blue"}">${ctxLabel(c)}</span>`;
 
@@ -55,6 +67,9 @@ const ICONS = {
   message: '<path d="M20 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v8Z"/>',
   chevron: '<path d="m9 6 6 6-6 6"/>',
   send: '<path d="M4 12 20 4l-6 16-3-7-7-1Z"/>',
+  pause: '<rect x="6.5" y="5" width="3.6" height="14" rx="1.4"/><rect x="13.9" y="5" width="3.6" height="14" rx="1.4"/>',
+  play: '<path d="M8 5.5v13l10.5-6.5Z"/>',
+  bell: '<path d="M6 16.5v-5.5a6 6 0 0 1 12 0v5.5l1.8 1.8H4.2Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
   lock: '<rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   sound: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4v-5Z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.3 6.5a8 8 0 0 1 0 11"/>'
 };
@@ -151,8 +166,8 @@ const NAV_ICONS = {
     <path class="ni-star" d="m16 10.4 1.8 3.5 3.9.6-2.8 2.7.7 3.9-3.6-1.9-3.6 1.9.7-3.9-2.8-2.7 3.9-.6Z"/>`
 };
 // Which bottom-nav item is highlighted for each route.
-const NAV_FOR = { home: "home", convo: "home", bank: "bank", cards: "bank", practice: "practice", session: "practice", recap: "practice", celebrate: "practice", report: "report" };
-const NO_NAV = ["session", "celebrate", "cards"];
+const NAV_FOR = { home: "home", convo: "home", bank: "bank", cards: "bank", practice: "practice", session: "practice", recap: "practice", report: "report" };
+const NO_NAV = ["session", "cards", "onboard"];
 
 function go(route) { UI.route = route; UI.enter = true; render(); UI.enter = false; window.scrollTo(0, 0); }
 
@@ -184,7 +199,16 @@ const afterRender = {};   // optional per-screen hook, e.g. scroll or animation
 // ---------- Shared actions ----------
 ACTIONS.go = el => { UI.bankFilter = el.dataset.filter || null; go({ name: el.dataset.to, id: el.dataset.id }); };
 ACTIONS.mark = el => { S.status[el.dataset.id] = el.dataset.status; save(); render(); };
-ACTIONS.reset = () => { S = freshState(); save(); UI.session = null; UI.bankFilter = null; UI.moments = {}; UI.flip = null; UI.tip = 0; UI.pick = null; UI.deck = null; go({ name: "home" }); };
+ACTIONS.reset = () => { S = freshState(); save(); UI.session = null; UI.bankFilter = null; UI.tip = 0; UI.pick = null; UI.deck = null; UI.ob = null; UI.notifHidden = false; go({ name: "onboard" }); };
+ACTIONS.speak = el => {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(el.dataset.text);
+  u.lang = "en-US";
+  u.rate = el.dataset.rate ? Number(el.dataset.rate) : 0.95;
+  el.classList.add("speaking");
+  u.onend = u.onerror = () => el.classList.remove("speaking");
+  speechSynthesis.speak(u);
+};
 
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-act]");

@@ -1,16 +1,23 @@
-// Conversation detail: new phrases, "you could also say" suggestions, context switch.
+// Conversation detail (PRD v2 §6.3): Top 3 to try next from the learner's own words, then all
+// other learning points (phrases other people said, more ways to improve), each attributed.
 // phraseCard / suggestionCard are also used by the Vocab screen.
 
-function itemActions(i) {
+// Save keeps an item in Vocab; it never starts practice (EXP-06). Practicing is its own,
+// optional action (PRA-02).
+function itemActions(i, practice) {
   const s = statusOf(i.id);
+  const chat = practice && !isPron(i) && i.convo
+    ? `<button class="text-link" type="button" data-act="practiceItem" data-id="${i.id}">Try it in a chat with ${esc(convoById[i.convo].partner)}</button>` : "";
   if (s === "new") return `<div class="phrase-actions">
-      <button class="button button-secondary" type="button" data-act="mark" data-id="${i.id}" data-status="practice">${icon(i.kind === "phrase" ? "spark" : "bookmark", 16)} ${i.kind === "phrase" ? "Practice this" : "Save to practice"}</button>
+      <button class="button button-secondary" type="button" data-act="mark" data-id="${i.id}" data-status="practice">${icon("bookmark", 16)} Save</button>
       <button class="button button-quiet" type="button" data-act="mark" data-id="${i.id}" data-status="known">${icon("check", 16)} I know this</button>
+      ${chat}
     </div>`;
-  const label = { practice: ["state-saved", "bookmark", "Saved to practice"], known: ["state-known", "check", "Got it, hidden from review"], learned: ["state-learned", "check", "Practiced"] }[s];
+  const label = { practice: ["state-saved", "bookmark", "Saved to Vocab"], known: ["state-known", "check", "Got it, hidden from review"], learned: ["state-learned", "check", "Practiced"] }[s];
   return `<div class="item-state">
       <span class="state-pill ${label[0]}">${icon(label[1], 14)} ${label[2]}</span>
       ${s !== "learned" ? `<button class="undo" type="button" data-act="mark" data-id="${i.id}" data-status="new">Undo</button>` : ""}
+      ${s === "practice" ? chat : ""}
     </div>`;
 }
 
@@ -19,37 +26,48 @@ function sourceLine(i) {
   return `<div class="source">${icon("message", 14)} from ${esc(convoById[i.convo].title)} ${tag(ctxOf(i.convo))}</div>`;
 }
 
+// A phrase another person said: attributed to them (CON-05). No audio of their voice (CON-06).
 function phraseCard(i, n, withSource) {
   return `<article class="phrase-card ${statusOf(i.id) === "known" ? "known" : ""}">
     <div class="phrase-index">${n ? String(n).padStart(2, "0") : ""}</div>
     <div class="phrase-content">
+      <span class="said-label">${i.speaker ? `${esc(i.speaker)} said · ${i.at}` : "Heard earlier"}</span>
       <h3>“${esc(i.text)}”</h3>
       ${i.sentence ? `<blockquote>${highlight(i.sentence, i.hl)}</blockquote>` : ""}
-      <p class="meaning">${esc(i.meaning)}${i.speaker ? ` <span class="said-by">· ${esc(i.speaker)}, ${i.at}</span>` : ""}</p>
+      <p class="meaning">${esc(i.meaning)}</p>
       ${withSource ? sourceLine(i) : ""}
       ${itemActions(i)}
     </div>
   </article>`;
 }
 
-function suggestionCard(i, withSource) {
+// Learner audio and model pronunciation: separate, labeled, played only on tap (PRO-04, PRO-05).
+// The prototype has no recording, so "your audio" is a synthetic stand-in.
+const audioButton = (text, label, rate) => canSpeak
+  ? `<button class="audio-btn" type="button" data-act="speak" data-text="${esc(text)}"${rate ? ` data-rate="${rate}"` : ""}>${icon("play", 14)} ${label}</button>` : "";
+const pronAudio = i => `<div class="audio-row">
+    ${audioButton(i.sayLearner, "Your audio <small>(simulated)</small>", 0.8)}
+    ${audioButton(i.sayModel, "Model", 0.85)}
+  </div>`;
+
+// An improvement from the learner's own words: what they said, a better way, an optional
+// one-line reason collapsed by default (FDB-05, FDB-06). n = its place in the Top 3.
+function suggestionCard(i, withSource, n) {
   const c = ctxOf(i.convo);
-  return `<article class="suggestion-card ${statusOf(i.id) === "known" ? "known" : ""}">
-    <div class="said-row">
-      <span class="said-label">You said · ${i.at}</span>
-      <p>“${esc(i.said)}”</p>
+  const pron = isPron(i);
+  return `<article class="suggestion-card ${n ? "top-card" : ""} ${statusOf(i.id) === "known" ? "known" : ""}">
+    <div class="top-head">
+      ${n ? `<span class="top-num">${n}</span>` : ""}
+      <span class="area-chip area-${i.area || "expression"}">${AREA[i.area] || "Expression"}</span>
+      <span class="top-ctx">You · ${i.at}</span>
     </div>
-    <div class="alternative-row">
-      <div class="alternative-icon">${icon("spark", 17)}</div>
-      <div>
-        <span class="said-label">You could try</span>
-        <h3>“${esc(i.alt[c])}”</h3>
-        <p>${esc(i.why[c])}</p>
-      </div>
-    </div>
+    <p class="top-said"><span>You said</span>“${esc(i.said)}”${pron ? ` <em>“${esc(i.sayModel)}” came out as ${esc(i.heard)}</em>` : ""}</p>
+    <p class="top-try"><span>Try</span>${pron ? `${esc(i.sayModel)}: <strong>${esc(i.alt[c])}</strong>` : `“${esc(i.alt[c])}”`}</p>
+    ${pron ? pronAudio(i) : ""}
+    <details class="why"><summary>Why?</summary><p>${esc(i.why[c])}</p></details>
     <div class="suggestion-foot">
       ${withSource ? sourceLine(i) : ""}
-      ${itemActions(i)}
+      ${itemActions(i, !withSource)}
     </div>
   </article>`;
 }
@@ -58,7 +76,9 @@ SCREENS.convo = () => {
   const c = convoById[UI.route.id];
   const items = itemsIn(c.id);
   const ctx = ctxOf(c.id);
-  const saved = items.filter(i => statusOf(i.id) === "practice").length;
+  const top = topOf(c.id);
+  const heard = items.filter(i => i.kind === "phrase");
+  const more = items.filter(i => i.kind === "rephrase" && !top.includes(i));
   return `
     ${pageHeader({ eyebrow: c.when.toUpperCase(), title: esc(c.title), back: "home", action: tag(ctx) })}
     <p class="detail-meta">${icon("clock", 15)} ${c.length} · ${esc(c.place)} · with ${esc(c.people)}</p>
@@ -71,33 +91,33 @@ SCREENS.convo = () => {
     <div class="context-switch">
       <div>
         <span class="said-label">Detected context</span>
-        <p class="subtle">${ctx === c.context ? "Auto-detected." : "Changed by you."} Suggestions below follow this.</p>
+        <p class="subtle">${ctx === c.context ? "Auto-detected." : "Changed by you."} Suggestions follow this.</p>
       </div>
       <div class="tabs tabs-small" role="group" aria-label="Conversation context">
         ${["casual", "professional"].map(k => `<button type="button" class="${ctx === k ? "active" : ""}" aria-pressed="${ctx === k}" data-act="ctx" data-id="${c.id}" data-ctx="${k}">${ctxLabel(k)}</button>`).join("")}
       </div>
     </div>
 
-    <div class="section-heading compact">
-      <div><p class="eyebrow">PICKED UP FOR YOU</p><h2>New phrases you heard</h2></div>
-    </div>
-    <div class="phrase-list">
-      ${items.filter(i => i.kind === "phrase").map((i, n) => phraseCard(i, n + 1)).join("")}
-    </div>
+    ${top.length ? `
+      <div class="section-heading compact">
+        <div><p class="eyebrow">FROM YOUR OWN WORDS</p><h2>Top ${top.length} to try next</h2></div>
+      </div>
+      <p class="section-intro">Not corrections, just options that fit a ${ctxLabel(ctx).toLowerCase()} conversation. Tap “Why?” for the reason.</p>
+      <div class="phrase-list">${top.map((i, n) => suggestionCard(i, false, n + 1)).join("")}</div>` : ""}
 
-    <div class="section-heading suggestion-heading">
-      <div><p class="eyebrow">ANOTHER WAY TO SAY IT</p><h2>You could also say</h2></div>
+    <div class="section-heading all-points">
+      <div><p class="eyebrow">EVERYTHING FROM THIS CHAT</p><h2>All learning points</h2></div>
     </div>
-    ${coachSays(`Not a correction, just another option that might feel natural in a <strong>${ctxLabel(ctx).toLowerCase()}</strong> conversation.`)}
-    <div class="phrase-list">
-      ${items.filter(i => i.kind === "rephrase").map(i => suggestionCard(i)).join("")}
-    </div>
+    ${heard.length ? `<h3 class="sub-heading">${icon("message", 16)} Phrases you heard <small>said by others</small></h3>
+      <div class="phrase-list">${heard.map((i, n) => phraseCard(i, n + 1)).join("")}</div>` : ""}
+    ${more.length ? `<h3 class="sub-heading">${icon("spark", 16)} More ways to improve <small>from your own words</small></h3>
+      <div class="phrase-list">${more.map(i => suggestionCard(i)).join("")}</div>` : ""}
 
     <div class="sticky-action">
-      <button class="button button-primary full-button" type="button" data-act="start" data-id="${c.id}" ${saved ? "" : "disabled"}>
-        Practice this conversation${saved ? ` · ${saved} saved` : ""} ${icon("next", 18)}
+      <button class="button button-primary full-button" type="button" data-act="start" data-id="${c.id}">
+        Practice with ${esc(c.partner)} ${icon("next", 18)}
       </button>
-      <p>${saved ? `About 3 minutes · ${esc(c.partner)}, played by AI` : "Tap “Practice this” on at least one phrase to start."}</p>
+      <p>Optional · about 3 minutes · ${esc(c.partner)}, played by AI</p>
     </div>`;
 };
 

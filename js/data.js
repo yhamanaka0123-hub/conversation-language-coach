@@ -1,8 +1,6 @@
 // Sample data for the prototype. Edit freely: conversations, phrases and the AI scripts
 // all live here, so content changes never touch the screen code.
 
-const GOAL = 5;           // weekly practice goal: saved phrases used in practice
-const USE_GOAL = 3;       // weekly goal: new phrases used in real conversations
 const USER = "Yuka";
 const TODAY = "Tuesday, Oct 20";
 
@@ -92,8 +90,12 @@ const CONVOS = [
   }
 ];
 
-// kind "phrase": something the other person said that is likely new to the user.
-// kind "rephrase": something the user said, with a context-fit alternative per context.
+// kind "phrase": something another person said that is likely new to the learner.
+// kind "rephrase": something the learner said, with a better way per context (alt) and an
+//   optional one-line reason (why). area = the skill it belongs to: expression, grammar,
+//   structure, pronunciation or culture. top = its place (1-3) in the conversation's Top 3.
+//   Pronunciation items add heard (how it came out), sayLearner / sayModel (what the
+//   prototype's synthetic voice reads for "your audio" and "model"; nothing is recorded).
 const ITEMS = [
   { id: "maya-p1", convo: "maya", kind: "phrase", text: "I'm swamped", meaning: "I'm extremely busy; too much to do.",
     sentence: "Honestly, I'm swamped this week with recruiting stuff.", hl: "I'm swamped", speaker: "Maya", at: "02:14", match: ["swamped"] },
@@ -103,12 +105,12 @@ const ITEMS = [
     sentence: "Applying there is a long shot, but why not.", hl: "a long shot", speaker: "Maya", at: "12:30", match: ["long shot"] },
   { id: "maya-p4", convo: "maya", kind: "phrase", text: "count me in", meaning: "Yes, include me; I want to join.",
     sentence: "If you're doing the hike Sunday, count me in.", hl: "count me in", speaker: "Maya", at: "15:02", match: ["count me in"] },
-  { id: "maya-r1", convo: "maya", kind: "rephrase", said: "I am very tired because of many assignments.", at: "01:40",
+  { id: "maya-r1", convo: "maya", kind: "rephrase", area: "expression", top: 1, said: "I am very tired because of many assignments.", at: "01:40",
     alt: { casual: "I'm wiped out from all these assignments.", professional: "I've been stretched a bit thin with deadlines this week." },
     why: { casual: "With a friend, a vivid everyday phrase sounds more relaxed.",
            professional: "At work, this signals a heavy load without sounding like a complaint." },
     match: { casual: ["wiped out"], professional: ["stretched", "thin"] } },
-  { id: "maya-r2", convo: "maya", kind: "rephrase", said: "Shall we go together?", at: "16:20",
+  { id: "maya-r2", convo: "maya", kind: "rephrase", area: "culture", said: "Shall we go together?", at: "16:20",
     alt: { casual: "Want to come with?", professional: "Would you like to join us?" },
     why: { casual: "“Shall we” is correct, but sounds formal between friends.",
            professional: "A polite question that works for colleagues or a manager." },
@@ -122,12 +124,12 @@ const ITEMS = [
     sentence: "Fixing checkout will actually move the needle on conversion.", hl: "move the needle", speaker: "Lena", at: "11:37", match: ["move the needle"] },
   { id: "sync-p4", convo: "sync", kind: "phrase", text: "loop in", meaning: "Include someone in a discussion or email thread.",
     sentence: "Let's loop in the design team before we commit.", hl: "loop in", speaker: "Daniel", at: "19:03", match: ["loop in"] },
-  { id: "sync-r1", convo: "sync", kind: "rephrase", said: "I want to say my opinion.", at: "04:05",
+  { id: "sync-r1", convo: "sync", kind: "rephrase", area: "culture", top: 2, said: "I want to say my opinion.", at: "04:05",
     alt: { professional: "If I could add one thing...", casual: "Can I jump in for a sec?" },
     why: { professional: "A softer opener lets you take the floor without sounding abrupt.",
            casual: "Among friends, a quick, light way to cut in." },
     match: { professional: ["add one thing", "quick thought"], casual: ["jump in"] } },
-  { id: "sync-r2", convo: "sync", kind: "rephrase", said: "This is not possible by Friday.", at: "22:18",
+  { id: "sync-r2", convo: "sync", kind: "rephrase", area: "structure", top: 1, said: "This is not possible by Friday.", at: "22:18",
     alt: { professional: "Friday might be tight. Could we aim for Monday?", casual: "Friday's pushing it. How about Monday?" },
     why: { professional: "Naming the constraint and offering an option keeps it collaborative.",
            casual: "Relaxed, but still clear about the timing." },
@@ -139,7 +141,7 @@ const ITEMS = [
     sentence: "Next coffee's on me, I owe you.", hl: "on me", speaker: "Priya", at: "11:40", match: ["on me"] },
   { id: "priya-p3", convo: "priya", kind: "phrase", text: "call it a day", meaning: "Stop working on something for now.",
     sentence: "I'm going to call it a day on laundry.", hl: "call it a day", speaker: "Priya", at: "06:05", match: ["call it a day"] },
-  { id: "priya-r1", convo: "priya", kind: "rephrase", said: "I want to buy food together tomorrow.", at: "09:30",
+  { id: "priya-r1", convo: "priya", kind: "rephrase", area: "expression", top: 1, said: "I want to buy food together tomorrow.", at: "09:30",
     alt: { casual: "Want to do a grocery run tomorrow?", professional: "Would you like to go grocery shopping together tomorrow?" },
     why: { casual: "“Grocery run” is the everyday way roommates say it.",
            professional: "A full, polite question that works with anyone." },
@@ -151,11 +153,42 @@ const ITEMS = [
     sentence: "You'll want to flesh out the customer section.", hl: "flesh out", speaker: "Prof. Chen", at: "07:48", match: ["flesh out"] },
   { id: "chen-p3", convo: "chen", kind: "phrase", text: "a good rule of thumb", meaning: "A practical guideline, not an exact rule.",
     sentence: "A good rule of thumb is about ten interviews.", hl: "a good rule of thumb", speaker: "Prof. Chen", at: "10:15", match: ["rule of thumb"] },
-  { id: "chen-r1", convo: "chen", kind: "rephrase", said: "I don't understand this part.", at: "01:05",
+  { id: "chen-r1", convo: "chen", kind: "rephrase", area: "expression", top: 1, said: "I don't understand this part.", at: "01:05",
     alt: { professional: "Could you walk me through this part?", casual: "Wait, can you explain this bit again?" },
     why: { professional: "Asks for help in a way that sounds engaged, not lost.",
            casual: "Light and friendly when you're among peers." },
     match: { professional: ["walk me through"], casual: ["explain this bit", "explain that again"] } },
+
+
+  // More improvement points (v2): grammar, structure, pronunciation.
+  { id: "maya-g1", convo: "maya", kind: "rephrase", area: "grammar", top: 2, said: "I have went to Tilden last month.", at: "05:20",
+    alt: { casual: "I went to Tilden last month.", professional: "I went to Tilden last month." },
+    why: { casual: "A finished time like \u201clast month\u201d takes the simple past: went.", professional: "A finished time like \u201clast month\u201d takes the simple past: went." },
+    match: { casual: ["i went"], professional: ["i went"] } },
+  { id: "maya-pr1", convo: "maya", kind: "rephrase", area: "pronunciation", top: 3, said: "I'm not comfortable hiking that far.", at: "07:02",
+    heard: "com-FOR-ta-ble", alt: { casual: "COMF-ter-bul", professional: "COMF-ter-bul" },
+    why: { casual: "Stress the first syllable; the middle \u201cfor\u201d almost disappears.", professional: "Stress the first syllable; the middle \u201cfor\u201d almost disappears." },
+    sayLearner: "come for table", sayModel: "comfortable", match: { casual: ["comfortable"], professional: ["comfortable"] } },
+  { id: "priya-g1", convo: "priya", kind: "rephrase", area: "grammar", top: 2, said: "The landlord don't answer my messages.", at: "05:44",
+    alt: { casual: "The landlord doesn't answer my messages.", professional: "The landlord doesn't answer my messages." },
+    why: { casual: "One person (he/she/the landlord) takes \u201cdoesn't\u201d.", professional: "One person (he/she/the landlord) takes \u201cdoesn't\u201d." },
+    match: { casual: ["doesn't answer", "doesn't reply"], professional: ["doesn't answer", "doesn't reply"] } },
+  { id: "priya-pr1", convo: "priya", kind: "rephrase", area: "pronunciation", top: 3, said: "Let's get more vegetables.", at: "10:02",
+    heard: "ve-ge-TA-bles", alt: { casual: "VEJ-tuh-bulz", professional: "VEJ-tuh-bulz" },
+    why: { casual: "Three beats, stress on the first: VEJ-tuh-bulz.", professional: "Three beats, stress on the first: VEJ-tuh-bulz." },
+    sayLearner: "veh jeh tah bles", sayModel: "vegetables", match: { casual: ["vegetables"], professional: ["vegetables"] } },
+  { id: "chen-s1", convo: "chen", kind: "rephrase", area: "structure", top: 2, said: "About the interviews, how many is enough, ten?", at: "09:40",
+    alt: { professional: "How many interviews would be enough? Would ten work?", casual: "How many interviews is enough? Like ten?" },
+    why: { professional: "Leading with the question makes it easier to follow.", casual: "Leading with the question makes it easier to follow." },
+    match: { professional: ["would ten work", "how many interviews"], casual: ["how many interviews", "like ten"] } },
+  { id: "chen-pr1", convo: "chen", kind: "rephrase", area: "pronunciation", top: 3, said: "I want to determine the market size.", at: "12:10",
+    heard: "de-ter-MINE", alt: { professional: "de-TER-min", casual: "de-TER-min" },
+    why: { professional: "Stress the middle syllable, and the end sounds like \u201cmin\u201d.", casual: "Stress the middle syllable, and the end sounds like \u201cmin\u201d." },
+    sayLearner: "dee ter mine", sayModel: "determine", match: { professional: ["determine"], casual: ["determine"] } },
+  { id: "sync-pr1", convo: "sync", kind: "rephrase", area: "pronunciation", top: 3, said: "We need to develop the fix first.", at: "14:30",
+    heard: "DE-ve-lop", alt: { professional: "dih-VEL-up", casual: "dih-VEL-up" },
+    why: { professional: "Stress the second syllable: dih-VEL-up.", casual: "Stress the second syllable: dih-VEL-up." },
+    sayLearner: "deh vuh lop", sayModel: "develop", match: { professional: ["develop"], casual: ["develop"] } },
 
   // Learned earlier this week, from a conversation outside the demo.
   { id: "old-1", convo: null, source: "Lab meeting · Oct 15", sourceContext: "professional", kind: "phrase", text: "touch base", meaning: "Check in briefly.", seed: "learned", match: [] },
@@ -167,3 +200,28 @@ const ITEMS = [
 const USES = [
   { item: "old-1", convo: "sync", at: "24:10", said: "Can we touch base before Friday?" }
 ];
+
+// Progress reports (v2). Sample data: the prototype doesn't score speech yet.
+// level: 0-100 per period; examples = earlier vs recent evidence in the learner's own words.
+const SKILLS = [
+  { id: "expression", name: "Expressions", level: { week: 62, month: 54, all: 41 }, evidence: { week: 3, month: 9, all: 21 },
+    earlier: { when: "Oct 8 · Lunch with Priya", text: "Thank you, I will eat it." },
+    recent: { when: "Oct 19 · Weekly product sync", text: "Can we touch base before Friday?" } },
+  { id: "grammar", name: "Grammar", level: { week: 48, month: 44, all: 36 }, evidence: { week: 4, month: 11, all: 26 },
+    earlier: { when: "Oct 6 · Coffee with Maya", text: "Yesterday I go to the library." },
+    recent: { when: "Oct 20 · Lunch with Priya", text: "I went to the store yesterday." } },
+  { id: "structure", name: "Sentence structure", level: { week: 52, month: 46, all: 39 }, evidence: { week: 2, month: 7, all: 15 },
+    earlier: { when: "Oct 12 · Office hours", text: "The draft, I think, maybe is not finished." },
+    recent: { when: "Oct 19 · Weekly product sync", text: "Friday might be tight. Could we aim for Monday?" } },
+  { id: "pronunciation", name: "Pronunciation", level: { week: 40, month: 38, all: 34 }, evidence: { week: 3, month: 8, all: 19 },
+    earlier: { when: "Oct 13 · Lab meeting", text: "\u201cdevelop\u201d came out as DE-ve-lop" },
+    recent: { when: "Oct 20 · Coffee with Maya", text: "\u201cdevelop\u201d with the stress on VEL" } },
+  { id: "culture", name: "Cultural context", level: { week: 56, month: 49, all: 40 }, evidence: { week: 2, month: 6, all: 13 },
+    earlier: { when: "Oct 15 · Lab meeting", text: "I want to say my opinion." },
+    recent: { when: "Oct 19 · Weekly product sync", text: "If I could add one thing..." } }
+];
+// Totals before this week, added for This Month and All Time (sample history).
+const EARLIER = {
+  month: { conversations: 10, minutes: 72, sessions: 3, practiced: 6 },
+  all: { conversations: 27, minutes: 186, sessions: 7, practiced: 15 }
+};
