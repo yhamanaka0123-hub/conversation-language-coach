@@ -1,0 +1,198 @@
+// Shared state, helpers, navigation and event wiring.
+// Each file in js/screens/ adds its screen to SCREENS and its buttons to ACTIONS.
+
+const SCREENS = {};   // route name -> () => HTML string
+const ACTIONS = {};   // data-act value -> (element) => void
+const FORMS = {};     // form id -> (form) => void
+
+// ---------- State (saved in this browser only) ----------
+const KEY = "clc-proto-v1";   // separate from the latest version, which shares this site
+const byId = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+const convoById = Object.fromEntries(CONVOS.map(c => [c.id, c]));
+
+function freshState() {
+  const status = {};
+  ITEMS.forEach(i => { status[i.id] = i.seed || "new"; });
+  return { v: 2, status, ctx: {}, celebrated: false, sessions: 0, chats: {}, history: {}, cards: {} };
+}
+function loadState() {
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 2) return s; } catch (e) {}
+  return freshState();
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+let S = loadState();
+// UI-only state that is not saved.
+const UI = { route: { name: "home" }, bankFilter: null, session: null, micTimer: null };
+
+// ---------- Helpers ----------
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ctxOf = cid => S.ctx[cid] || convoById[cid].context;
+const ctxOfItem = i => i.convo ? ctxOf(i.convo) : i.sourceContext;
+const ctxLabel = c => c === "casual" ? "Casual" : "Professional";
+const statusOf = id => S.status[id];
+const learnedItems = () => ITEMS.filter(i => statusOf(i.id) === "learned");
+const learnedCount = () => learnedItems().length;
+const itemsIn = cid => ITEMS.filter(i => i.convo === cid);
+const practiceText = i => i.kind === "phrase" ? i.text : i.alt[ctxOf(i.convo)];
+const bare = s => s.replace(/[.?!…]+$/, "");
+const matchWords = i => i.kind === "phrase" ? i.match : i.match[ctxOf(i.convo)];
+const norm = s => s.toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, " ");
+const uses = (text, i) => matchWords(i).some(w => norm(text).includes(w));
+const highlight = (s, h) => h ? esc(s).replace(esc(h), `<mark>${esc(h)}</mark>`) : esc(s);
+const plural = (n, word, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;
+
+const tag = c => `<span class="tag tag-${c === "casual" ? "sage" : "blue"}">${ctxLabel(c)}</span>`;
+
+const ICONS = {
+  spark: '<path d="m12 2 1.3 5.1A5 5 0 0 0 17 10.7L22 12l-5 1.3a5 5 0 0 0-3.7 3.7L12 22l-1.3-5A5 5 0 0 0 7 13.3L2 12l5-1.3A5 5 0 0 0 10.7 7L12 2Z"/>',
+  back: '<path d="m15 18-6-6 6-6"/><path d="M9 12h11"/>',
+  next: '<path d="m9 18 6-6-6-6"/><path d="M15 12H4"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  check: '<path d="m5 12 4.2 4.2L19 6.5"/>',
+  mic: '<rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6"/>',
+  bookmark: '<path d="M6 3h12v18l-6-4-6 4V3Z"/>',
+  message: '<path d="M20 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v8Z"/>',
+  chevron: '<path d="m9 6 6 6-6 6"/>',
+  send: '<path d="M4 12 20 4l-6 16-3-7-7-1Z"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  sound: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4v-5Z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.3 6.5a8 8 0 0 1 0 11"/>'
+};
+const icon = (name, size = 20) =>
+  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
+
+// The coach mascot: a lavender speech bubble with a face. wave: play the one-time hello.
+// mood: "happy" (default), "cheer" (closed happy eyes, open smile, both arms up), "think", "talk".
+const MASCOT_FACE = {
+  happy: `<ellipse cx="26" cy="25" rx="3.2" ry="4.2" fill="#2d2440"/><ellipse cx="41" cy="25" rx="3.2" ry="4.2" fill="#2d2440"/>
+    <circle cx="27" cy="23.5" r="1" fill="#fff"/><circle cx="42" cy="23.5" r="1" fill="#fff"/>
+    <path d="M28.5 33.5q5 5 10 0" fill="none" stroke="#2d2440" stroke-width="2.4" stroke-linecap="round"/>`,
+  cheer: `<path d="M22.5 26q3.5-5 7 0M37.5 26q3.5-5 7 0" fill="none" stroke="#2d2440" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M27 31.5h13q-1 8-6.5 8T27 31.5Z" fill="#2d2440"/><path d="M30 36.5q3.5-2 7 0q-1.5 3-3.5 3t-3.5-3Z" fill="#ff8f7a"/>`,
+  talk: `<ellipse cx="26" cy="24" rx="3.2" ry="4" fill="#2d2440"/><ellipse cx="41" cy="24" rx="3.2" ry="4" fill="#2d2440"/>
+    <circle cx="27" cy="22.5" r="1" fill="#fff"/><circle cx="42" cy="22.5" r="1" fill="#fff"/>
+    <ellipse cx="33.5" cy="35" rx="4" ry="3.4" fill="#2d2440"/><ellipse cx="33.5" cy="36.6" rx="2.4" ry="1.4" fill="#ff8f7a"/>`,
+  think: `<ellipse cx="27" cy="23" rx="3" ry="3.8" fill="#2d2440"/><ellipse cx="42" cy="23" rx="3" ry="3.8" fill="#2d2440"/>
+    <circle cx="28" cy="21.5" r="1" fill="#fff"/><circle cx="43" cy="21.5" r="1" fill="#fff"/>
+    <ellipse cx="34" cy="35" rx="2.6" ry="2.2" fill="#2d2440"/>`
+};
+const mascot = (size = 56, wave = false, mood = "happy") => `
+  <svg class="mascot mascot-${mood} ${wave ? "wave" : ""}" width="${size}" height="${Math.round(size * 64 / 72)}" viewBox="0 0 72 64" aria-hidden="true">
+    <ellipse cx="33" cy="61" rx="20" ry="2.5" fill="#2d2440" opacity=".08"/>
+    ${mood === "cheer" ? `<path d="M8 24C3 21 1 15 2 10" fill="none" stroke="#a78bec" stroke-width="6" stroke-linecap="round"/>` : ""}
+    <g class="mascot-arm"><path d="${mood === "cheer" ? "M58 24c5-3 7-8 6-14" : "M58 30c6-2 9-7 9-13"}" fill="none" stroke="#a78bec" stroke-width="6" stroke-linecap="round"/></g>
+    <path d="M17 44 13 57l15-10Z" fill="#b39cf0" stroke="#b39cf0" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="5" y="5" width="56" height="45" rx="20" fill="#b39cf0"/>
+    <ellipse cx="22" cy="13" rx="9" ry="3" fill="#fff" opacity=".35"/>
+    ${MASCOT_FACE[mood] || MASCOT_FACE.happy}
+    <circle cx="19.5" cy="33" r="3.5" fill="#ffb59c" opacity=".75"/><circle cx="47.5" cy="33" r="3.5" fill="#ffb59c" opacity=".75"/>
+  </svg>`;
+
+// A conversation partner drawn from c.look (see data.js): shoulders, head, hair, face.
+const HAIR = {
+  short: '<path d="M24 32c0-13 9-18 16-18 10 0 17 6 16 18-4-7-12-9-18-8-6 1-11 4-14 8Z"/>',
+  bob: '<path d="M22 37c-1-16 9-23 18-23 10 0 19 7 18 23v8c-3 0-4-4-4-10-4-7-12-10-20-9-6 2-8 7-8 13v6c-3 0-4-3-4-8Z"/>',
+  bun: '<circle cx="40" cy="12" r="7"/><path d="M24 33c-1-12 7-17 16-17s17 5 16 17c-4-7-11-10-16-10-6 0-12 4-16 10Z"/>'
+};
+const person = (c, size = 64) => {
+  const k = c.look || { hair: "short", hairColor: "#4a3b5c", skin: "#e9c3a0", shirt: "#b39cf0" };
+  return `<svg class="person" width="${size}" height="${size}" viewBox="0 0 80 80" aria-hidden="true">
+    <path d="M14 80c0-18 12-26 26-26s26 8 26 26Z" fill="${k.shirt}"/>
+    <rect x="35" y="44" width="10" height="12" rx="4" fill="${k.skin}"/>
+    <circle cx="40" cy="33" r="16" fill="${k.skin}"/>
+    <g fill="${k.hairColor}">${HAIR[k.hair] || HAIR.short}</g>
+    <circle cx="34" cy="35" r="1.9" fill="#2d2440"/><circle cx="46" cy="35" r="1.9" fill="#2d2440"/>
+    ${k.glasses ? '<g fill="none" stroke="#2d2440" stroke-width="1.6"><circle cx="34" cy="35" r="4.6"/><circle cx="46" cy="35" r="4.6"/><path d="M38.6 35h2.8"/></g>' : ""}
+    <circle cx="30" cy="40" r="2.4" fill="#ff9f86" opacity=".45"/><circle cx="50" cy="40" r="2.4" fill="#ff9f86" opacity=".45"/>
+    <path d="M35.5 41.5q4.5 4 9 0" fill="none" stroke="#2d2440" stroke-width="1.8" stroke-linecap="round"/>
+  </svg>`;
+};
+
+// The coach talking: small mascot plus a speech bubble. html is trusted markup.
+const coachSays = (html, mood = "happy", size = 46) =>
+  `<div class="coach-says">${mascot(size, false, mood)}<p class="coach-bubble">${html}</p></div>`;
+
+// Page header used by most screens. back: route name to return to.
+function pageHeader({ eyebrow, title, back, action = "" }) {
+  return `<header class="page-header">
+    ${back || action ? `<div class="header-row">
+      ${back ? `<button class="icon-button" type="button" data-act="go" data-to="${back}" aria-label="Go back">${icon("back")}</button>` : ""}
+      ${action}
+    </div>` : ""}
+    ${eyebrow ? `<p class="eyebrow">${eyebrow}</p>` : ""}
+    <h1>${title}</h1>
+  </header>`;
+}
+
+// ---------- Navigation ----------
+const NAV = [
+  { key: "home", label: "Home" },
+  { key: "bank", label: "Vocab" },
+  { key: "practice", label: "Practice" },
+  { key: "report", label: "Progress" }
+];
+// Bottom-nav icons in the mascot's style: soft shapes, little faces. Colors come from CSS
+// (.ni-body, .ni-accent, .ni-face) so the active tab lights up and the rest stay muted.
+const NAV_ICONS = {
+  home: `<path class="ni-body" d="M5.5 15 16 6l10.5 9v10a3 3 0 0 1-3 3h-15a3 3 0 0 1-3-3Z"/>
+    <path class="ni-roof" d="M3.5 15.5 16 4.8l12.5 10.7"/>
+    <rect class="ni-accent" x="13" y="20" width="6" height="8" rx="3"/>
+    <circle class="ni-face" cx="12.3" cy="15.3" r="1.4"/><circle class="ni-face" cx="19.7" cy="15.3" r="1.4"/>`,
+  bank: `<rect class="ni-accent" x="10" y="4" width="16" height="21" rx="4" transform="rotate(12 18 14.5)"/>
+    <rect class="ni-body" x="5.5" y="7" width="16" height="21" rx="4" transform="rotate(-6 13.5 17.5)"/>
+    <circle class="ni-face" cx="11" cy="16.5" r="1.4"/><circle class="ni-face" cx="16.6" cy="15.9" r="1.4"/>
+    <path class="ni-smile" d="M11.6 20.4q2.6 2 5.2-.5"/>`,
+  practice: `<path class="ni-body" d="M7.5 5.5h17a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H14l-5.5 4.3V23.5h-1a5 5 0 0 1-5-5v-8a5 5 0 0 1 5-5Z"/>
+    <circle class="ni-face" cx="12.6" cy="13.6" r="1.6"/><circle class="ni-face" cx="19.4" cy="13.6" r="1.6"/>
+    <circle class="ni-accent" cx="9.6" cy="17.4" r="1.7"/><circle class="ni-accent" cx="22.4" cy="17.4" r="1.7"/>
+    <path class="ni-smile" d="M13.6 17.6q2.4 2.4 4.8 0"/>`,
+  report: `<circle class="ni-track" cx="16" cy="16" r="11"/>
+    <path class="ni-ring" d="M16 5a11 11 0 1 1-10.4 14.6"/>
+    <path class="ni-star" d="m16 10.4 1.8 3.5 3.9.6-2.8 2.7.7 3.9-3.6-1.9-3.6 1.9.7-3.9-2.8-2.7 3.9-.6Z"/>`
+};
+// Which bottom-nav item is highlighted for each route.
+const NAV_FOR = { home: "home", convo: "home", bank: "bank", cards: "bank", practice: "practice", session: "practice", recap: "practice", celebrate: "practice", report: "report" };
+const NO_NAV = ["session", "celebrate", "cards"];
+
+function go(route) { UI.route = route; UI.enter = true; render(); UI.enter = false; window.scrollTo(0, 0); }
+
+function renderNav() {
+  const nav = document.getElementById("nav");
+  nav.hidden = NO_NAV.includes(UI.route.name);
+  const review = ITEMS.filter(i => ["new", "practice"].includes(statusOf(i.id))).length;
+  const active = NAV_FOR[UI.route.name];
+  // The icon hops only when the active tab changes, not on every re-render.
+  const hop = active !== UI.navActive;
+  UI.navActive = active;
+  nav.innerHTML = NAV.map(n => `
+    <button type="button" class="nav-item nav-${n.key} ${active === n.key ? `active${hop ? " hop" : ""}` : ""}" data-act="go" data-to="${n.key}"
+      ${active === n.key ? 'aria-current="page"' : ""}>
+      <svg class="nav-icon" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">${NAV_ICONS[n.key]}</svg>
+      <span>${n.label}${n.key === "bank" && review ? ` <b class="nav-badge">${review}</b>` : ""}</span>
+    </button>`).join("");
+}
+
+function render() {
+  const view = document.getElementById("view");
+  view.className = `screen screen-${UI.route.name}${UI.enter ? " enter" : ""}`;
+  view.innerHTML = SCREENS[UI.route.name]();
+  renderNav();
+  if (typeof afterRender[UI.route.name] === "function") afterRender[UI.route.name]();
+}
+const afterRender = {};   // optional per-screen hook, e.g. scroll or animation
+
+// ---------- Shared actions ----------
+ACTIONS.go = el => { UI.bankFilter = el.dataset.filter || null; go({ name: el.dataset.to, id: el.dataset.id }); };
+ACTIONS.mark = el => { S.status[el.dataset.id] = el.dataset.status; save(); render(); };
+ACTIONS.reset = () => { S = freshState(); save(); UI.session = null; UI.bankFilter = null; UI.moments = {}; UI.flip = null; UI.tip = 0; UI.pick = null; UI.deck = null; go({ name: "home" }); };
+
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]");
+  if (el && ACTIONS[el.dataset.act]) ACTIONS[el.dataset.act](el);
+});
+document.addEventListener("submit", e => {
+  if (!FORMS[e.target.id]) return;
+  e.preventDefault();
+  FORMS[e.target.id](e.target);
+});
+document.addEventListener("DOMContentLoaded", () => { UI.enter = true; render(); UI.enter = false; });
