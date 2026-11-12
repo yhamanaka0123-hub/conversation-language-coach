@@ -1,8 +1,7 @@
-// Onboarding (PRD v2 §6.0): language, level and contexts, a sample of the feedback, then
-// turning on recording. Every step but the last can be skipped. Answers go to S.profile.
+// Onboarding (PRD v2 §6.0): language, level and contexts, then turning on recording. Every step but the last can be skipped. Answers go to S.profile.
 // Shown on first launch and after Reset demo.
 
-const OB_STEPS = 4;
+const OB_STEPS = 3;
 const OB_LANGS = ["English", "Spanish", "Japanese", "Mandarin"];
 const OB_SPEAKS = ["Mandarin", "Japanese", "Korean", "Spanish", "Hindi", "Other"];
 const OB_LEVELS = [
@@ -34,19 +33,6 @@ function obBody(p) {
     <p class="ob-q">Where do you speak it?</p>
     <div class="ob-chips">${OB_CONTEXTS.map(c => chip("obContext", c, p.contexts.includes(c))).join("")}</div>
     <p class="ob-note">This is a starting point. Your first few conversations will fine-tune it, and you can change it anytime.</p>`;
-  if (p.step === 2) {
-    const i = byId["maya-r1"];
-    return `
-    <h1>After each conversation, you get up to 3 things to try.</h1>
-    <p class="ob-lead">Here's what one looks like:</p>
-    <article class="top-card ob-sample">
-      <div class="top-head"><span class="top-num">1</span><span class="area-chip area-${i.area}">${AREA[i.area]}</span><span class="top-ctx">Coffee chat · 01:40</span></div>
-      <p class="top-said"><span>You said</span>“${esc(i.said)}”</p>
-      <p class="top-try"><span>Try</span>“${esc(i.alt.casual)}”</p>
-      <details class="why"><summary>Why?</summary><p>${esc(i.why.casual)}</p></details>
-    </article>
-    <p class="ob-note">Only your own words are scored. Phrases other people say can still become things you save and learn.</p>`;
-  }
   return `
     <div class="ob-hero">${mascot(84, false, "happy")}</div>
     <h1>Turn on recording</h1>
