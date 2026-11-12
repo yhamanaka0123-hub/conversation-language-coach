@@ -199,7 +199,7 @@ const afterRender = {};   // optional per-screen hook, e.g. scroll or animation
 // ---------- Shared actions ----------
 ACTIONS.go = el => { UI.bankFilter = el.dataset.filter || null; go({ name: el.dataset.to, id: el.dataset.id }); };
 ACTIONS.mark = el => { S.status[el.dataset.id] = el.dataset.status; save(); render(); };
-ACTIONS.reset = () => { S = freshState(); save(); UI.session = null; UI.bankFilter = null; UI.tip = 0; UI.pick = null; UI.deck = null; UI.ob = null; UI.notifHidden = false; go({ name: "onboard" }); };
+ACTIONS.reset = () => { S = freshState(); save(); UI.session = null; UI.bankFilter = null; UI.tip = 0; UI.pick = null; UI.deck = null; UI.ob = null; UI.pushShown = {}; go({ name: "onboard" }); };
 ACTIONS.speak = el => {
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(el.dataset.text);

@@ -1,4 +1,4 @@
-// Home: recording control, a feedback-ready notification, the coach greeting, the latest
+// Home: recording control, a feedback-ready push banner, the coach greeting, the latest
 // conversation's Top 3 to try next, and the rest of the day (PRD v2 §5).
 
 // Small illustrations for conversation cards, keyed by CONVOS[].art.
@@ -47,6 +47,7 @@ function featureCard(c, body, cta) {
     <div class="feature-top">
       ${artTile(c)}
       <div class="feature-heading">
+        ${!S.seen[c.id] && topOf(c.id).length ? `<span class="new-chip">New · ${plural(topOf(c.id).length, "point")} to review</span>` : ""}
         <h2 id="feature-title">${esc(c.title)}</h2>
         <p class="card-meta">${homeTag(c)}<span>${whenLine(c)}</span></p>
       </div>
@@ -89,19 +90,19 @@ function recordingControl() {
   </button>`;
 }
 
-// Feedback-ready notification (NTF-01..04): no quotations, can be put off or turned off.
+// Feedback-ready notification (NTF-01..04), shown the way a phone push would be: a banner
+// that slides in once per new conversation and hides itself. No quotations; turned on and off
+// with the bell. Tapping it opens the feedback.
+UI.pushShown = UI.pushShown || {};
 function notification(c) {
-  if (!S.notify || UI.notifHidden || !c || S.seen[c.id] || !topOf(c.id).length) return "";
-  const n = topOf(c.id).length;
-  return `<section class="notif" aria-label="Notification">
-    <div class="notif-app">${mascot(24)}<strong>Coach</strong><small>now</small></div>
-    <p>Your latest conversation has ${plural(n, "point")} to review.</p>
-    <div class="notif-actions">
-      <button class="text-link" type="button" data-act="openfb" data-id="${c.id}">Review</button>
-      <button class="text-link" type="button" data-act="notifLater">Later</button>
-      <button class="text-link quiet" type="button" data-act="notify" data-on="0">Turn off these</button>
-    </div>
-  </section>`;
+  if (!S.notify || !c || S.seen[c.id] || UI.pushShown[c.id] || !topOf(c.id).length) return "";
+  return `<div class="push" role="status">
+    <button class="push-body" type="button" data-act="openfb" data-id="${c.id}">
+      ${mascot(26)}<span><span class="push-app"><strong>Coach</strong><small>now</small></span>
+      Your latest conversation has ${plural(topOf(c.id).length, "point")} to review.</span>
+    </button>
+    <button class="push-close" type="button" data-act="pushClose" aria-label="Dismiss">×</button>
+  </div>`;
 }
 
 // The first line on Home: a warm, factual note about today; a cheer only at milestones.
@@ -165,6 +166,11 @@ SCREENS.home = () => {
 
 afterRender.home = () => {
   UI.waved = true;
+  const push = document.querySelector(".push");
+  if (push) {
+    UI.pushShown[document.querySelector(".push-body").dataset.id] = true;
+    setTimeout(() => { push.classList.add("out"); setTimeout(() => push.remove(), 300); }, 5000);
+  }
   UI.wiggle = false;
   if (UI.refocus) { document.querySelector(UI.refocus)?.focus({ preventScroll: true }); UI.refocus = null; }
 };
@@ -172,7 +178,7 @@ afterRender.home = () => {
 ACTIONS.openfb = el => { S.seen[el.dataset.id] = true; save(); go({ name: "convo", id: el.dataset.id }); };
 ACTIONS.rec = () => { S.recording = S.recording === "paused" ? "on" : "paused"; save(); UI.refocus = ".rec-pill"; render(); };
 ACTIONS.notify = el => { S.notify = el.dataset.on === "1"; save(); UI.refocus = ".bell"; render(); };
-ACTIONS.notifLater = () => { UI.notifHidden = true; render(); };
+ACTIONS.pushClose = el => el.closest(".push")?.remove();
 ACTIONS.tip = () => {
   UI.tip = (UI.tip || 0) + 1;
   UI.wiggle = true;
