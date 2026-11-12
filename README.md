@@ -25,7 +25,7 @@ Pause recording from Home; it stays paused until Resume. *Reset demo* restarts o
 | `js/data.js` | Conversations, phrases, suggestions, AI partner scripts. No coding needed beyond keeping the format. |
 | `style.css` | All colors, fonts and layout (from the Figma Make design). |
 | `js/core.js` | Shared state, helpers, icons, bottom nav, page header. Change with care: every screen uses it. |
-| `js/screens/onboard.js` | Onboarding: language, level, contexts, a feedback sample, turn on recording |
+| `js/screens/onboard.js` | Onboarding: language, level, contexts, turn on recording |
 | `js/screens/home.js` | Home: recording Pause/Resume, feedback-ready notification (can be turned off), tappable coach, latest conversation's Top 3, more from your day |
 | `js/screens/conversation.js` | Conversation detail: Top 3 to try next (optional one-line *Why?*, pronunciation audio), then all learning points; Save is separate from practice |
 | `js/screens/bank.js` | Vocab bank, with the flashcard review entry on top |
