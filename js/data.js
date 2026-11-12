@@ -202,24 +202,40 @@ const USES = [
 ];
 
 // Progress reports (v2). Sample data: the prototype doesn't score speech yet.
-// level: 0-100 per period; examples = earlier vs recent evidence in the learner's own words.
+// level: 0-100 per period; evidence: how many of the learner's own sentences it rests on.
+// before / now: the same kind of moment, earlier and recently, in the learner's own words;
+// mark = the words that changed; change = one line saying what got better.
 const SKILLS = [
-  { id: "expression", name: "Expressions", level: { week: 62, month: 54, all: 41 }, evidence: { week: 3, month: 9, all: 21 },
-    earlier: { when: "Oct 8 · Lunch with Priya", text: "Thank you, I will eat it." },
-    recent: { when: "Oct 19 · Weekly product sync", text: "Can we touch base before Friday?" } },
+  { id: "expression", name: "Natural expressions", level: { week: 62, month: 54, all: 41 }, evidence: { week: 3, month: 9, all: 21 },
+    before: { when: "Oct 8 · Lab meeting", text: "Can I meet you shortly before Friday?", mark: "meet you shortly" },
+    now: { when: "Oct 19 · Weekly product sync", text: "Can we touch base before Friday?", mark: "touch base" },
+    change: "“Touch base” is how colleagues say a quick check-in." },
   { id: "grammar", name: "Grammar", level: { week: 48, month: 44, all: 36 }, evidence: { week: 4, month: 11, all: 26 },
-    earlier: { when: "Oct 6 · Coffee with Maya", text: "Yesterday I go to the library." },
-    recent: { when: "Oct 20 · Lunch with Priya", text: "I went to the store yesterday." } },
+    before: { when: "Oct 6 · Coffee with Maya", text: "Yesterday I go to the library.", mark: "go" },
+    now: { when: "Oct 20 · Lunch with Priya", text: "I went to the store yesterday.", mark: "went" },
+    change: "Past tense for things that already happened: go → went." },
   { id: "structure", name: "Sentence structure", level: { week: 52, month: 46, all: 39 }, evidence: { week: 2, month: 7, all: 15 },
-    earlier: { when: "Oct 12 · Office hours", text: "The draft, I think, maybe is not finished." },
-    recent: { when: "Oct 19 · Weekly product sync", text: "Friday might be tight. Could we aim for Monday?" } },
+    before: { when: "Oct 12 · Office hours", text: "The draft, I think, maybe is not finished.", mark: "The draft, I think, maybe is not" },
+    now: { when: "Oct 19 · Office hours", text: "I don't think the draft is finished yet.", mark: "I don't think the draft is" },
+    change: "Starting with “I don't think” makes the point clear right away." },
   { id: "pronunciation", name: "Pronunciation", level: { week: 40, month: 38, all: 34 }, evidence: { week: 3, month: 8, all: 19 },
-    earlier: { when: "Oct 13 · Lab meeting", text: "\u201cdevelop\u201d came out as DE-ve-lop" },
-    recent: { when: "Oct 20 · Coffee with Maya", text: "\u201cdevelop\u201d with the stress on VEL" } },
+    before: { when: "Oct 13 · Lab meeting", text: "“develop” said as DE-ve-lop", mark: "DE-ve-lop" },
+    now: { when: "Oct 19 · Weekly product sync", text: "“develop” said as dih-VEL-up", mark: "dih-VEL-up" },
+    change: "The stress moved to the second syllable, where it belongs." },
   { id: "culture", name: "Cultural context", level: { week: 56, month: 49, all: 40 }, evidence: { week: 2, month: 6, all: 13 },
-    earlier: { when: "Oct 15 · Lab meeting", text: "I want to say my opinion." },
-    recent: { when: "Oct 19 · Weekly product sync", text: "If I could add one thing..." } }
+    before: { when: "Oct 15 · Lab meeting", text: "I want to say my opinion.", mark: "I want to say my opinion" },
+    now: { when: "Oct 19 · Weekly product sync", text: "If I could add one thing...", mark: "If I could add one thing" },
+    change: "A softer way to take the floor in a meeting." }
 ];
+// The summary at the top of Progress and the takeaway card, per period (sample).
+const INSIGHTS = {
+  week: { title: "More natural, fewer verb slips.", sub: "You used a new phrase at work and got past tense right in two chats.",
+    takeaway: "You try new phrases more in casual chats than in meetings.", note: "Your coffee chat with Maya had the most new phrases." },
+  month: { title: "Steady progress this month.", sub: "Grammar and natural expressions moved the most.",
+    takeaway: "Your longest conversations were with friends over food.", note: "Lunch and coffee chats ran 15 minutes or more." },
+  all: { title: "You've come a long way.", sub: "Since you started, every skill has moved up.",
+    takeaway: "Meetings are where you've grown the most.", note: "Cultural context in meetings rose the fastest." }
+};
 // Totals before this week, added for This Month and All Time (sample history).
 const EARLIER = {
   month: { conversations: 10, minutes: 72, sessions: 3, practiced: 6 },

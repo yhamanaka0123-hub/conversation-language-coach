@@ -25,18 +25,27 @@ const statTile = (scene, value, label, cls) =>
 
 // A full bar = shown consistently in observed conversations, not mastery of the language.
 const levelWord = n => n < 35 ? "Starting out" : n < 55 ? "Getting there" : n < 75 ? "Often" : "Consistently";
+// Trend against the next longer period (sample data); no trend for All time.
+const LONGER = { week: "month", month: "all" };
+const trendOf = (k, p) => !LONGER[p] ? "" : k.level[p] > k.level[LONGER[p]] ? "up" : "steady";
+const marked = (side, cls) => highlight(side.text, side.mark).replace("<mark>", `<mark class="${cls}">`);
 
+// One skill: name, trend, bar; opens to Before vs Now in the learner's own words, with the
+// changed words marked and one line on what got better (SKL-03).
 function skillRow(k, p) {
-  const n = k.level[p], ev = k.evidence[p];
+  const n = k.level[p], t = trendOf(k, p);
   return `<details class="skill">
     <summary>
-      <span class="skill-top"><span class="skill-name">${esc(k.name)}</span><span class="skill-level">${levelWord(n)}</span></span>
+      <span class="skill-top"><span class="skill-name">${esc(k.name)}</span>
+        ${t ? `<span class="trend trend-${t}">${t === "up" ? "↑ Improving" : "→ Steady"}</span>` : ""}
+        ${icon("chevron", 16)}</span>
       <span class="skill-bar" role="img" aria-label="${esc(k.name)}: ${levelWord(n)}"><span style="width:${n}%"></span></span>
-      <small>Based on ${plural(ev, "example")} · <u>See examples</u></small>
+      <small>${levelWord(n)} · from ${plural(k.evidence[p], "thing", "things")} you said</small>
     </summary>
     <div class="skill-evidence">
-      <div class="ev ev-then"><span>${esc(k.earlier.when)}</span><p>“${esc(k.earlier.text)}”</p></div>
-      <div class="ev ev-now"><span>${esc(k.recent.when)}</span><p>“${esc(k.recent.text)}”</p></div>
+      <div class="ev ev-then"><span class="ev-label">Before</span><span class="ev-when">${esc(k.before.when)}</span><p>“${marked(k.before, "old")}”</p></div>
+      <div class="ev ev-now"><span class="ev-label">${icon("check", 13)} Now</span><span class="ev-when">${esc(k.now.when)}</span><p>“${marked(k.now, "new")}”</p></div>
+      <p class="ev-change">${icon("spark", 14)} ${esc(k.change)}</p>
     </div>
   </details>`;
 }
@@ -44,14 +53,25 @@ function skillRow(k, p) {
 function realReport(p) {
   const extra = p === "week" ? { conversations: 0, minutes: 0 } : EARLIER[p];
   const minutes = CONVOS.reduce((a, c) => a + (c.mine || 0), 0) + extra.minutes;
+  const convos = CONVOS.length + extra.conversations;
+  const ins = INSIGHTS[p];
   return `
-    <div class="stat-row">
-      ${statTile("waves", `${minutes} min`, "you spoke", "stat-spoke")}
-      ${statTile("chat", CONVOS.length + extra.conversations, "conversations", "stat-practiced")}
-    </div>
-    <div class="section-heading compact"><div><p class="eyebrow">YOUR OWN SPEECH ONLY</p><h2>Skill clusters</h2></div></div>
-    <p class="section-intro">A full bar means you show the skill consistently in your conversations, not that you’ve mastered the language. Tap a skill to see your examples.</p>
+    <section class="summary-card">
+      ${mascotScene("waves", "talk", 92)}
+      <div>
+        <p class="summary-big"><strong>${minutes}</strong> min</p>
+        <p class="summary-label">you spoke, ${PERIODS[p].toLowerCase()}</p>
+        <p class="summary-note">Based on ${plural(convos, "conversation")}, your own speech only</p>
+      </div>
+    </section>
+    <div class="section-heading compact skills-head"><div><h2>Skill progress</h2></div><span class="hint">Tap a skill to compare</span></div>
     <div class="skill-list">${SKILLS.map(k => skillRow(k, p)).join("")}</div>
+    <p class="section-intro bar-note">A full bar means you show the skill consistently in your conversations, not that you’ve mastered the language.</p>
+    <section class="takeaway">
+      <p class="eyebrow">${PERIODS[p].toUpperCase()}’S TAKEAWAY</p>
+      <h3>${esc(ins.takeaway)}</h3>
+      <p>${esc(ins.note)}</p>
+    </section>
     <div class="section-heading compact"><div><p class="eyebrow">TRANSFER</p><h2>Used in real conversations</h2></div></div>
     <div class="used-list">${USES.map(u => `<div class="used-row"><span>⭐</span><p><strong>“${esc(bare(practiceText(byId[u.item])))}”</strong><small>${esc(convoById[u.convo].title)} · “${esc(u.said)}”</small></p></div>`).join("")}</div>`;
 }
@@ -82,7 +102,11 @@ function aiReport(p) {
 SCREENS.report = () => {
   const view = UI.report || "real", p = UI.period || "week";
   return `
-    ${pageHeader({ eyebrow: "PROGRESS", title: "How you’re doing" })}
+    <header class="insights-hero">
+      <p class="eyebrow">YOUR INSIGHTS</p>
+      <h1>${view === "real" ? esc(INSIGHTS[p].title) : "Practice, on your terms."}</h1>
+      <p>${view === "real" ? esc(INSIGHTS[p].sub) : "Practice is optional. Its results stay separate from your real conversations."}</p>
+    </header>
     <div class="tabs report-tabs" role="group" aria-label="Report">
       ${[["real", "Real conversations"], ["ai", "AI practice"]].map(([k, l]) => `<button type="button" class="${view === k ? "active" : ""}" aria-pressed="${view === k}" data-act="reportView" data-v="${k}">${l}</button>`).join("")}
     </div>
