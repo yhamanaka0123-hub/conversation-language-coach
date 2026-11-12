@@ -1,6 +1,6 @@
 // Vocab bank: a flashcard review entry on top, then every captured phrase, filtered by state.
 
-const BANK_GROUPS = { new: "New", practice: "To practice", learned: "Practiced" };
+const BANK_GROUPS = { new: "New", practice: "Saved", learned: "Practiced" };
 
 SCREENS.bank = () => {
   const visible = ITEMS.filter(i => statusOf(i.id) !== "known");
@@ -10,7 +10,7 @@ SCREENS.bank = () => {
   const known = ITEMS.filter(i => statusOf(i.id) === "known").length;
   const empty = {
     new: "Nothing new to review. Phrases arrive after your next conversation.",
-    practice: "Nothing saved yet. Open a conversation and tap “Practice this”.",
+    practice: "Nothing saved yet. Open a conversation and tap “Save”.",
     learned: "Use a saved phrase in practice and it lands here."
   }[f];
   return `
