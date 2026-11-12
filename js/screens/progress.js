@@ -51,17 +51,21 @@ function skillRow(k, p) {
 }
 
 function realReport(p) {
-  const extra = p === "week" ? { conversations: 0, minutes: 0 } : EARLIER[p];
+  const extra = p === "week" ? { conversations: 0, minutes: 0, used: 0, tips: 0, applied: 0 } : EARLIER[p];
   const minutes = CONVOS.reduce((a, c) => a + (c.mine || 0), 0) + extra.minutes;
   const convos = CONVOS.length + extra.conversations;
+  // Three countable things, no score: time speaking, transfer of new phrases, tips applied.
+  const used = new Set(USES.map(u => u.item)).size + extra.used;
+  const tips = CONVOS.reduce((a, c) => a + itemsIn(c.id).filter(i => i.top).length, 0) + extra.tips;
+  const applied = APPLIED.length + extra.applied;
   const ins = INSIGHTS[p];
   return `
     <section class="summary-card">
-      ${mascotScene("waves", "talk", 92)}
-      <div>
-        <p class="summary-big"><strong>${minutes}</strong> min</p>
-        <p class="summary-label">you spoke, ${PERIODS[p].toLowerCase()}</p>
-        <p class="summary-note">Based on ${plural(convos, "conversation")}, your own speech only</p>
+      <div class="summary-head">${mascotScene("waves", "talk", 56)}<p><strong>${PERIODS[p]}</strong><small>Based on ${plural(convos, "conversation")}, your own speech only</small></p></div>
+      <div class="metrics">
+        <div class="metric"><strong>${minutes}<small>min</small></strong><span>you spoke</span></div>
+        <div class="metric"><strong>${used}</strong><span>new ${used === 1 ? "phrase" : "phrases"} used in real chats</span></div>
+        <div class="metric"><strong>${applied}<small>/${tips}</small></strong><span>tips you applied later</span></div>
       </div>
     </section>
     <div class="section-heading compact skills-head"><div><h2>Skill progress</h2></div><span class="hint">Tap a skill to compare</span></div>

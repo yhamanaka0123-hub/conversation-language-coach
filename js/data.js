@@ -236,8 +236,12 @@ const INSIGHTS = {
   all: { title: "You've come a long way.", sub: "Since you started, every skill has moved up.",
     takeaway: "Meetings are where you've grown the most.", note: "Cultural context in meetings rose the fastest." }
 };
+// Top 3 tips from this week's feedback that the learner later used in a real conversation.
+// Simulated: the prototype doesn't analyse the learner's speech yet.
+const APPLIED = ["sync-r1", "chen-r1"];
 // Totals before this week, added for This Month and All Time (sample history).
+// used: new phrases used in real conversations; tips / applied: Top 3 tips given / later used.
 const EARLIER = {
-  month: { conversations: 10, minutes: 72, sessions: 3, practiced: 6 },
-  all: { conversations: 27, minutes: 186, sessions: 7, practiced: 15 }
+  month: { conversations: 10, minutes: 72, sessions: 3, practiced: 6, used: 3, tips: 30, applied: 7 },
+  all: { conversations: 27, minutes: 186, sessions: 7, practiced: 15, used: 9, tips: 81, applied: 22 }
 };
