@@ -112,7 +112,7 @@ The exact layout inside Progress, and how Pronunciation and Skill Clusters sit n
 | --- | --- |
 | ONB-01 | Ask for the target language and the languages the learner already speaks. |
 | ONB-02 | Ask for a self-rated speaking level and the everyday contexts where they use the language (e.g. work, school, friends, services). |
-| ONB-03 | Show a short sample of what conversation feedback looks like, so later screens make sense. |
+| ONB-03 | Removed Nov 13: onboarding does not show a feedback sample (decided after the v2 prototype review). |
 | ONB-04 | Explain ongoing recording and ask the learner to enable it (REC-01). |
 | ONB-05 | Keep onboarding short; every step except recording activation can be skipped. |
 | ONB-06 | Use onboarding answers as a starting estimate of level, refine it from the learner's first real conversations, and let the learner adjust it. |
@@ -253,7 +253,7 @@ Example copy: "Your latest conversation has 2 points to review." Final copy is T
 
 ## 7. Primary User Journey
 
-1. In a short onboarding, the learner picks their language, rates their level, names the contexts where they speak it, and sees a sample of the feedback.
+1. In a short onboarding, the learner picks their language, rates their level, and names the contexts where they speak it.
 2. The learner understands the ongoing-recording behavior and activates it.
 3. Recording continues while enabled. The learner can pause before sensitive interactions and manually resume later.
 4. The system identifies a completed conversation, produces a transcript, and separates learner speech from other speakers.
@@ -271,7 +271,7 @@ The updated prototype should make the confirmed experience reviewable without cl
 | Area | Acceptance criteria |
 | --- | --- |
 | Existing navigation | Home, Vocab, Practice, and Progress remain available. |
-| Onboarding | A short onboarding asks for language, level, and contexts, shows a feedback sample, and activates recording; optional steps can be skipped. |
+| Onboarding | A short onboarding asks for language, level, and contexts, and activates recording; optional steps can be skipped. |
 | Recording state | Active and paused states are distinguishable; Pause changes the state and Resume is required to reactivate it. |
 | Feedback | A conversation shows a Top 3 summary at the top, each with context, original wording, and a suggested alternative; a one-line reason opens on tap. All other learning points are listed below. |
 | Learning content | Automatically extracted items can be manually saved to Vocab; saving does not start practice. |
@@ -288,7 +288,7 @@ Use representative sample conversations where backend functions are unavailable.
 
 **Usability and desirability**
 
-- Does onboarding give enough context that the sample conversations and feedback make sense?
+- Does onboarding give enough context that the conversations and feedback make sense without a sample?
 - Do learners feel the feedback matches their level?
 - Can users understand the recording state and pause it without assistance?
 - Do they understand that a pause will remain until they manually resume?
@@ -350,7 +350,7 @@ These items remain unresolved and must not be presented as validated behavior:
 | Area | Updated requirement |
 | --- | --- |
 | Audience | Focus on learners living in a target-language environment. |
-| Onboarding | New short onboarding: language, self-rated level, contexts, a feedback sample, and recording activation. |
+| Onboarding | New short onboarding: language, self-rated level, contexts, and recording activation. |
 | Learning focus | Expand from vocabulary and expressions to actual speaking performance. |
 | Recording | First-time activation followed by ongoing capture, with one-tap pause and manual resume; no daily prompt. |
 | Feedback | A Top 3 summary of improvements at the top, showing context, original wording, and alternatives, with an optional one-line reason; all other learning points listed below. |
