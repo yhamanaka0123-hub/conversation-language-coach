@@ -7,9 +7,9 @@ const OB_STEPS = 4;
 const OB_LANGS = ["English", "Spanish", "Japanese", "Mandarin"];
 const OB_SPEAKS = ["Mandarin", "Japanese", "Korean", "Spanish", "Hindi", "Other"];
 const OB_LEVELS = [
-  ["getby", "I get by", "I can handle everyday things, but often search for words."],
-  ["comfortable", "I'm comfortable", "I keep up in most conversations."],
-  ["natural", "I'm fluent", "I want to sound more natural."]
+  ["getby", "I get by", "Everyday things, with some searching for words"],
+  ["comfortable", "I'm comfortable", "I keep up in most conversations"],
+  ["natural", "I'm fluent", "I want to sound more natural"]
 ];
 const OB_FREQ = ["Every day", "A few times a week", "About once a week", "Rarely"];
 const OB_CONTEXTS = ["Work", "School or classes", "Friends", "Errands & services", "Online", "Community", "Travel"];
@@ -34,8 +34,7 @@ function langSupport(lang) {
 function obBody(p) {
   if (p.step === 0) return `
     <div class="ob-hero">${mascot(84, true)}</div>
-    <h1>Hi! I turn your real conversations into feedback you can use.</h1>
-    <p class="ob-lead">A few quick questions so the feedback starts at your level.</p>
+    <h1>Hi! Let's set up your coach.</h1>
     <p class="ob-q">Which language are you practicing?</p>
     <div class="ob-chips">${OB_LANGS.map(l => chip("obLang", l, p.lang === l)).join("")}</div>
     ${langSupport(p.lang)}
@@ -51,29 +50,28 @@ function obBody(p) {
     <div class="ob-chips">${OB_FREQ.map(f => chip("obFreq", f, p.freq === f)).join("")}</div>
     <p class="ob-q">Where do you speak it?</p>
     <div class="ob-chips">${OB_CONTEXTS.map(c => chip("obContext", c, p.contexts.includes(c))).join("")}</div>
-    <p class="ob-note">This is a starting point. Your first few conversations will fine-tune it, and you can change it anytime.</p>`;
+    <p class="ob-note">You can change this anytime.</p>`;
   if (p.step === 2) return `
     <h1>You decide what gets recorded</h1>
     <ul class="ob-points">
-      <li>${icon("mic", 18)}<span><strong>Quick record.</strong> One tap to start, for a conversation, a class, or your own presentation. It runs until you stop it.</span></li>
-      <li>${icon("bell", 18)}<span><strong>Recording prompts.</strong> I can suggest moments to record for 2–3 minutes. Nothing is recorded until you accept, and prompts stop after 2 captures a day.</span></li>
-      <li>${icon("lock", 18)}<span>After analysis, the audio and the full transcript are deleted. Only learning points are kept. Let people know when you record them.</span></li>
+      <li>${icon("mic", 18)}<span><strong>Quick record:</strong> tap to start, tap to stop</span></li>
+      <li>${icon("bell", 18)}<span><strong>Prompts:</strong> 2–3 min, only if you accept, up to 2 a day</span></li>
+      <li>${icon("lock", 18)}<span>Audio and full transcripts are deleted after analysis</span></li>
     </ul>
     <p class="ob-q">Would you like recording prompts?</p>
     <div class="ob-levels" role="radiogroup" aria-label="Recording prompts">
       <button type="button" class="ob-level ${p.mode === "prompts" ? "on" : ""}" role="radio" aria-checked="${p.mode === "prompts"}" data-act="obMode" data-v="prompts">
         <strong>Yes, prompt me</strong><small>Quick record works too.</small></button>
       <button type="button" class="ob-level ${p.mode === "ai" ? "on" : ""}" role="radio" aria-checked="${p.mode === "ai"}" data-act="obMode" data-v="ai">
-        <strong>No prompts, AI practice for now</strong><small>AI-only mode. You can still record anytime, or turn prompts on later.</small></button>
+        <strong>No prompts, AI practice for now</strong><small>You can still record anytime.</small></button>
     </div>
-    <p class="ob-note">Prototype: nothing is actually recorded.</p>`;
+    <p class="ob-note ob-fine">Prototype: nothing is actually recorded.</p>`;
   return `
     <div class="ob-hero">${mascot(84, false, "happy")}</div>
     <h1>Connect your calendar?</h1>
-    <p class="ob-lead">Optional. It only helps time recording prompts around your meetings and classes.</p>
+    <p class="ob-lead">Helps time prompts. Optional.</p>
     <ul class="ob-points">
-      <li>${icon("calendar", 18)}<span>A calendar event never starts a recording. You still accept a prompt or tap Record.</span></li>
-      <li>${icon("check", 18)}<span>Everything works without it, and you can change this in Settings.</span></li>
+      <li>${icon("calendar", 18)}<span>It never starts recording. You can change this in Settings.</span></li>
     </ul>`;
 }
 
