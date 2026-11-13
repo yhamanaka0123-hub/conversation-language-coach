@@ -6,8 +6,8 @@
 const ROUND = 10;          // cards per round
 const REMEMBERED = 3;      // "Got it" in a row to count as remembered
 
-// Every phrase except the ones marked "I know this".
-const deckItems = () => ITEMS.filter(i => !["known", "deleted"].includes(statusOf(i.id)));
+// The learner's saved items, from all three Learn categories.
+const deckItems = () => ITEMS.filter(i => ["practice", "learned"].includes(statusOf(i.id)));
 const cardOf = id => (S.cards || {})[id] || { seen: 0, streak: 0 };
 const famOf = id => { const k = cardOf(id); return !k.seen ? "new" : k.streak >= REMEMBERED ? "remembered" : "growing"; };
 const FAM = { new: ["🌱", "New"], growing: ["🌿", "Getting there"], remembered: ["🌳", "Remembered"] };
@@ -29,15 +29,22 @@ function cardFaces(i) {
     const who = i.speaker || "Someone";
     return {
       where: c ? `${esc(who)} · ${esc(c.short || c.title)}` : esc(i.source),
-      front: `<p class="fc-meaning">${esc(i.meaning)}</p><p class="fc-ask">How would ${esc(who)} say it?</p>`,
+      front: `<p class="fc-meaning">${esc(i.meaning)}</p><p class="fc-ask">${i.speaker ? `How would ${esc(who)} say it?` : "What's the phrase?"}</p>`,
       back: `<p class="fc-phrase">“${esc(i.text)}”</p>${i.sentence ? `<p class="fc-sentence">${highlight(i.sentence, i.hl)}</p>` : ""}`,
       say: i.sentence || i.text
     };
   }
   const ctx = ctxOf(i.convo), c = convoById[i.convo];
+  // Pronunciation: the word on the front; the stress, a cue and the model's audio on the back.
+  if (isPron(i)) return {
+    where: `Pronunciation · ${esc(c.short || c.title)}`,
+    front: `<p class="fc-label">How do you say it?</p><p class="fc-meaning">“${esc(i.sayModel)}”</p><p class="fc-ask">Where does the stress go?</p>`,
+    back: `<p class="fc-phrase">${esc(i.alt[ctx])}</p><p class="fc-sentence">${esc(i.why[ctx])}</p>`,
+    say: i.sayModel
+  };
   return {
     where: `You · ${esc(c.short || c.title)}`,
-    front: `<p class="fc-label">You said</p><p class="fc-meaning">“${esc(i.said)}”</p><p class="fc-ask">A more natural ${ctxLabel(ctx).toLowerCase()} way?</p>`,
+    front: `<p class="fc-label">You said</p><p class="fc-meaning">“${esc(i.said)}”</p><p class="fc-ask">${i.area === "grammar" || i.area === "structure" ? "A better way to say it?" : `A more natural ${ctxLabel(ctx).toLowerCase()} way?`}</p>`,
     back: `<p class="fc-phrase">“${esc(i.alt[ctx])}”</p><p class="fc-sentence">${esc(i.why[ctx])}</p>`,
     say: i.alt[ctx]
   };
@@ -52,7 +59,7 @@ SCREENS.cards = () => {
   const d = UI.deck;
   if (!d || !d.queue.length) return `
     ${pageHeader({ eyebrow: "REVIEW", title: "No cards yet", back: "bank" })}
-    <div class="empty">${mascot(64, false, "think")}<p>Phrases from your conversations become cards here.</p></div>`;
+    <div class="empty">${mascot(64, false, "think")}<p>Save something in Learn to review it here.</p></div>`;
   if (d.k >= d.queue.length) return roundDone(d);
   const i = byId[d.queue[d.k]], f = cardFaces(i), fam = FAM[famOf(i.id)];
   return `
@@ -85,7 +92,7 @@ SCREENS.cards = () => {
 function roundDone(d) {
   // Remembered: got it without a miss this round. Missed ones count as "to see again".
   const remembered = d.got.filter(id => !d.again.includes(id)).length;
-  const grown = d.grown.map(id => byId[id]).filter(i => i.convo);
+  const grown = d.grown.map(id => byId[id]).filter(i => i.convo && !isPron(i));
   const g = grown[0];
   return `
     ${pageHeader({ eyebrow: "ROUND DONE", title: `${remembered} remembered${d.again.length ? `, ${d.again.length} to see again` : ""}`, back: "bank" })}
