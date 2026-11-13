@@ -13,19 +13,21 @@ const OB_LEVELS = [
 ];
 const OB_FREQ = ["Every day", "A few times a week", "About once a week", "Rarely"];
 const OB_CONTEXTS = ["Work", "School or classes", "Friends", "Errands & services", "Online", "Community", "Travel"];
-const CAP_LABEL = { yes: "Available", limited: "Limited", no: "Not yet" };
+const CAP_MARK = { yes: ["✓", "available"], limited: ["◐", "limited"], no: ["×", "not yet"] };
 
 const obProfile = () => (UI.ob = UI.ob || { step: 0, lang: "English", speaks: [], level: null, freq: null, contexts: [], mode: null });
 const chip = (act, value, on, label = value) =>
   `<button type="button" class="ob-chip ${on ? "on" : ""}" aria-pressed="${on}" data-act="${act}" data-v="${esc(value)}">${esc(label)}</button>`;
 
-// What the chosen language supports (LNG-01..03). Sample values; real coverage is TBD.
+// What the chosen language supports (LNG-01..03), as one line of chips. A note appears only
+// when something is limited. Sample values; real coverage is TBD.
 function langSupport(lang) {
   const l = LANG_SUPPORT[lang];
   return `<div class="lang-caps" aria-label="What ${esc(lang)} supports">
-    <ul>${CAPS.map((c, k) => `<li><span>${c}</span><span class="cap cap-${l.caps[k]}">${CAP_LABEL[l.caps[k]]}</span></li>`).join("")}</ul>
-    <p>${esc(l.note)} Where support is limited, you won't get a score.</p>
-    <p class="lang-sample">Sample coverage for this prototype.</p>
+    <p class="cap-line">${CAPS.map((c, k) => { const [mark, word] = CAP_MARK[l.caps[k]];
+      return `<span class="cap cap-${l.caps[k]}"><span aria-hidden="true">${mark}</span> ${c}<span class="sr-only">: ${word}</span></span>`; }).join("")}
+      <small class="lang-sample">sample</small></p>
+    ${l.note ? `<p class="cap-note">${esc(l.note)}</p>` : ""}
   </div>`;
 }
 

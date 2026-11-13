@@ -6,12 +6,13 @@ const TODAY = "Tuesday, Oct 20";
 
 // Language support shown in onboarding (PRD §6.12). SAMPLE values for the prototype only:
 // the real supported languages and coverage are TBD.
-const CAPS = ["AI conversation", "Transcription", "Pronunciation feedback", "Skill assessment"];
+const CAPS = ["AI chat", "Transcription", "Pronunciation", "Skill check"];
+// note: shown only when something is limited (one sentence, says what won't be scored).
 const LANG_SUPPORT = {
-  English: { caps: ["yes", "yes", "yes", "yes"], note: "Pronunciation feedback is tuned mostly on US English. Other accents may get less precise feedback." },
-  Spanish: { caps: ["yes", "yes", "limited", "no"], note: "Regional varieties may not be recognized well yet." },
-  Japanese: { caps: ["yes", "yes", "limited", "no"], note: "Dialects other than standard Tokyo Japanese are not assessed." },
-  Mandarin: { caps: ["yes", "limited", "no", "no"], note: "Tone feedback is not available yet." }
+  English: { caps: ["yes", "yes", "yes", "yes"], note: null },
+  Spanish: { caps: ["yes", "yes", "limited", "no"], note: "Pronunciation feedback is limited and skills aren't scored yet; some regional varieties may not be recognized." },
+  Japanese: { caps: ["yes", "yes", "limited", "no"], note: "Pronunciation feedback is limited and skills aren't scored yet; dialects other than standard Japanese aren't assessed." },
+  Mandarin: { caps: ["yes", "limited", "no", "no"], note: "Tone feedback isn't available yet, so pronunciation and skills won't be scored." }
 };
 // "This week's picks" on Learn (PCK-01..05): two expressions, each with why it was picked.
 const PICKS = [
