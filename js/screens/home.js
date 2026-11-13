@@ -122,10 +122,10 @@ function recordingBar() {
   const sec = Math.floor((Date.now() - r.start) / 1000);
   return `<section class="rec-live" role="status" aria-live="polite">
     <span class="dot"></span>
-    <p><strong>Recording</strong><small>${r.mode === "prompted" ? "Stops on its own" : "Runs until you stop it"}</small></p>
+    <p><strong>Recording</strong><small>${r.mode === "prompted" ? "Stops on its own" : "No time limit · runs until you stop it"}</small></p>
     <span class="rec-time" id="rec-time">${r.limit ? `${clock(sec)} / ${clock(r.limit)}` : clock(sec)}</span>
     <span class="rec-buttons">
-      ${r.limit ? `<button class="rec-extend" type="button" data-act="recExtend" aria-label="Add one minute">+1 min</button>` : ""}
+      ${r.limit ? `<button class="rec-extend" type="button" data-act="recExtend" aria-label="Add one minute">${icon("clock", 15)} +1 min</button>` : ""}
       <button class="rec-stop" type="button" data-act="recStop">${icon("stop", 14)} Stop</button>
     </span>
   </section>`;
