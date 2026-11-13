@@ -626,15 +626,14 @@ mark.new { background: linear-gradient(transparent 45%, #b5e6cd 45%); font-weigh
 .data-note { margin: 18px 0 0; }
 
 /* ---------- Onboarding: language support (§6.12) ---------- */
-.lang-caps { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 18px; background: var(--white); }
-.lang-caps ul { display: grid; gap: 6px; margin: 0 0 8px; padding: 0; list-style: none; }
-.lang-caps li { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
-.lang-caps p { margin: 0; color: var(--plum-muted); font-size: 12px; line-height: 1.45; }
-.lang-caps .lang-sample { margin-top: 4px; color: var(--faint); font-size: 11px; }
-.cap { padding: 1px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 700; }
+.lang-caps { margin-top: 10px; }
+.cap-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
+.cap { display: inline-flex; gap: 4px; padding: 3px 9px; border-radius: 99px; font-size: 12px; font-weight: 700; }
 .cap-yes { color: var(--mint-ink); background: var(--mint); }
 .cap-limited { color: var(--peach-ink); background: var(--peach); }
 .cap-no { color: var(--plum-muted); background: var(--lavender); }
+.lang-sample { color: var(--faint); font-size: 10.5px; }
+.cap-note { margin: 8px 0 0; color: var(--peach-ink); font-size: 12.5px; line-height: 1.45; }
 .ob-skip { margin-top: 10px; }
 .button-cta small { font-weight: 500; opacity: .8; }
 
