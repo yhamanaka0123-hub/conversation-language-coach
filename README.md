@@ -31,8 +31,8 @@ after 2 captures a day; Record always works. Choosing AI-only in onboarding show
 | `js/screens/onboard.js` | Onboarding: language with its (sample) capabilities, level, frequency, contexts, recording prompts or AI-only, optional calendar |
 | `js/screens/home.js` | Home: quick record, recording prompt (stops after 2 captures a day), live recording bar, Settings, feedback-ready notification, tappable coach, latest conversation's Top 3, more from your day; AI-only empty state |
 | `js/screens/conversation.js` | Conversation detail: Top 3 to try next (context → you said → try; pronunciation cue and model audio), then all learning points; Save is separate from practice; deletion note |
-| `js/screens/bank.js` | Learn: This week's picks, Expressions / Pronunciation / Speaking Tips (each its own format), suggested vs saved, delete an item, optional flashcard review |
-| `js/screens/cards.js` | Flashcard review: situation + meaning on the front, the phrase on the back; Got it / Not yet; familiarity 🌱 new → 🌿 getting there → 🌳 remembered |
+| `js/screens/bank.js` | Learn: This week's picks, review card for saved items, Expressions / Pronunciation / Speaking Tips (each its own format) / Saved, suggested vs saved, delete an item |
+| `js/screens/cards.js` | Flashcard review of saved items: expressions (meaning → phrase), pronunciation (word → stress, cue, model audio), speaking tips (you said → try); Got it / Not yet; familiarity 🌱 new → 🌿 getting there → 🌳 remembered |
 | `js/screens/practice.js` | Pick anyone to chat with (character cards drawn from `look` in data.js; saved phrases first, otherwise phrases from that chat, or a free chat), AI practice session, recap (then vs now, compared with your last chat with that person), scripted fallback |
 | `api/practice.mjs` | Vercel serverless function that calls the AI model (Groq). Holds the only use of the API key. |
 | `prompts/practice.mjs` | The live prompts for the coach suggestion and each practice turn |

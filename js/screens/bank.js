@@ -1,9 +1,10 @@
 // Learn (PRD §6.6): This week's picks, then three categories, each in its own format:
 // Expressions (expression, meaning, context), Pronunciation (word, model audio, text cue) and
 // Speaking Tips (what you said → what to try). Suggested items (extracted, not saved yet) are
-// kept apart from saved ones (LRN-03). Any item can be deleted (proposed safeguard SAF-03).
+// kept apart from saved ones (LRN-03); the Saved tab lists everything saved, and the review card
+// on top turns saved items into flashcards. Any item can be deleted (proposed safeguard SAF-03).
 
-const LEARN_CATS = { expr: "Expressions", pron: "Pronunciation", tips: "Speaking Tips" };
+const LEARN_CATS = { expr: "Expressions", pron: "Pronunciation", tips: "Speaking Tips", saved: "Saved" };
 const catOf = i => i.kind === "phrase" || i.area === "expression" ? "expr" : i.area === "pronunciation" ? "pron" : "tips";
 const isSaved = i => ["practice", "learned"].includes(statusOf(i.id));
 const inLearn = i => !["known", "deleted"].includes(statusOf(i.id));
@@ -81,7 +82,7 @@ function picksSection() {
 
 SCREENS.bank = () => {
   const all = ITEMS.filter(inLearn);
-  const counts = Object.fromEntries(Object.keys(LEARN_CATS).map(k => [k, all.filter(i => catOf(i) === k).length]));
+  const counts = Object.fromEntries(Object.keys(LEARN_CATS).map(k => [k, all.filter(i => k === "saved" ? isSaved(i) : catOf(i) === k).length]));
   const cat = UI.learnCat || "expr";
   const list = all.filter(i => catOf(i) === cat);
   const suggested = list.filter(i => statusOf(i.id) === "new");
@@ -90,16 +91,24 @@ SCREENS.bank = () => {
   const hidden = ITEMS.filter(i => statusOf(i.id) === "known").length;
   const group = (title, sub, items, empty) => `
     <h3 class="sub-heading">${title} <small>${sub}</small></h3>
-    ${items.length ? `<div class="vocab-list">${items.map(CARD[cat]).join("")}</div>` : `<p class="empty-line">${empty}</p>`}`;
+    ${items.length ? `<div class="vocab-list">${items.map(i => CARD[catOf(i)](i)).join("")}</div>` : `<p class="empty-line">${empty}</p>`}`;
+  // Saved: everything saved, grouped by category (each in its own format).
+  const savedView = () => {
+    const mine = all.filter(isSaved);
+    if (!mine.length) return `<p class="empty-line saved-empty">Nothing saved yet. Tap Save on anything in Expressions, Pronunciation or Speaking Tips.</p>`;
+    return ["expr", "pron", "tips"].map(k => { const items = mine.filter(i => catOf(i) === k);
+      return items.length ? group(LEARN_CATS[k], plural(items.length, "item"), items, "") : ""; }).join("");
+  };
   return `
     ${pageHeader({ eyebrow: "LEARN", title: "Things worth keeping" })}
     ${picksSection()}
-    <div class="tabs tabs-3" role="group" aria-label="Category">
+    ${reviewCard()}
+    <div class="tabs tabs-4" role="group" aria-label="Category">
       ${Object.entries(LEARN_CATS).map(([k, label]) => `<button type="button" class="${cat === k ? "active" : ""}" aria-pressed="${cat === k}" data-act="learnCat" data-c="${k}">${label} <span>${counts[k]}</span></button>`).join("")}
     </div>
-    ${cat === "expr" ? reviewCard() : ""}
+    ${cat === "saved" ? savedView() : `
     ${group("Suggested", "from your conversations, not saved yet", suggested, "Nothing new here. More arrives after your next conversation.")}
-    ${group("Saved", "kept to revisit or practice", saved, "Nothing saved yet. Tap Save on anything above.")}
+    ${group("Saved", "kept to revisit or practice", saved, "Nothing saved yet. Tap Save on anything above.")}`}
     ${hidden ? `<p class="footnote">${plural(hidden, "item")} marked as known and hidden.</p>` : ""}
     ${savedAll ? `<div class="sticky-action">
         <button class="button button-primary full-button" type="button" data-act="go" data-to="practice">Practice ${plural(savedAll, "saved item")} ${icon("next", 18)}</button>
@@ -112,19 +121,22 @@ ACTIONS.delAsk = el => { UI.confirmDel = el.dataset.id; render(); };
 ACTIONS.delCancel = () => { UI.confirmDel = null; render(); };
 ACTIONS.del = el => { S.status[el.dataset.id] = "deleted"; UI.confirmDel = null; save(); render(); };
 
-// Entry to flashcard review (js/screens/cards.js), optional: how many cards, how familiar.
+// Review your saved items as flashcards (js/screens/cards.js), from all three categories.
 function reviewCard() {
   const deck = deckItems();
-  if (!deck.length) return "";
+  if (!deck.length) return `<section class="review-card review-empty">
+    <div class="review-stack" aria-hidden="true"><span></span><span></span><span>${mascot(40, false, "think")}</span></div>
+    <div class="review-copy"><h2>Review your saved items</h2><p>Save something below to review it here.</p></div>
+  </section>`;
   const n = Math.min(ROUND, deck.length);
   const count = f => deck.filter(i => famOf(i.id) === f).length;
   return `<section class="review-card">
     <div class="review-stack" aria-hidden="true"><span></span><span></span><span>${mascot(40, false, "happy")}</span></div>
     <div class="review-copy">
-      <h2>${plural(n, "card")} to review</h2>
-      <p>Optional · about ${Math.max(1, Math.round(n / 5))} min</p>
+      <h2>${plural(deck.length, "saved item")}</h2>
+      <p>Review as cards · about ${Math.max(1, Math.round(n / 5))} min</p>
       <p class="review-fam">${Object.entries(FAM).map(([k, [leaf, label]]) => `<span title="${label}">${leaf} ${count(k)}<span class="sr-only"> ${label}</span></span>`).join("")}</p>
     </div>
-    <button class="button button-primary review-start" type="button" data-act="cards">Start ${icon("next", 16)}</button>
+    <button class="button button-primary review-start" type="button" data-act="cards">Review them ${icon("next", 16)}</button>
   </section>`;
 }
