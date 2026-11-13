@@ -4,6 +4,21 @@
 const USER = "Yuka";
 const TODAY = "Tuesday, Oct 20";
 
+// Language support shown in onboarding (PRD §6.12). SAMPLE values for the prototype only:
+// the real supported languages and coverage are TBD.
+const CAPS = ["AI conversation", "Transcription", "Pronunciation feedback", "Skill assessment"];
+const LANG_SUPPORT = {
+  English: { caps: ["yes", "yes", "yes", "yes"], note: "Pronunciation feedback is tuned mostly on US English. Other accents may get less precise feedback." },
+  Spanish: { caps: ["yes", "yes", "limited", "no"], note: "Regional varieties may not be recognized well yet." },
+  Japanese: { caps: ["yes", "yes", "limited", "no"], note: "Dialects other than standard Tokyo Japanese are not assessed." },
+  Mandarin: { caps: ["yes", "limited", "no", "no"], note: "Tone feedback is not available yet." }
+};
+// "This week's picks" on Learn (PCK-01..05): two expressions, each with why it was picked.
+const PICKS = [
+  { item: "maya-p2", why: "You turned down plans twice this week. This is the friendly way to do it." },
+  { item: "sync-p4", why: "Useful for your Monday syncs, where you want to bring others in." }
+];
+
 // mine: minutes the learner spoke in that conversation (simulated speaker ID).
 // role, invite, look: how the partner appears on the Practice character cards.
 // look.hair is "bob", "short" or "bun"; look.glasses adds glasses.

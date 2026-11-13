@@ -1,4 +1,4 @@
-// Progress (PRD v2 §6.6, §6.8): reports kept inside this tab. Real conversations and AI
+// Insights (PRD §6.9): reports kept inside this tab. Real conversations and AI
 // practice are separate (RPT-02, SKL-05); This Week by default, This Month and All Time too.
 // Skill bars open to show the evidence: an earlier and a recent line in the learner's words.
 // Scores and earlier weeks are sample data (SKILLS, EARLIER in data.js); nothing is scored yet.
@@ -103,13 +103,22 @@ function aiReport(p) {
       <div class="hint-row">${practiced.map(i => `<span class="hint-chip">${icon("check", 13)} ${esc(bare(practiceText(i)))}</span>`).join("")}</div>` : ""}`;
 }
 
+// AI-only learners have no real conversations yet (RPT-08). AI practice is never shown as
+// real-world progress (RPT-09).
+function realEmpty() {
+  return `<div class="empty">${mascot(64, false, "think")}
+    <p><strong>No real-conversation report yet.</strong> You're in AI-only mode. This report appears after you record a real conversation. Your AI practice results are on the other tab, and they don't count here.</p>
+    <button class="button button-secondary" type="button" data-act="go" data-to="home">Go to Home to record</button></div>`;
+}
+
 SCREENS.report = () => {
   const view = UI.report || "real", p = UI.period || "week";
+  const empty = view === "real" && aiOnly();
   return `
     <header class="insights-hero">
       <p class="eyebrow">YOUR INSIGHTS</p>
-      <h1>${view === "real" ? esc(INSIGHTS[p].title) : "Practice, on your terms."}</h1>
-      <p>${view === "real" ? esc(INSIGHTS[p].sub) : "Practice is optional. Its results stay separate from your real conversations."}</p>
+      <h1>${empty ? "Your real conversations, when you're ready." : view === "real" ? esc(INSIGHTS[p].title) : "Practice, on your terms."}</h1>
+      <p>${empty ? "Reports here come only from conversations you record." : view === "real" ? esc(INSIGHTS[p].sub) : "Practice is optional. Its results stay separate from your real conversations."}</p>
     </header>
     <div class="tabs report-tabs" role="group" aria-label="Report">
       ${[["real", "Real conversations"], ["ai", "AI practice"]].map(([k, l]) => `<button type="button" class="${view === k ? "active" : ""}" aria-pressed="${view === k}" data-act="reportView" data-v="${k}">${l}</button>`).join("")}
@@ -117,7 +126,7 @@ SCREENS.report = () => {
     <div class="period-chips" role="group" aria-label="Time period">
       ${Object.entries(PERIODS).map(([k, l]) => `<button type="button" class="${p === k ? "on" : ""}" aria-pressed="${p === k}" data-act="period" data-v="${k}">${l}</button>`).join("")}
     </div>
-    ${view === "real" ? realReport(p) : aiReport(p)}
+    ${empty ? realEmpty() : view === "real" ? realReport(p) : aiReport(p)}
     <p class="footnote">Sample data: skill levels, examples and earlier weeks are simulated in this prototype.</p>`;
 };
 

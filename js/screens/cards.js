@@ -7,7 +7,7 @@ const ROUND = 10;          // cards per round
 const REMEMBERED = 3;      // "Got it" in a row to count as remembered
 
 // Every phrase except the ones marked "I know this".
-const deckItems = () => ITEMS.filter(i => statusOf(i.id) !== "known");
+const deckItems = () => ITEMS.filter(i => !["known", "deleted"].includes(statusOf(i.id)));
 const cardOf = id => (S.cards || {})[id] || { seen: 0, streak: 0 };
 const famOf = id => { const k = cardOf(id); return !k.seen ? "new" : k.streak >= REMEMBERED ? "remembered" : "growing"; };
 const FAM = { new: ["🌱", "New"], growing: ["🌿", "Getting there"], remembered: ["🌳", "Remembered"] };
@@ -99,7 +99,7 @@ function roundDone(d) {
       </section>` : ""}
     <div class="stack recap-actions">
       <button class="button button-primary full-button" type="button" data-act="cards">Another round</button>
-      <button class="button button-quiet full-button" type="button" data-act="go" data-to="bank">Back to Vocab</button>
+      <button class="button button-quiet full-button" type="button" data-act="go" data-to="bank">Back to Learn</button>
     </div>`;
 }
 
