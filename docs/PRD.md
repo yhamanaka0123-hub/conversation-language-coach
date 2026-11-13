@@ -155,7 +155,7 @@ Recording is always opt-in. There are two modes; both can be used by the same le
 | --- | --- |
 | REC-01 | The app may prompt the learner to record when a conversation may be worth capturing. Nothing is recorded or buffered before the learner accepts the prompt. |
 | REC-02 | A prompted recording lasts a default duration of 2–3 minutes, adjustable in settings. |
-| REC-03 | The learner can stop a prompted recording early. |
+| REC-03 | The learner can stop a prompted recording early or extend it while it runs. |
 | REC-04 | Once the learner has two usable captures in a day, stop proactive prompts for the rest of that day. Manual recordings count toward this threshold. |
 | REC-05 | After the threshold is reached, the learner can still record manually. |
 
@@ -443,7 +443,7 @@ The prototype should make these requirements reviewable without claiming unbuilt
 | Navigation | Tabs read Home / Learn / Practice / Insights, each with its stated purpose. | Built |
 | Onboarding | Asks for language, level, frequency of use, and speaking contexts; explains the two recording modes; offers prompts or AI-only mode without preselecting by location; offers an optional calendar connection. | Built (calendar connection simulated) |
 | Language support | Supported languages and per-language capabilities are shown; known dialect or accent limits are stated; unsupported varieties get no confident assessment. | Built in onboarding (sample coverage values) |
-| Prompted recording | A prompt can be accepted or ignored; nothing records before acceptance; recording shows as active, can be stopped early, and ends after its duration; prompts stop after two usable captures that day. | Built (simulated; nothing is recorded) |
+| Prompted recording | A prompt can be accepted or ignored; nothing records before acceptance; recording shows as active, can be stopped early or extended, and ends after its duration; prompts stop after two usable captures that day. | Built (simulated; nothing is recorded) |
 | No daily quota | No required daily count or duration, no penalty for declined or ignored prompts, and no "recordings left today" messaging anywhere. | Built |
 | Manual quick-record | A one-tap entry starts recording; the learner stops it manually; active recording is clearly shown; available even with prompts off; fits conversations, classes, and the learner's own presentations. | Built (simulated) |
 | Calendar | Calendar connection is optional and never starts recording. | Built (simulated) |

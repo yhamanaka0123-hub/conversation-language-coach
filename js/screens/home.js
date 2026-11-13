@@ -122,9 +122,12 @@ function recordingBar() {
   const sec = Math.floor((Date.now() - r.start) / 1000);
   return `<section class="rec-live" role="status" aria-live="polite">
     <span class="dot"></span>
-    <p><strong>Recording</strong><small>${r.mode === "prompted" ? "Stops on its own, or stop it now" : "Quick record · runs until you stop it"}</small><small>Let people know you're recording.</small></p>
+    <p><strong>Recording</strong><small>${r.mode === "prompted" ? "Stops on its own" : "Runs until you stop it"}</small><small>Let people know you're recording.</small></p>
     <span class="rec-time" id="rec-time">${r.limit ? `${clock(sec)} / ${clock(r.limit)}` : clock(sec)}</span>
-    <button class="rec-stop" type="button" data-act="recStop">${icon("stop", 14)} Stop</button>
+    <span class="rec-buttons">
+      ${r.limit ? `<button class="rec-extend" type="button" data-act="recExtend" aria-label="Add one minute">+1 min</button>` : ""}
+      <button class="rec-stop" type="button" data-act="recStop">${icon("stop", 14)} Stop</button>
+    </span>
   </section>`;
 }
 
@@ -268,6 +271,13 @@ ACTIONS.openfb = el => { S.seen[el.dataset.id] = true; save(); go({ name: "convo
 ACTIONS.recQuick = () => startRec("manual");
 ACTIONS.recPrompt = () => startRec("prompted");
 ACTIONS.recStop = () => stopRec();
+// A prompted recording can run longer: each tap adds a minute (REC-03).
+ACTIONS.recExtend = () => {
+  const r = UI.rec; if (!r || !r.limit) return;
+  r.limit += 60;
+  const el = document.getElementById("rec-time");
+  if (el) el.textContent = `${clock(Math.floor((Date.now() - r.start) / 1000))} / ${clock(r.limit)}`;
+};
 ACTIONS.promptLater = () => { UI.promptOff = true; render(); };   // no penalty (REC-12)
 ACTIONS.capturedClose = () => { UI.captured = null; render(); };
 ACTIONS.settings = () => { UI.settings = !UI.settings; UI.refocus = ".gear"; render(); };
