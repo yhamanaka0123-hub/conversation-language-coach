@@ -153,8 +153,7 @@ function capturedNote() {
     : `<strong>That was too short to analyze</strong>, so it wasn't kept.`;
   const promptsDone = c.usable && S.prompts && (S.captures || 0) === 2
     ? `<br><span class="captured-sub">Recording prompts are off for the rest of today. Quick record still works anytime.</span>` : "";
-  return `<div class="captured" role="status">${icon(c.usable ? "check" : "clock", 16)}<p>${note}${promptsDone}
-    <span class="captured-sub">Prototype: nothing is actually recorded.</span></p>
+  return `<div class="captured" role="status">${icon(c.usable ? "check" : "clock", 16)}<p>${note}${promptsDone}</p>
     <button class="push-close" type="button" data-act="capturedClose" aria-label="Dismiss">×</button></div>`;
 }
 
@@ -222,7 +221,7 @@ SCREENS.home = () => {
       <p class="home-date">${esc(TODAY)}</p>
       <div class="home-controls">
         <button class="icon-button gear ${UI.settings ? "on" : ""}" type="button" data-act="settings" aria-expanded="${!!UI.settings}" aria-label="Settings">${icon("gear", 18)}</button>
-        ${UI.rec ? "" : `<button class="rec-quick" type="button" data-act="recQuick" title="Recording is simulated in this prototype">${icon("mic", 15)} Record</button>`}
+        ${UI.rec ? "" : `<button class="rec-quick" type="button" data-act="recQuick">${icon("mic", 15)} Record</button>`}
       </div>
     </header>
     ${settingsPanel()}

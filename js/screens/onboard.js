@@ -64,8 +64,7 @@ function obBody(p) {
         <strong>Yes, prompt me</strong><small>Quick record works too.</small></button>
       <button type="button" class="ob-level ${p.mode === "ai" ? "on" : ""}" role="radio" aria-checked="${p.mode === "ai"}" data-act="obMode" data-v="ai">
         <strong>No prompts, AI practice for now</strong><small>You can still record anytime.</small></button>
-    </div>
-    <p class="ob-note ob-fine">Prototype: nothing is actually recorded.</p>`;
+    </div>`;
   return `
     <div class="ob-hero">${mascot(84, false, "happy")}</div>
     <h1>Connect your calendar?</h1>
