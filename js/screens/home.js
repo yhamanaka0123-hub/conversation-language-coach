@@ -138,7 +138,7 @@ function recordPrompt() {
     ${mascot(40, false, "talk")}
     <div>
       <p class="rec-prompt-q">About to chat with someone? Record the next ${S.duration} minutes for feedback.</p>
-      <p class="rec-prompt-note">${icon("lock", 13)} Nothing is recorded until you tap Record. Let people know first.</p>
+      <p class="rec-prompt-note">${icon("lock", 13)} Nothing is recorded until you tap Record.</p>
       <div class="rec-prompt-actions">
         <button class="button button-primary" type="button" data-act="recPrompt">${icon("mic", 16)} Record ${S.duration} min</button>
         <button class="button button-quiet" type="button" data-act="promptLater">Not now</button>
