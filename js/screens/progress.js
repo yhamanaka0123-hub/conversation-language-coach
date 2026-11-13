@@ -61,7 +61,7 @@ function realReport(p) {
   const ins = INSIGHTS[p];
   return `
     <section class="summary-card">
-      <div class="summary-head">${mascotScene("waves", "talk", 56)}<p><strong>${PERIODS[p]}</strong><small>Based on ${plural(convos, "conversation")}, your own speech only</small></p></div>
+      <div class="summary-head">${mascotScene("waves", "talk", 56)}<p><strong>${PERIODS[p]}</strong><small>${plural(convos, "conversation")} · your speech only</small></p></div>
       <div class="metrics">
         <div class="metric"><strong>${minutes}<small>min</small></strong><span>you spoke</span></div>
         <div class="metric"><strong>${used}</strong><span>new ${used === 1 ? "phrase" : "phrases"} used in real chats</span></div>
@@ -70,7 +70,7 @@ function realReport(p) {
     </section>
     <div class="section-heading compact skills-head"><div><h2>Skill progress</h2></div><span class="hint">Tap a skill to compare</span></div>
     <div class="skill-list">${SKILLS.map(k => skillRow(k, p)).join("")}</div>
-    <p class="section-intro bar-note">A full bar means you show the skill consistently in your conversations, not that you’ve mastered the language.</p>
+    <p class="section-intro bar-note">A full bar means you use the skill consistently, not that you’ve mastered it.</p>
     <section class="takeaway">
       <p class="eyebrow">${PERIODS[p].toUpperCase()}’S TAKEAWAY</p>
       <h3>${esc(ins.takeaway)}</h3>
@@ -127,7 +127,7 @@ SCREENS.report = () => {
       ${Object.entries(PERIODS).map(([k, l]) => `<button type="button" class="${p === k ? "on" : ""}" aria-pressed="${p === k}" data-act="period" data-v="${k}">${l}</button>`).join("")}
     </div>
     ${empty ? realEmpty() : view === "real" ? realReport(p) : aiReport(p)}
-    <p class="footnote">Sample data: skill levels, examples and earlier weeks are simulated in this prototype.</p>`;
+    <p class="footnote">Skill levels and examples are sample data.</p>`;
 };
 
 ACTIONS.reportView = el => { UI.report = el.dataset.v; render(); };

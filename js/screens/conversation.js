@@ -89,7 +89,7 @@ SCREENS.convo = () => {
     <div class="context-switch">
       <div>
         <span class="said-label">Detected context</span>
-        <p class="subtle">${ctx === c.context ? "Auto-detected." : "Changed by you."} Suggestions follow this.</p>
+        <p class="subtle">${ctx === c.context ? "Auto-detected" : "Changed by you"}</p>
       </div>
       <div class="tabs tabs-small" role="group" aria-label="Conversation context">
         ${["casual", "professional"].map(k => `<button type="button" class="${ctx === k ? "active" : ""}" aria-pressed="${ctx === k}" data-act="ctx" data-id="${c.id}" data-ctx="${k}">${ctxLabel(k)}</button>`).join("")}
@@ -100,7 +100,7 @@ SCREENS.convo = () => {
       <div class="section-heading compact">
         <div><p class="eyebrow">FROM YOUR OWN WORDS</p><h2>Top ${top.length} to try next</h2></div>
       </div>
-      <p class="section-intro">Not corrections, just options that fit a ${ctxLabel(ctx).toLowerCase()} conversation.</p>
+      <p class="section-intro">Options for a ${ctxLabel(ctx).toLowerCase()} chat, not corrections.</p>
       <div class="phrase-list">${top.map((i, n) => suggestionCard(i, false, n + 1)).join("")}</div>` : ""}
 
     <div class="section-heading all-points">
@@ -111,13 +111,13 @@ SCREENS.convo = () => {
     ${more.length ? `<h3 class="sub-heading">${icon("spark", 16)} More ways to improve <small>from your own words</small></h3>
       <div class="phrase-list">${more.map(i => suggestionCard(i)).join("")}</div>` : ""}
 
-    <p class="data-note">${icon("lock", 14)} The audio and the full transcript of this conversation were deleted after analysis. Only the sentences and context above are kept, and you can delete any of them in Learn.</p>
+    <p class="data-note">${icon("lock", 14)} Audio and full transcript deleted after analysis. Only the lines above are kept.</p>
 
     <div class="sticky-action">
       <button class="button button-primary full-button" type="button" data-act="start" data-id="${c.id}">
         Practice with ${esc(c.partner)} ${icon("next", 18)}
       </button>
-      <p>Optional · about 3 minutes · ${esc(c.partner)}, played by AI</p>
+      <p>Optional · ~3 min · AI plays ${esc(c.partner)}</p>
     </div>`;
 };
 
