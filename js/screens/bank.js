@@ -69,7 +69,7 @@ function picksSection() {
   const picks = PICKS.map(p => ({ ...p, i: byId[p.item] })).filter(p => inLearn(p.i));
   if (!picks.length) return "";
   return `<section class="picks">
-    <div class="picks-head"><p class="eyebrow">THIS WEEK'S PICKS</p><small>${aiOnly() ? "Based on your AI practice and goals" : "Picked from your recent conversations"}</small></div>
+    <div class="picks-head"><p class="eyebrow">THIS WEEK'S PICKS</p><small>${aiOnly() ? "Based on your AI practice and goals" : "From your recent chats"}</small></div>
     ${picks.map(({ i, why }) => `<article class="pick">
       <h3>“${esc(i.text)}”</h3>
       <p class="meaning">${esc(i.meaning)}</p>
@@ -107,8 +107,8 @@ SCREENS.bank = () => {
       ${Object.entries(LEARN_CATS).map(([k, label]) => `<button type="button" class="${cat === k ? "active" : ""}" aria-pressed="${cat === k}" data-act="learnCat" data-c="${k}">${label} <span>${counts[k]}</span></button>`).join("")}
     </div>
     ${cat === "saved" ? savedView() : `
-    ${group("Suggested", "from your conversations, not saved yet", suggested, "Nothing new here. More arrives after your next conversation.")}
-    ${group("Saved", "kept to revisit or practice", saved, "Nothing saved yet. Tap Save on anything above.")}`}
+    ${group("Suggested", "not saved yet", suggested, "Nothing new here. More arrives after your next conversation.")}
+    ${group("Saved", "", saved, "Nothing saved yet. Tap Save on anything above.")}`}
     ${hidden ? `<p class="footnote">${plural(hidden, "item")} marked as known and hidden.</p>` : ""}
     ${savedAll ? `<div class="sticky-action">
         <button class="button button-primary full-button" type="button" data-act="go" data-to="practice">Practice ${plural(savedAll, "saved item")} ${icon("next", 18)}</button>

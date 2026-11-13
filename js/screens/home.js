@@ -137,7 +137,7 @@ function recordPrompt() {
   return `<section class="rec-prompt">
     ${mascot(40, false, "talk")}
     <div>
-      <p class="rec-prompt-q">About to chat with someone? Record the next ${S.duration} minutes for feedback.</p>
+      <p class="rec-prompt-q">About to chat? Record ${S.duration} min for feedback.</p>
       <p class="rec-prompt-note">${icon("lock", 13)} Nothing is recorded until you tap Record.</p>
       <div class="rec-prompt-actions">
         <button class="button button-primary" type="button" data-act="recPrompt">${icon("mic", 16)} Record ${S.duration} min</button>
@@ -152,10 +152,10 @@ function capturedNote() {
   const c = UI.captured;
   if (!c || UI.rec) return "";
   const note = c.usable
-    ? `<strong>Captured ${clock(c.sec)}.</strong> Feedback will appear here after analysis. Then the audio and the full transcript are deleted; only the learning points are kept.`
+    ? `<strong>Captured ${clock(c.sec)}.</strong> Feedback will appear here. The audio is deleted after analysis.`
     : `<strong>That was too short to analyze</strong>, so it wasn't kept.`;
   const promptsDone = c.usable && S.prompts && (S.captures || 0) === 2
-    ? `<br><span class="captured-sub">Recording prompts are off for the rest of today. Quick record still works anytime.</span>` : "";
+    ? `<br><span class="captured-sub">No more prompts today. Record still works.</span>` : "";
   return `<div class="captured" role="status">${icon(c.usable ? "check" : "clock", 16)}<p>${note}${promptsDone}</p>
     <button class="push-close" type="button" data-act="capturedClose" aria-label="Dismiss">×</button></div>`;
 }
@@ -167,12 +167,12 @@ function settingsPanel() {
       <span><strong>${label}</strong><small>${sub}</small></span><span class="switch ${on ? "on" : ""}" aria-hidden="true"></span></button>`;
   return `<section class="settings" aria-label="Settings">
     <div class="settings-head"><h2>Settings</h2><button class="push-close" type="button" data-act="settings" aria-label="Close settings">×</button></div>
-    ${toggle("setPrompts", S.prompts, "Recording prompts", S.prompts ? "Suggests moments to record. Stops after 2 captures a day." : "Off (AI-only mode). Quick record still works.")}
-    <div class="set-row set-static"><span><strong>Prompted recording length</strong><small>You can always stop early.</small></span>
+    ${toggle("setPrompts", S.prompts, "Recording prompts", S.prompts ? "Up to 2 a day" : "Off (AI-only mode)")}
+    <div class="set-row set-static"><span><strong>Prompted recording length</strong></span>
       <span class="set-chips">${[2, 3].map(m => `<button type="button" class="ob-chip ${S.duration === m ? "on" : ""}" aria-pressed="${S.duration === m}" data-act="setDuration" data-v="${m}">${m} min</button>`).join("")}</span></div>
-    ${toggle("setNotify", S.notify, "Feedback-ready notifications", "No quotes from your conversations on the lock screen.")}
-    ${toggle("setCalendar", S.calendar, "Calendar (optional)", S.calendar ? "Connected (simulated). Only used to time prompts; it never starts recording." : "Helps time prompts. It never starts recording.")}
-    <p class="set-data">${icon("lock", 14)} After analysis, the audio and the full transcript are deleted. Kept: short excerpts, brief context, expressions, and feedback. You can delete any item in Learn.</p>
+    ${toggle("setNotify", S.notify, "Feedback-ready notifications", "No quotes on the lock screen")}
+    ${toggle("setCalendar", S.calendar, "Calendar (optional)", S.calendar ? "Connected (simulated). Never starts recording." : "Never starts recording")}
+    <p class="set-data">${icon("lock", 14)} Audio and full transcripts are deleted after analysis. Delete any saved item in Learn.</p>
   </section>`;
 }
 
