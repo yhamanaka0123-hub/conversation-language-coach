@@ -6,27 +6,28 @@ const ACTIONS = {};   // data-act value -> (element) => void
 const FORMS = {};     // form id -> (form) => void
 
 // ---------- State (saved in this browser only) ----------
-const KEY = "clc-demo-v3";   // v3: prototype v2 (onboarding, Top 3, reports)
+const KEY = "clc-demo-v4";   // v4: PRD v2.3 (opt-in recording, Learn, Insights)
 const byId = Object.fromEntries(ITEMS.map(i => [i.id, i]));
 const convoById = Object.fromEntries(CONVOS.map(c => [c.id, c]));
 
 function freshState() {
   const status = {};
   ITEMS.forEach(i => { status[i.id] = i.seed || "new"; });
-  // recording: "on" | "paused" (simulated; a pause lasts until Resume). seen: conversations
-  // whose feedback was opened. profile: onboarding answers.
-  return { v: 3, status, ctx: {}, sessions: 0, chats: {}, history: {}, cards: {},
-    onboarded: false, profile: {}, recording: "on", notify: true, seen: {} };
+  // Recording is opt-in (PRD §6.1): prompts: show recording prompts (off = AI-only mode);
+  // duration: prompted-recording length in minutes; captures: usable captures today (prompts stop
+  // at 2, manual ones count). seen: conversations whose feedback was opened. profile: onboarding.
+  return { v: 4, status, ctx: {}, sessions: 0, chats: {}, history: {}, cards: {},
+    onboarded: false, profile: {}, prompts: true, duration: 2, captures: 0, calendar: false, notify: true, seen: {} };
 }
 function loadState() {
-  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 3) return s; } catch (e) {}
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 4) return s; } catch (e) {}
   return freshState();
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
 let S = loadState();
 // UI-only state that is not saved.
-const UI = { route: { name: S.onboarded ? "home" : "onboard" }, bankFilter: null, session: null, micTimer: null };
+const UI = { route: { name: S.onboarded ? "home" : "onboard" }, bankFilter: null, session: null, micTimer: null, rec: null };
 
 // ---------- Helpers ----------
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -34,9 +35,13 @@ const ctxOf = cid => S.ctx[cid] || convoById[cid].context;
 const ctxOfItem = i => i.convo ? ctxOf(i.convo) : i.sourceContext;
 const ctxLabel = c => c === "casual" ? "Casual" : "Professional";
 const statusOf = id => S.status[id];
+// Learning outputs the learner deleted (proposed safeguard SAF-03) are gone everywhere.
+const gone = id => statusOf(id) === "deleted";
+// AI-only mode (§6.10): the learner chose no recording prompts and has not recorded anything.
+const aiOnly = () => S.prompts === false && S.profile.mode === "ai" && !S.recorded;
 const learnedItems = () => ITEMS.filter(i => statusOf(i.id) === "learned");
 const learnedCount = () => learnedItems().length;
-const itemsIn = cid => ITEMS.filter(i => i.convo === cid);
+const itemsIn = cid => ITEMS.filter(i => i.convo === cid && !gone(i.id));
 const practiceText = i => i.kind === "phrase" ? i.text : i.alt[ctxOf(i.convo)];
 const bare = s => s.replace(/[.?!…]+$/, "");
 const matchWords = i => i.kind === "phrase" ? i.match : i.match[ctxOf(i.convo)];
@@ -48,8 +53,8 @@ const plural = (n, word, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;
 const AREA = { expression: "Expression", grammar: "Grammar", structure: "Structure", pronunciation: "Pronunciation", culture: "Culture" };
 const topOf = cid => itemsIn(cid).filter(i => i.top && statusOf(i.id) !== "known").sort((a, b) => a.top - b.top).slice(0, 3);
 const isPron = i => i.area === "pronunciation";
-// Read text aloud with the browser's synthetic voice (model pronunciation, or the prototype's
-// stand-in for the learner's own recording). Plays only when the user taps (PRO-05).
+// Read text aloud with the browser's synthetic voice (model pronunciation only; the learner's
+// own audio is deleted after analysis, PRO-04). Plays only when the user taps (PRO-06).
 const canSpeak = "speechSynthesis" in window;
 const speakButton = (text, label = "Listen") => canSpeak
   ? `<button class="speak" type="button" data-act="speak" data-text="${esc(text)}" aria-label="${esc(label)}">${icon("sound", 17)}</button>` : "";
@@ -71,6 +76,10 @@ const ICONS = {
   play: '<path d="M8 5.5v13l10.5-6.5Z"/>',
   bell: '<path d="M6 16.5v-5.5a6 6 0 0 1 12 0v5.5l1.8 1.8H4.2Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
   lock: '<rect x="5" y="11" width="14" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  stop: '<rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>',
+  calendar: '<rect x="4" y="5.5" width="16" height="15" rx="3"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>',
+  trash: '<path d="M5 7h14M10 7V4.5h4V7M7 7l1 13h8l1-13"/>',
   sound: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4v-5Z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.3 6.5a8 8 0 0 1 0 11"/>'
 };
 const icon = (name, size = 20) =>
@@ -142,9 +151,9 @@ function pageHeader({ eyebrow, title, back, action = "" }) {
 // ---------- Navigation ----------
 const NAV = [
   { key: "home", label: "Home" },
-  { key: "bank", label: "Vocab" },
+  { key: "bank", label: "Learn" },
   { key: "practice", label: "Practice" },
-  { key: "report", label: "Progress" }
+  { key: "report", label: "Insights" }
 ];
 // Bottom-nav icons in the mascot's style: soft shapes, little faces. Colors come from CSS
 // (.ni-body, .ni-accent, .ni-face) so the active tab lights up and the rest stay muted.
@@ -174,7 +183,7 @@ function go(route) { UI.route = route; UI.enter = true; render(); UI.enter = fal
 function renderNav() {
   const nav = document.getElementById("nav");
   nav.hidden = NO_NAV.includes(UI.route.name);
-  const review = ITEMS.filter(i => ["new", "practice"].includes(statusOf(i.id))).length;
+  const review = ITEMS.filter(i => statusOf(i.id) === "new").length;
   const active = NAV_FOR[UI.route.name];
   // The icon hops only when the active tab changes, not on every re-render.
   const hop = active !== UI.navActive;
@@ -190,7 +199,9 @@ function renderNav() {
 function render() {
   const view = document.getElementById("view");
   view.className = `screen screen-${UI.route.name}${UI.enter ? " enter" : ""}`;
-  view.innerHTML = SCREENS[UI.route.name]();
+  // An active recording stays visible on every screen (REC-08); Home shows its own bar.
+  const live = UI.rec && !["home", "onboard"].includes(UI.route.name) && typeof recordingBar === "function" ? recordingBar() : "";
+  view.innerHTML = live + SCREENS[UI.route.name]();
   renderNav();
   if (typeof afterRender[UI.route.name] === "function") afterRender[UI.route.name]();
 }
@@ -199,7 +210,7 @@ const afterRender = {};   // optional per-screen hook, e.g. scroll or animation
 // ---------- Shared actions ----------
 ACTIONS.go = el => { UI.bankFilter = el.dataset.filter || null; go({ name: el.dataset.to, id: el.dataset.id }); };
 ACTIONS.mark = el => { S.status[el.dataset.id] = el.dataset.status; save(); render(); };
-ACTIONS.reset = () => { S = freshState(); save(); UI.session = null; UI.bankFilter = null; UI.tip = 0; UI.pick = null; UI.deck = null; UI.ob = null; UI.pushShown = {}; go({ name: "onboard" }); };
+ACTIONS.reset = () => { S = freshState(); save(); UI.session = null; UI.bankFilter = null; UI.tip = 0; UI.pick = null; UI.deck = null; UI.ob = null; UI.pushShown = {}; UI.promptOff = false; stopRec(true); go({ name: "onboard" }); };
 ACTIONS.speak = el => {
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(el.dataset.text);

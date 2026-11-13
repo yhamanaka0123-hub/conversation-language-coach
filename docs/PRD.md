@@ -440,23 +440,23 @@ The prototype should make these requirements reviewable without claiming unbuilt
 
 | Area | Acceptance criteria | Current prototype |
 | --- | --- | --- |
-| Navigation | Tabs read Home / Learn / Practice / Insights, each with its stated purpose. | Tabs read Home / Vocab / Practice / Progress |
-| Onboarding | Asks for language, level, frequency of use, and speaking contexts; explains the two recording modes; offers prompts or AI-only mode without preselecting by location; offers an optional calendar connection. | Partly: language, level, contexts; no frequency question; recording step shows the earlier always-on design |
-| Language support | Supported languages and per-language capabilities are shown; known dialect or accent limits are stated; unsupported varieties get no confident assessment. | Not built |
-| Prompted recording | A prompt can be accepted or ignored; nothing records before acceptance; recording shows as active, can be stopped early, and ends after its duration; prompts stop after two usable captures that day. | Not built |
-| No daily quota | No required daily count or duration, no penalty for declined or ignored prompts, and no "recordings left today" messaging anywhere. | Not built (no prompts yet); check existing copy when prompts are added |
-| Manual quick-record | A one-tap entry starts recording; the learner stops it manually; active recording is clearly shown; available even with prompts off; fits conversations, classes, and the learner's own presentations. | Not built (prototype shows an always-on pause/resume pill) |
-| Calendar | Calendar connection is optional and never starts recording. | Not built |
-| Data retention | Prototype documentation states that audio and complete transcripts are deleted after analysis and which learning outputs are kept. | Not built |
-| Learning-output safeguards (proposed) | A learner can delete an individual learning output; sample outputs avoid unnecessary names, company, or medical details. | Not built |
-| Feedback | Up to three points, each as brief context → original wording → suggested alternative, with more points when relevant; no "Why?" field required. | Built (also shows an optional "Why?") |
-| Learn | Expressions, Pronunciation, and Speaking Tips, each in its own format; suggested vs saved is clear; saving does not start practice. | Partly: one Vocab list with New / Saved / Practiced filters and flashcards |
-| This week's picks | Two highlighted expressions at the top of Learn, each savable. | Not built |
-| Pronunciation | Tap-to-play model pronunciation and a text cue; no playback of the learner's own audio. | Partly: model playback built; also shows "Your audio (simulated)", which should be removed |
+| Navigation | Tabs read Home / Learn / Practice / Insights, each with its stated purpose. | Built |
+| Onboarding | Asks for language, level, frequency of use, and speaking contexts; explains the two recording modes; offers prompts or AI-only mode without preselecting by location; offers an optional calendar connection. | Built (calendar connection simulated) |
+| Language support | Supported languages and per-language capabilities are shown; known dialect or accent limits are stated; unsupported varieties get no confident assessment. | Built in onboarding (sample coverage values) |
+| Prompted recording | A prompt can be accepted or ignored; nothing records before acceptance; recording shows as active, can be stopped early, and ends after its duration; prompts stop after two usable captures that day. | Built (simulated; nothing is recorded) |
+| No daily quota | No required daily count or duration, no penalty for declined or ignored prompts, and no "recordings left today" messaging anywhere. | Built |
+| Manual quick-record | A one-tap entry starts recording; the learner stops it manually; active recording is clearly shown; available even with prompts off; fits conversations, classes, and the learner's own presentations. | Built (simulated) |
+| Calendar | Calendar connection is optional and never starts recording. | Built (simulated) |
+| Data retention | Prototype documentation states that audio and complete transcripts are deleted after analysis and which learning outputs are kept. | Built (notes on Home, Settings, and each conversation) |
+| Learning-output safeguards (proposed) | A learner can delete an individual learning output; sample outputs avoid unnecessary names, company, or medical details. | Partly: delete built in Learn; sensitive-detail minimizing not built |
+| Feedback | Up to three points, each as brief context → original wording → suggested alternative, with more points when relevant; no "Why?" field required. | Built |
+| Learn | Expressions, Pronunciation, and Speaking Tips, each in its own format; suggested vs saved is clear; saving does not start practice. | Built (flashcards kept as an optional review) |
+| This week's picks | Two highlighted expressions at the top of Learn, each savable. | Built |
+| Pronunciation | Tap-to-play model pronunciation and a text cue; no playback of the learner's own audio. | Built |
 | Speaker distinction | Examples show who spoke; other speakers do not count toward the learner's progress. | Built |
 | Practice | A feedback item can lead to optional related AI practice. | Built |
-| Insights | Real conversations and AI practice separate; This Week default plus This Month and All Time; skill bars open to examples; empty real-conversation state for AI-only learners. | Partly: built as Progress; AI-only empty state not built |
-| Notifications | Recording prompts and feedback-ready notifications are represented, can be turned off, and contain no quotations. | Partly: feedback-ready banner and toggle built; recording prompts not built |
+| Insights | Real conversations and AI practice separate; This Week default plus This Month and All Time; skill bars open to examples; empty real-conversation state for AI-only learners. | Built |
+| Notifications | Recording prompts and feedback-ready notifications are represented, can be turned off, and contain no quotations. | Built (recording prompt shown in-app) |
 
 Use representative sample conversations where backend functions are unavailable, and label simulated states and sample data clearly.
 
@@ -522,16 +522,14 @@ Do not use raw recording duration or vocabulary count alone as evidence of learn
 
 ## 11. Current Prototype Summary
 
-For reviewers comparing the prototype at the site root with this document. The prototype predates some confirmed decisions:
+The prototype at the site root follows this PRD (updated Nov 13, 2026). What it simulates:
 
-- **Onboarding:** three steps; the last turns on always-on recording. No frequency-of-use question, language-support information, prompt choice, AI-only mode, or calendar step.
-- **Home:** an always-on Recording / Paused pill with Pause and Resume, a feedback-ready banner, a notifications toggle, and the latest conversation's Top 3. No prompted recording or manual quick-record.
-- **Conversation feedback:** Top 3 as context → "You said" → "Try" (built), an optional "Why?", Save, I know this, and "Try it in a chat"; then all learning points. Pronunciation points show "Your audio (simulated)" and "Model".
-- **Vocab:** one list with New / Saved / Practiced filters and flashcards; no categories or weekly picks.
-- **Practice:** pick a person from your conversations; recap compares then and now.
-- **Progress:** real conversations and AI practice, time filters, counts, skill bars with Before / Now examples.
-
-Recording, notifications, learner audio, skill levels, and earlier periods are simulated or sample data.
+- **Recording:** recording prompts, quick record, the timer and the two-capture limit work, but nothing is recorded. A capture does not create a new conversation; sample conversations stand in for analyzed ones.
+- **Calendar:** the connection is a toggle only.
+- **Language support:** the capabilities shown in onboarding are sample values; real coverage is TBD (§6.12).
+- **AI-only mode:** shown as empty states on Home and Insights; Learn and Practice still use the sample content.
+- **Proposed safeguards:** deleting an item in Learn works; minimizing sensitive details is not built.
+- **Sample data:** conversations, suggestions, weekly picks, skill levels and earlier periods.
 
 ## 12. Remaining Technical and Operational TBDs
 

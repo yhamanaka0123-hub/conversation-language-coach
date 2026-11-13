@@ -1,7 +1,9 @@
-// Onboarding (PRD v2 §6.0): language, level and contexts, then turning on recording. Every step but the last can be skipped. Answers go to S.profile.
+// Onboarding (PRD §6.0): language (with what it supports), level, how often and where the
+// learner speaks it, the two opt-in recording modes (prompts or AI-only), and an optional
+// calendar. Every step but the recording choice can be skipped. Answers go to S.profile.
 // Shown on first launch and after Reset demo.
 
-const OB_STEPS = 3;
+const OB_STEPS = 4;
 const OB_LANGS = ["English", "Spanish", "Japanese", "Mandarin"];
 const OB_SPEAKS = ["Mandarin", "Japanese", "Korean", "Spanish", "Hindi", "Other"];
 const OB_LEVELS = [
@@ -9,55 +11,86 @@ const OB_LEVELS = [
   ["comfortable", "I'm comfortable", "I keep up in most conversations."],
   ["natural", "I'm fluent", "I want to sound more natural."]
 ];
-const OB_CONTEXTS = ["Work", "School", "Friends", "Errands & services"];
+const OB_FREQ = ["Every day", "A few times a week", "About once a week", "Rarely"];
+const OB_CONTEXTS = ["Work", "School or classes", "Friends", "Errands & services", "Online", "Community", "Travel"];
+const CAP_LABEL = { yes: "Available", limited: "Limited", no: "Not yet" };
 
-const obProfile = () => (UI.ob = UI.ob || { step: 0, lang: "English", speaks: [], level: null, contexts: [] });
+const obProfile = () => (UI.ob = UI.ob || { step: 0, lang: "English", speaks: [], level: null, freq: null, contexts: [], mode: null });
 const chip = (act, value, on, label = value) =>
   `<button type="button" class="ob-chip ${on ? "on" : ""}" aria-pressed="${on}" data-act="${act}" data-v="${esc(value)}">${esc(label)}</button>`;
 
+// What the chosen language supports (LNG-01..03). Sample values; real coverage is TBD.
+function langSupport(lang) {
+  const l = LANG_SUPPORT[lang];
+  return `<div class="lang-caps" aria-label="What ${esc(lang)} supports">
+    <ul>${CAPS.map((c, k) => `<li><span>${c}</span><span class="cap cap-${l.caps[k]}">${CAP_LABEL[l.caps[k]]}</span></li>`).join("")}</ul>
+    <p>${esc(l.note)} Where support is limited, you won't get a score.</p>
+    <p class="lang-sample">Sample coverage for this prototype.</p>
+  </div>`;
+}
+
 function obBody(p) {
   if (p.step === 0) return `
-    <div class="ob-hero">${mascot(96, true)}</div>
+    <div class="ob-hero">${mascot(84, true)}</div>
     <h1>Hi! I turn your real conversations into feedback you can use.</h1>
     <p class="ob-lead">A few quick questions so the feedback starts at your level.</p>
     <p class="ob-q">Which language are you practicing?</p>
     <div class="ob-chips">${OB_LANGS.map(l => chip("obLang", l, p.lang === l)).join("")}</div>
+    ${langSupport(p.lang)}
     <p class="ob-q">Which languages do you already speak?</p>
     <div class="ob-chips">${OB_SPEAKS.map(l => chip("obSpeak", l, p.speaks.includes(l))).join("")}</div>`;
   if (p.step === 1) return `
-    <h1>How do you feel speaking ${esc(p.lang)}?</h1>
+    <h1>How do you use ${esc(p.lang)}?</h1>
     <div class="ob-levels" role="radiogroup" aria-label="Your speaking level">
       ${OB_LEVELS.map(([k, name, hint]) => `<button type="button" class="ob-level ${p.level === k ? "on" : ""}" role="radio" aria-checked="${p.level === k}" data-act="obLevel" data-v="${k}">
         <strong>${name}</strong><small>${hint}</small></button>`).join("")}
     </div>
+    <p class="ob-q">How often do you speak it?</p>
+    <div class="ob-chips">${OB_FREQ.map(f => chip("obFreq", f, p.freq === f)).join("")}</div>
     <p class="ob-q">Where do you speak it?</p>
     <div class="ob-chips">${OB_CONTEXTS.map(c => chip("obContext", c, p.contexts.includes(c))).join("")}</div>
     <p class="ob-note">This is a starting point. Your first few conversations will fine-tune it, and you can change it anytime.</p>`;
+  if (p.step === 2) return `
+    <h1>You decide what gets recorded</h1>
+    <ul class="ob-points">
+      <li>${icon("mic", 18)}<span><strong>Quick record.</strong> One tap to start, for a conversation, a class, or your own presentation. It runs until you stop it.</span></li>
+      <li>${icon("bell", 18)}<span><strong>Recording prompts.</strong> I can suggest moments to record for 2–3 minutes. Nothing is recorded until you accept, and prompts stop after 2 captures a day.</span></li>
+      <li>${icon("lock", 18)}<span>After analysis, the audio and the full transcript are deleted. Only learning points are kept. Let people know when you record them.</span></li>
+    </ul>
+    <p class="ob-q">Would you like recording prompts?</p>
+    <div class="ob-levels" role="radiogroup" aria-label="Recording prompts">
+      <button type="button" class="ob-level ${p.mode === "prompts" ? "on" : ""}" role="radio" aria-checked="${p.mode === "prompts"}" data-act="obMode" data-v="prompts">
+        <strong>Yes, prompt me</strong><small>Quick record works too.</small></button>
+      <button type="button" class="ob-level ${p.mode === "ai" ? "on" : ""}" role="radio" aria-checked="${p.mode === "ai"}" data-act="obMode" data-v="ai">
+        <strong>No prompts, AI practice for now</strong><small>AI-only mode. You can still record anytime, or turn prompts on later.</small></button>
+    </div>
+    <p class="ob-note">Prototype: nothing is actually recorded.</p>`;
   return `
     <div class="ob-hero">${mascot(84, false, "happy")}</div>
-    <h1>Turn on recording</h1>
+    <h1>Connect your calendar?</h1>
+    <p class="ob-lead">Optional. It only helps time recording prompts around your meetings and classes.</p>
     <ul class="ob-points">
-      <li>${icon("mic", 18)}<span>Once it's on, it keeps running in the background. No daily prompts.</span></li>
-      <li>${icon("pause", 18)}<span>Pause anytime with one tap. It stays paused until you tap Resume.</span></li>
-      <li>${icon("lock", 18)}<span>Only your own speech is scored. Other people's audio isn't kept, only the text of useful phrases.</span></li>
-    </ul>
-    <p class="ob-note">Prototype: nothing is actually recorded. Let people know when you're recording them.</p>`;
+      <li>${icon("calendar", 18)}<span>A calendar event never starts a recording. You still accept a prompt or tap Record.</span></li>
+      <li>${icon("check", 18)}<span>Everything works without it, and you can change this in Settings.</span></li>
+    </ul>`;
 }
 
 SCREENS.onboard = () => {
   const p = obProfile();
   const last = p.step === OB_STEPS - 1;
+  const mustChoose = p.step === 2 && !p.mode;
   return `
     <div class="ob-top">
       ${p.step ? `<button class="icon-button" type="button" data-act="obBack" aria-label="Back">${icon("back")}</button>` : "<span></span>"}
       <div class="ob-dots" role="img" aria-label="Step ${p.step + 1} of ${OB_STEPS}">${Array.from({ length: OB_STEPS }, (_, k) => `<span class="${k <= p.step ? "on" : ""}"></span>`).join("")}</div>
-      ${last ? "<span></span>" : `<button class="text-link" type="button" data-act="obNext">Skip</button>`}
+      ${p.step === 2 || last ? "<span></span>" : `<button class="text-link" type="button" data-act="obNext">Skip</button>`}
     </div>
     <div class="ob-body">${obBody(p)}</div>
     <div class="ob-actions">
       ${last
-        ? `<button class="button-cta" type="button" data-act="obDone">${icon("mic", 18)} Turn on recording</button>`
-        : `<button class="button-cta" type="button" data-act="obNext">Continue ${icon("next", 18)}</button>`}
+        ? `<button class="button-cta" type="button" data-act="obDone" data-cal="1">${icon("calendar", 18)} Connect calendar <small>(simulated)</small></button>
+           <button class="button button-quiet full-button ob-skip" type="button" data-act="obDone" data-cal="0">Not now</button>`
+        : `<button class="button-cta" type="button" data-act="obNext" ${mustChoose ? "disabled" : ""}>Continue ${icon("next", 18)}</button>`}
     </div>`;
 };
 
@@ -65,14 +98,17 @@ const obToggle = (list, v) => list.includes(v) ? list.filter(x => x !== v) : [..
 ACTIONS.obLang = el => { obProfile().lang = el.dataset.v; render(); };
 ACTIONS.obSpeak = el => { const p = obProfile(); p.speaks = obToggle(p.speaks, el.dataset.v); render(); };
 ACTIONS.obLevel = el => { obProfile().level = el.dataset.v; render(); };
+ACTIONS.obFreq = el => { obProfile().freq = el.dataset.v; render(); };
 ACTIONS.obContext = el => { const p = obProfile(); p.contexts = obToggle(p.contexts, el.dataset.v); render(); };
-ACTIONS.obNext = () => { const p = obProfile(); p.step = Math.min(OB_STEPS - 1, p.step + 1); go({ name: "onboard" }); };
+ACTIONS.obMode = el => { obProfile().mode = el.dataset.v; render(); };
+ACTIONS.obNext = () => { const p = obProfile(); if (p.step === 2 && !p.mode) return; p.step = Math.min(OB_STEPS - 1, p.step + 1); go({ name: "onboard" }); };
 ACTIONS.obBack = () => { const p = obProfile(); p.step = Math.max(0, p.step - 1); go({ name: "onboard" }); };
-ACTIONS.obDone = () => {
-  const { lang, speaks, level, contexts } = obProfile();
-  S.profile = { lang, speaks, level, contexts };
+ACTIONS.obDone = el => {
+  const { lang, speaks, level, freq, contexts, mode } = obProfile();
+  S.profile = { lang, speaks, level, freq, contexts, mode };
+  S.prompts = mode !== "ai";
+  S.calendar = el.dataset.cal === "1";
   S.onboarded = true;
-  S.recording = "on";
   save();
   UI.ob = null;
   UI.waved = false;
