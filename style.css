@@ -112,8 +112,8 @@ mark { background: linear-gradient(transparent 55%, var(--highlight) 55%); color
 
 .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 4px; border-radius: 16px; background: var(--lavender); }
 .tabs-3 { grid-template-columns: repeat(3, 1fr); }
-.tabs-4 { grid-template-columns: repeat(4, auto); }
-@media (max-width: 460px) { .tabs-4 { grid-template-columns: 1fr 1fr; } }
+/* Four tabs never fit one row in the phone-width frame, so always 2 x 2. */
+.tabs-4 { grid-template-columns: 1fr 1fr; }
 .review-empty { grid-template-columns: auto 1fr; }
 .review-empty .review-stack { transform: scale(.8); }
 .saved-empty { margin-top: 14px; }
