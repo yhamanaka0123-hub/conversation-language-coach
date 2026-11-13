@@ -1,32 +1,44 @@
-# PRD v2: Conversation Language Coach
+# PRD v2.3: Conversation Language Coach
 
-Version 2.0 · November 12, 2026 · INFO 213 · Team 12
-Status: Confirmed product direction; implementation and measurement details pending validation.
-Version 1 (Oct 20, 2026) is kept in [`PRD-v1.md`](PRD-v1.md). The prototype as tested is at `/v1/` (git tag `v1-prototype`).
+Version 2.3 · November 12, 2026 · INFO 213 · Team 12
+Status: Confirmed product direction. Proposed safeguards and capabilities still to validate are marked as such; technical and operational details marked TBD are listed in §12.
+Version 1 (Oct 20, 2026) is kept in [`PRD-v1.md`](PRD-v1.md). The prototype as tested is at `/v1/` (git tag `v1-prototype`); the current prototype is at the site root and does not yet reflect every requirement here (see §11).
 
 ## 1. Overview
 
-The Conversation Language Coach helps language learners improve everyday speaking through feedback grounded in their real conversations. It identifies useful expressions and opportunities to improve communication, supports optional AI practice, and makes progress visible through reports backed by conversation examples.
+The Conversation Language Coach helps language learners improve everyday speaking through feedback grounded in their real conversations. Learners record selected conversations by accepting a short prompt or by starting a recording themselves. The product turns each capture into concrete feedback and learning content, supports optional AI practice, and shows progress through reports backed by examples. Captured audio and complete transcripts are deleted after analysis; only learning outputs are kept.
 
-This iteration builds on Prototype A (#1 "Learn, Practice, Track"). It incorporates the depth and specificity of Prototype B's feedback (#2 "Habit-Stack Nudges") and the simplicity of Prototype C's experience (#3 "Double Subtitles"). It preserves Prototype A's existing tabs: Home, Vocab, Practice, and Progress. It adds a short onboarding so feedback can start from the learner's level.
+This iteration builds on Prototype A (#1 "Learn, Practice, Track"). It incorporates the depth and specificity of Prototype B's feedback (#2 "Habit-Stack Nudges") and the simplicity of Prototype C's experience (#3 "Double Subtitles").
 
-The product expands beyond vocabulary collection to support pronunciation, grammar, sentence structure, and communication appropriate to the situation. Users should understand what to try next and see whether they apply it in subsequent conversations.
+The main navigation is **Home / Learn / Practice / Insights**:
+
+- **Home:** recent conversations, their feedback, and recording access.
+- **Learn:** actionable learning content to review, save, and practice.
+- **Practice:** optional AI conversation practice.
+- **Insights:** performance and progress reports.
+
+The product covers expressions, pronunciation, grammar, sentence structure, tone, and cultural context, not only vocabulary. Learners should understand what to try next and see whether they apply it in later conversations.
 
 **Decision status**
 
 - **Confirmed:** approved product behavior for this iteration.
-- **To validate:** a technical capability or measurement method that has not been demonstrated.
+- **Proposed safeguard:** a protective requirement the team proposes, pending validation. Not yet confirmed. Requirement IDs start with SAF.
+- **To validate:** a technical capability or measurement method that has not been demonstrated. Future capabilities marked this way are not committed for this iteration.
 - **TBD:** an implementation or operational decision still requiring definition.
 
-Confirmed requirements describe intended behavior; they do not imply that the current prototype already implements it.
+Requirements describe intended product behavior; they do not imply that the current prototype already implements them.
 
 ## 2. Problem and Audience
 
-Learners who use their target language in daily life encounter useful expressions and speaking difficulties, but often lack a way to revisit those moments. Generic feedback does not show them what to change. Lists of saved vocabulary also do not demonstrate whether their communication is improving.
+Learners who use their target language in daily life encounter useful expressions and speaking difficulties, but often lack a way to revisit those moments. Generic feedback does not show them what to change. Lists of saved vocabulary also do not show whether their communication is improving.
 
 **Primary audience:** language learners living in a country or environment where their target language is regularly spoken, with opportunities to use it in everyday interactions. An example is a non-native English speaker living in the United States.
 
-The design prioritizes learners who want to improve existing participation in real conversations. Learners with little exposure to the target language are outside this iteration's primary audience.
+**Learners elsewhere:** country of residence is not an eligibility requirement for real-conversation features. Learners outside a target-language country may still use the language through online conversations, classes, work, community activities, or travel, and can record those conversations like anyone else.
+
+**Secondary audience:** learners with few real-world opportunities to speak the language, who rely mainly on AI conversation practice. They can turn recording prompts off and use AI-only mode (§6.10). AI-only mode is an option the learner chooses, not the default for everyone living outside a target-language country.
+
+Personalization uses the learner's level, how often they use the language, and where they speak it (§6.0), not location alone.
 
 > How might we help learners living in their target-language environment improve everyday communication and build speaking confidence through concrete feedback from real conversations?
 
@@ -37,278 +49,457 @@ The team's November 10 discussion synthesized feedback across three prototypes. 
 | Finding | Product implication |
 | --- | --- |
 | Participants valued content from their own real conversations. | Retain real conversations as the core source of learning and assessment. |
-| Generic feedback was insufficient and sometimes discouraging. Participants asked for their exact words, a suggested revision, and the reason. | Show the learner's original speech and a concrete suggested alternative, with an optional one-line reason. |
-| Needs extended beyond vocabulary. | Cover pronunciation, grammar, structure, expressions, and cultural context. |
-| Applying feedback in later conversations felt like meaningful growth. | Ground progress in evidence from subsequent real conversations. |
-| Participants resisted forced learning during entertainment. | Deliver optional feedback after conversations rather than interrupting them with mandatory practice. |
-| Recording raised confidentiality and privacy concerns. | Provide visible recording status and direct user control; validate whether controls are sufficient. |
-| Some participants struggled with navigation and unclear actions, and asked who the people in the sample conversations were. | Simplify access to feedback, distinguish saving from practicing, and add a short onboarding that sets context. |
+| Generic feedback was insufficient and sometimes discouraging. Participants asked for their exact words and a suggested revision. | Show brief context, the learner's original wording, and a concrete suggested alternative. |
+| Needs extended beyond vocabulary. | Cover expressions, pronunciation, grammar, structure, tone, and cultural context. |
+| Applying feedback in later conversations felt like meaningful growth. | Ground progress in evidence from later real conversations. |
+| Participants resisted forced learning during entertainment. | Keep practice optional and deliver feedback after conversations, not during them. |
+| Recording raised confidentiality and privacy concerns. | Record only after the learner accepts a prompt or starts a recording, show clearly when recording is active, and delete audio and complete transcripts after analysis. |
+| Some participants struggled with navigation and unclear actions, and asked who the people in the sample conversations were. | Give each tab one clear purpose, distinguish saving from practicing, and add a short onboarding. |
 | A participant asked how the app would know which phrases she doesn't already know. | Calibrate to the learner's level through onboarding and early conversations. |
 
 **Research limitations**
 
 Participants reviewed predetermined conversation content rather than feedback generated from conversations they had just completed. Emotional relevance, sustained engagement, and actual improvement therefore remain unvalidated. Preferences also differed with participants' language environments.
 
-**Subsequent change to the recording direction**
-
-The meeting explored selective recording through short consent prompts. During subsequent product clarification, the product owner chose a different approach: one initial activation followed by ongoing recording, with one-tap pause and manual resume. This supersedes the short-session prompt proposal. Its convenience and privacy tradeoffs require further testing; it is not a validated outcome of the original study.
-
 ## 4. Goals and Scope
 
 **Goals**
 
 1. Turn authentic conversations into specific, manageable learning opportunities.
-2. Help learners apply improvements in subsequent real interactions.
-3. Show understandable progress supported by actual conversation evidence.
-4. Reduce repeated interaction required to capture conversations.
+2. Help learners apply improvements in later real interactions.
+3. Show understandable progress supported by concrete examples.
+4. Make capturing a useful conversation quick, without recording anything the learner did not choose to record.
 5. Keep practice optional and feedback easy to access.
 6. Start feedback at the learner's level from the first conversation.
+7. Support learners without regular real-world conversations through AI practice, without presenting AI performance as real-world improvement.
+8. Be clear about which languages and capabilities are supported, and where coverage is limited.
 
 **In scope**
 
-- A short onboarding: target language, self-rated level, everyday contexts, and recording activation.
-- Ongoing recording after initial activation, with pause and resume controls.
-- Conversation transcripts, contextual expressions, and speaker attribution.
-- A Top 3 summary of improvements per conversation, with all other learning points listed below it.
-- Expressions in Vocab; Pronunciation and Skill Clusters in Progress.
+- A short onboarding: target language, self-rated level, how often the learner uses the language, speaking contexts, recording preferences, and an optional calendar connection.
+- Clear information on supported languages and the capabilities available for each (§6.12).
+- Two opt-in recording modes: prompted recording and manual quick-record. Manual recording covers everyday conversations, classroom discussions, and the learner's own presentations and speaking practice.
+- Optional calendar connection to improve prompt timing; calendar events never start recording.
+- AI-only mode: recording prompts can be turned off while manual recording stays available.
+- Deleting captured audio and complete transcripts after analysis, keeping only learning outputs.
+- Proposed safeguards for retained learning outputs: minimizing unnecessary sensitive details and deleting individual outputs (§6.4).
+- Up to three prioritized improvement points per conversation, each as brief context → original wording → suggested alternative, with additional points when relevant.
+- A Learn tab organized into Expressions, Pronunciation, and Speaking Tips, with automatic extraction, manual saving, and a format suited to each type.
+- "This week's picks": two highlighted expressions per week.
+- Tap-to-play model pronunciation with textual pronunciation feedback.
 - Optional AI partner practice based on real conversation feedback.
-- Separate reports for real conversations and AI practice.
-- Skill progress bars supported by conversation examples.
-- Optional notifications when conversation feedback is ready.
+- Insights: separate reports for real conversations and AI practice, with This Week, This Month, and All Time filters.
+- Skill progress bars supported by concrete examples.
+- Optional notifications for recording prompts and for feedback that is ready.
 
 **Outside the current scope**
 
+- Always-on, ongoing, or automatic daily recording.
+- Recording or buffering audio before the learner accepts a prompt or starts a recording.
+- Recording started automatically by calendar events.
+- Keeping captured audio or complete transcripts after analysis.
+- Playback of the learner's own recorded audio.
 - Mandatory daily AI practice or fixed daily learning quotas.
+- A required daily recording count or speaking duration, or penalties for declining or ignoring prompts.
+- Using country of residence to decide who can use real-conversation features.
+- Confident assessments for language varieties the product does not support.
+- Intonation, pausing, and speech-chunking assessment (future capabilities to validate, §6.7).
 - Forced learning interruptions during social media or video consumption.
-- Combining all three prototypes' content-capture mechanisms.
-- Fixed weekly quotas for new expressions.
-- Short 2–3 minute recording prompts or daily consent prompts.
+- Fixed weekly quotas for new expressions. (The two weekly picks are highlights, not a limit.)
 - Treating other speakers' performance as the learner's performance.
-- Combining AI practice scores with real-conversation progress.
+- Combining AI practice results with real-conversation progress.
 - A full placement test during onboarding.
-
-Calendar-based recording scheduling is not required for the selected flow. Additional recording schedules can be considered later, but are not approved scope.
+- A numeric speaking or confidence score.
+- A progress dashboard on Home.
 
 ## 5. Information Architecture
 
-This iteration keeps Prototype A's four tabs and gives each a clear job.
-
-| Existing tab | Responsibility in this iteration |
+| Tab | Purpose |
 | --- | --- |
-| Home | Recent conversations, available feedback (Top 3 per conversation), and recording controls. Final layout is TBD. |
-| Vocab | Expressions: automatically extracted and manually saved, each with its original context. Keeps the existing flashcard review. |
-| Practice | Optional AI partner practice grounded in identified improvement opportunities. |
-| Progress | Reports and skill progress: Pronunciation and Skill Clusters with progress bars and supporting examples; real conversations and AI practice shown separately. |
+| Home | Recent conversations and their feedback (each conversation's Top 3), recording access (manual quick-record and the state of any active recording), and feedback-ready notifications. |
+| Learn | Actionable learning content to review, save, and practice: This week's picks, Expressions, Pronunciation, and Speaking Tips. Suggested and saved items are clearly distinguished. |
+| Practice | Optional AI conversation practice, grounded in identified improvement points or, for AI-only users, in stated learning needs. |
+| Insights | Performance and progress reports: real conversations and AI practice evaluated separately, with time filters, skill progress bars, and supporting examples. |
 
-**Confirmed:** complete progress summaries and skill progress bars belong in Progress. Do not introduce a duplicate progress-summary requirement on Home.
+**Keeping the purposes distinct**
 
-The exact layout inside Progress, and how Pronunciation and Skill Clusters sit next to the real-conversation and AI-practice reports, is a layout decision still to be resolved.
+- Home shows what is new from recent conversations and how to record. It does not hold a progress dashboard.
+- Learn holds the content itself. It stays a separate tab and is not merged into Insights.
+- Insights shows whether the learner applies what they learn. It keeps the Natural Expressions skill measure, which shows whether the learner uses natural expressions in real conversations, but does not repeat the full Learn content list.
+- Practice is optional, and its results stay separate from real-conversation progress.
 
 ## 6. Functional Requirements
 
-### 6.0 Onboarding (new in v2)
+### 6.0 Onboarding
 
-| ID | Requirement (proposed Nov 12, team to confirm) |
+| ID | Requirement |
 | --- | --- |
-| ONB-01 | Ask for the target language and the languages the learner already speaks. |
-| ONB-02 | Ask for a self-rated speaking level and the everyday contexts where they use the language (e.g. work, school, friends, services). |
-| ONB-03 | Removed Nov 13: onboarding does not show a feedback sample (decided after the v2 prototype review). |
-| ONB-04 | Explain ongoing recording and ask the learner to enable it (REC-01). |
-| ONB-05 | Keep onboarding short; every step except recording activation can be skipped. |
-| ONB-06 | Use onboarding answers as a starting estimate of level, refine it from the learner's first real conversations, and let the learner adjust it. |
+| ONB-01 | Ask for the target language and the languages the learner already speaks. When the learner picks a language, show which capabilities are available for it (§6.12). |
+| ONB-02 | Ask for a self-rated speaking level, how often the learner uses the language, and the contexts where they speak it (e.g. work, school, friends, services, online conversations, community activities, travel). |
+| ONB-03 | Removed Nov 12: onboarding does not show a feedback sample. |
+| ONB-04 | Explain the two recording modes and that nothing is recorded until the learner accepts a prompt or starts a recording. Let the learner choose whether to receive recording prompts or use AI-only mode. AI-only mode is never preselected based on where the learner lives. |
+| ONB-05 | Keep onboarding short; let learners skip optional steps. |
+| ONB-06 | Use onboarding answers as a starting estimate of level, refine it from the learner's first conversations, and let the learner adjust it. |
+| ONB-07 | Offer an optional calendar connection to improve prompt timing (§6.2). The learner can skip it. |
+| ONB-08 | Personalize from level, frequency of use, and speaking contexts, not from location alone. Country of residence does not restrict real-conversation features. |
 
-To validate: whether self-rating plus early conversations is enough to tell which expressions a learner already knows. Number of steps and exact questions are TBD.
+To validate: whether self-rating plus early conversations is enough to tell which expressions a learner already knows.
 
-### 6.1 Recording and Control
+### 6.1 Recording Modes
 
-| ID | Confirmed requirement |
+Recording is always opt-in. There are two modes; both can be used by the same learner.
+
+**A. Prompted recording**
+
+| ID | Requirement |
 | --- | --- |
-| REC-01 | During first-time setup, explain ongoing recording and require the user to actively enable it. |
-| REC-02 | After activation, recording continues without a repeated daily permission prompt, subject to the user's pause state and technical availability. |
-| REC-03 | Clearly indicate whether recording is active or paused. |
-| REC-04 | Provide an obvious one-tap Pause control. |
-| REC-05 | A user-initiated pause persists until the user explicitly selects Resume. |
-| REC-06 | Do not impose a fixed 2–3 minute recording limit. |
+| REC-01 | The app may prompt the learner to record when a conversation may be worth capturing. Nothing is recorded or buffered before the learner accepts the prompt. |
+| REC-02 | A prompted recording lasts a default duration of 2–3 minutes, adjustable in settings. |
+| REC-03 | The learner can stop a prompted recording early. |
+| REC-04 | Once the learner has two usable captures in a day, stop proactive prompts for the rest of that day. Manual recordings count toward this threshold. |
+| REC-05 | After the threshold is reached, the learner can still record manually. |
 
-To validate: background operation, operating-system constraints, battery impact, recording reliability, and recovery after interruptions. The product must not imply it is recording when capture is unavailable. Handling app restarts, device restarts, and permission changes is TBD, while preserving an intentional pause is mandatory.
+**The two-capture threshold is not a daily goal.** It only controls when proactive prompts stop. It is not a task the learner has to complete.
 
-One-time product activation does not define consent handling for other participants. Participant notice/consent, recording exclusions, and related launch requirements remain TBD (see §11). No legal compliance claim is made by this PRD.
-
-### 6.2 Conversation Processing and Speaker Attribution
-
-| ID | Confirmed requirement |
+| ID | Requirement |
 | --- | --- |
-| CON-01 | Organize captured speech into conversations and produce transcripts with relevant context. |
+| REC-11 | Do not set a required daily recording count or speaking duration. |
+| REC-12 | Do not penalize the learner for declining or ignoring prompts (no lost streaks, lowered progress, or warnings). |
+| REC-13 | Do not show messages that frame captures as a quota, such as "one recording left to complete today". |
+| REC-14 | Keep AI practice optional; never present it as a substitute task when the learner does not record. |
+
+TBD: how prompt frequency changes when prompts are ignored or declined.
+
+**B. Manual quick-record**
+
+Manual recording is for moments the learner chooses to capture:
+
+- Everyday conversations.
+- Classroom discussions.
+- The learner's own presentations and speaking practice.
+
+Classes and presentations can run much longer than a prompted capture, so a manual recording continues until the learner stops it rather than using the prompted-recording time limit.
+
+| ID | Requirement |
+| --- | --- |
+| REC-06 | Provide a one-tap entry point to start recording. |
+| REC-07 | The learner explicitly starts a manual recording and stops it manually. It is not limited to the prompted-recording duration. |
+| REC-15 | In every manual use case, distinguish the learner's own speech from other speakers (classmates, instructors, audience) and assess only the learner (§6.3). |
+
+**Both modes**
+
+| ID | Requirement |
+| --- | --- |
+| REC-08 | Clearly show when recording is active, with a way to stop it. |
+| REC-09 | The product must not imply it is recording when it is not, or that it is not recording when it is. |
+| REC-10 | Turning recording prompts off does not disable manual recording. |
+
+A shortcut similar to a Control Center toggle or Shazam's quick-capture is a reference interaction for manual quick-record, not a confirmed platform capability; its implementation feasibility is TBD.
+
+TBD: the exact default duration, the allowed duration settings, what counts as a usable capture, and prompt frequency when prompts are ignored or declined.
+
+**User controls and remaining privacy risks**
+
+The learner controls recording: nothing is captured until they accept a prompt or start a recording, they can stop at any time, recording is clearly shown while active, and prompts can be turned off. These controls reduce but do not remove privacy risk:
+
+- Other people in a conversation, class, or presentation have not necessarily agreed to be recorded.
+- Retained learning outputs can still contain sensitive details (§6.4).
+- Classroom and presentation recordings may capture many other speakers.
+
+Starting a recording manually does not move all responsibility to the learner or remove the product's own privacy responsibilities, such as clear recording states, data minimization, and deletion. Participant notice/consent and situations where recording should not proceed are TBD. Legal requirements for recording differ by place; this PRD makes no legal conclusions or compliance claims, and legal review is needed before real-world use.
+
+### 6.2 Optional Calendar Connection
+
+| ID | Requirement |
+| --- | --- |
+| CAL-01 | Offer an optional calendar connection, during onboarding and later in settings, to improve the timing of recording prompts. |
+| CAL-02 | Calendar events never start recording automatically. The learner must still accept a prompt or start a manual recording. |
+| CAL-03 | The product works fully without a calendar connection. |
+
+TBD: calendar-based timing rules, calendar permissions requested, and how suitable or excluded events are identified and handled.
+
+### 6.3 Conversation Processing and Speaker Attribution
+
+| ID | Requirement |
+| --- | --- |
+| CON-01 | Organize each capture into a conversation and analyze it. |
 | CON-02 | Distinguish the learner's speech from other speakers' speech. |
 | CON-03 | Use only the learner's own speech for progress assessment. |
-| CON-04 | Allow useful expressions from any speaker to become learning content. |
+| CON-04 | Allow useful expressions spoken by any speaker to become learning content. |
 | CON-05 | Clearly attribute learning examples to the learner or another speaker. |
-| CON-06 | Retain only transcripts, expressions, and context from other speakers as learning records; do not retain their playable original audio. |
-| CON-07 | Make the learner's original pronunciation audio available alongside a model pronunciation in relevant feedback. |
 
-To validate: conversation-boundary detection, speaker identification, mixed-language handling, transcription quality, and separating learner audio from other speakers' audio. Temporary processing of shared audio and deletion of non-learner audio require an explicit implementation policy before launch.
+To validate: speaker identification, mixed-language handling, and transcription quality on short captures and on longer manual recordings with many speakers, such as classes.
 
 Proposed error behavior, to validate: when speaker attribution is uncertain, withhold affected speech from scoring rather than assigning another person's speech to the learner.
 
-### 6.3 Conversation Feedback
+### 6.4 Data Retention and Privacy
 
-| ID | Confirmed requirement |
+After a capture is analyzed:
+
+| ID | Requirement |
 | --- | --- |
-| FDB-01 | Generate feedback after a conversation, without interrupting the conversation with required learning actions. |
-| FDB-02 | Show a Top 3 summary of the most important improvements at the top of each conversation's feedback. |
-| FDB-03 | Show fewer than three when fewer meaningful recommendations exist. |
-| FDB-04 | Below the Top 3, list all other learning points from the conversation (further improvements and useful expressions), each attributed to who said it. |
-| FDB-05 | Present each improvement as conversation context and the learner's original wording, followed by a suggested alternative. |
-| FDB-06 | Each improvement may include an optional one-line reason, collapsed by default and shown on tap. |
-| FDB-07 | Cover relevant pronunciation, grammar, structure, expression, and cultural-context opportunities. |
+| DAT-01 | Delete the captured audio. |
+| DAT-02 | Delete the complete transcript. |
+| DAT-03 | Retain only learning outputs and the minimum information needed to support them. |
 
-TBD: how the Top 3 are chosen. Candidate considerations include impact on understanding, recurrence, and usefulness in upcoming everyday interactions. These are proposed criteria, not a finalized algorithm.
+Retained learning outputs may include:
 
-Suggested wording must preserve the learner's intended meaning and suit the conversation context. The method for evaluating this requirement is to validate.
+- Relevant excerpts of original sentences (for example, the sentence an improvement point quotes).
+- Brief conversation context (for example, "Coffee chat with Maya, casual").
+- Extracted or saved expressions, including ones other people said, kept as text with their context.
+- Suggested alternatives and feedback.
+- Skill assessment results and the supporting learning evidence.
 
-### 6.4 Expressions and Saving
+Deleting the complete transcript is different from keeping selected excerpts. Confirmed: full audio and full transcripts are deleted after analysis. Necessary original excerpts, brief context, expressions, and feedback may remain as learning outputs. This document does not claim that no conversation content is retained.
 
-| ID | Confirmed requirement |
+**Proposed safeguards for retained learning outputs (pending validation)**
+
+Deleting full audio and transcripts does not guarantee that the excerpts and feedback that remain are free of sensitive information.
+
+| ID | Proposed safeguard |
 | --- | --- |
-| EXP-01 | Automatically identify potentially useful expressions from recorded conversations. |
-| EXP-02 | Let users manually save the items they want to revisit or practice, preserving the existing behavior. Saved items appear in Vocab. |
-| EXP-03 | Include everyday expressions and phrases, not only slang. |
-| EXP-04 | Keep expressions connected to their original conversation context. |
-| EXP-05 | Base recommendations on actual conversations rather than a fixed quota of two new suggestions per week. |
-| EXP-06 | Clearly distinguish Save actions from Practice actions. |
+| SAF-01 | Minimize unnecessary personal names, company details, medical details, and other sensitive context in retained learning outputs. |
+| SAF-02 | Keep enough context for feedback to stay useful, without retaining conversation details the feedback does not need. |
+| SAF-03 | Let the learner delete individual learning outputs. |
 
-Expressions spoken by others may be retained as text with context. Their usage must not be credited as evidence that the learner used the expression.
+The product cannot guarantee that sensitive information is always detected or removed. Detection methods, whether learners review outputs before they are kept, and how individual deletion behaves are TBD.
 
-### 6.5 Pronunciation
+TBD: exact deletion timing, how long data is kept during processing, what happens when processing fails, storage location and processor behavior, participant notice/consent, and learner deletion controls. Whether AI practice chat transcripts follow the same deletion policy is also TBD. No privacy or compliance claim beyond these requirements is made.
 
-| ID | Confirmed requirement |
+### 6.5 Conversation Feedback
+
+Each improvement point follows **brief context → original wording → suggested alternative**. For example:
+
+- Context: Grammar · coffee chat with Maya
+- You said: "I have went to Tilden last month."
+- Try: "I went to Tilden last month."
+
+| ID | Requirement |
+| --- | --- |
+| FDB-01 | Generate feedback after a capture, without interrupting the conversation. |
+| FDB-02 | Show at most three prioritized improvement points at the top of each conversation's feedback. |
+| FDB-03 | Show fewer than three when fewer are useful; do not force three suggestions. |
+| FDB-04 | Make additional learning points available below the top points when relevant, each attributed to who said it. |
+| FDB-05 | Present each improvement point as brief context, the learner's original wording, then a suggested alternative. |
+| FDB-06 | A separate "Why?" explanation field is not required. |
+| FDB-07 | Cover relevant expression, pronunciation, grammar, structure, tone, and cultural-context opportunities. |
+| FDB-08 | Let the learner save any point or expression to Learn, and optionally start a related AI practice. Saving does not start practice. |
+
+TBD: how the top points are chosen. Candidate considerations include impact on understanding, recurrence, and usefulness in upcoming everyday interactions. These are proposed criteria, not a finalized algorithm.
+
+Suggested wording must preserve the learner's intended meaning and suit the conversation context. The method for evaluating this is to validate.
+
+### 6.6 Learn
+
+Learn is a separate tab for actionable learning content. It is organized by learning type, and each type uses its own format rather than one vocabulary-flashcard format.
+
+| Category | What it holds | Format |
+| --- | --- | --- |
+| Expressions | Vocabulary, phrases, slang, and everyday expressions | The expression, its meaning, and the context it is used in |
+| Pronunciation | Pronunciation improvement opportunities found in the learner's speech | The word or phrase, tap-to-play model pronunciation, and a short pronunciation cue where useful |
+| Speaking Tips | Grammar, sentence structure, tone, and cultural context | Original wording → suggested alternative, with brief context |
+
+| ID | Requirement |
+| --- | --- |
+| LRN-01 | Automatically extract learning content from analyzed conversations into the three categories. |
+| LRN-02 | Let learners manually save the items they want to revisit or practice. |
+| LRN-03 | Clearly distinguish suggested items (extracted, not yet saved) from saved items. |
+| LRN-04 | Keep each item connected to its brief conversation context and attributed to who said it. |
+| LRN-05 | Include everyday expressions and phrases, not only slang. |
+| LRN-06 | Do not cap how many items are extracted or saved. |
+| LRN-07 | Clearly distinguish Save actions from Practice actions. |
+| LRN-08 | Use the format for each category shown above; do not present all content as vocabulary flashcards. |
+
+Expressions spoken by others may be retained as text with context. Their use by others is not evidence that the learner used them.
+
+**This week's picks**
+
+| ID | Requirement |
+| --- | --- |
+| PCK-01 | Show two highlighted expressions per week at the top of Learn. |
+| PCK-02 | Prioritize relevance to the learner's recent conversations and needs. |
+| PCK-03 | For AI-only learners, picks may draw on AI practice and stated learning needs. |
+| PCK-04 | Each pick shows the expression, its meaning, and the context it relates to, and can be saved. |
+| PCK-05 | Picks are recommendations, not a limit on other extracted or saved content. |
+
+TBD: how picks are selected and what happens when there are fewer than two good candidates.
+
+### 6.7 Pronunciation
+
+| ID | Requirement |
 | --- | --- |
 | PRO-01 | Identify pronunciation opportunities in the learner's speech. |
 | PRO-02 | Prioritize recurring issues and issues that affect understanding. |
-| PRO-03 | Do not mark accent differences as errors when they do not affect understanding. |
-| PRO-04 | Provide separate, clearly labeled controls for learner audio and model pronunciation. |
-| PRO-05 | Play audio only when the user selects a playback control. |
+| PRO-03 | Do not automatically treat accent differences that do not affect understanding as errors. |
+| PRO-04 | Provide tap-to-play model pronunciation for each pronunciation item. |
+| PRO-05 | Give textual pronunciation feedback (for example, which syllable to stress). |
+| PRO-06 | Play audio only when the learner taps a playback control. |
 
-The goal is clearer communication, not eliminating the learner's accent. Pronunciation assessment accuracy and suitable reference pronunciations are to validate.
+Because captured audio is deleted after analysis, the product does not offer playback of the learner's own recording or an original-audio comparison. The goal is clearer communication, not eliminating the learner's accent. Assessment accuracy, suitable reference pronunciations, and coverage of dialects and accents (§6.12) are to validate.
 
-### 6.6 Skill Clusters and Progress Bars
+**Future assessment capabilities (to validate, not committed for this iteration):** intonation, pausing, and speech chunking were raised as potentially useful feedback, especially for presentations. They are not part of this iteration's requirements.
 
-| ID | Confirmed requirement |
-| --- | --- |
-| SKL-01 | Include grammar, sentence structure, and cultural context within Skill Clusters. |
-| SKL-02 | Show progress bars for assessed skills in Progress. |
-| SKL-03 | Support progress displays with actual conversation examples, including earlier and more recent performance where available. |
-| SKL-04 | Assess real-conversation progress using only the learner's own speech. |
-| SKL-05 | Keep AI practice assessment separate from real-conversation assessment. |
+### 6.8 AI Partner Practice
 
-**Scoring status:** detailed rubrics, thresholds, and aggregation methods are explicitly to validate. Progress bars are approved as a presentation format; this does not approve a fabricated numeric scoring system.
-
-The intended meaning of a full bar is consistent demonstration of the assessed skill in observed conversations, not complete mastery of a language.
-
-Before production scoring, define and test:
-
-- What each skill measures and what observable performance counts as improvement.
-- How a personal baseline is established (starting from onboarding, ONB-06).
-- The minimum amount and variety of evidence required.
-- How multiple conversations are aggregated and how recent evidence is weighted.
-- How conversational difficulty and opportunities to demonstrate a skill affect comparison.
-- How uncertainty and insufficient evidence appear to users.
-
-Missing evidence must not automatically count as failure or regression. A learner may not have had an opportunity to use a particular expression or skill in the recorded sample.
-
-### 6.7 AI Partner Practice
-
-| ID | Confirmed requirement |
+| ID | Requirement |
 | --- | --- |
 | PRA-01 | Retain the existing AI partner practice capability. |
-| PRA-02 | Offer practice based on improvement opportunities from real conversations. |
-| PRA-03 | Let users choose whether and when to practice. |
+| PRA-02 | Offer practice based on improvement points from real conversations, or on stated learning needs for AI-only learners. |
+| PRA-03 | Let learners choose whether and when to practice. |
 | PRA-04 | Do not require daily practice tasks. |
-| PRA-05 | Assess practice separately and display its results in Progress. |
+| PRA-05 | Assess practice separately and show its results in Insights. |
 
-Example: if a learner struggled to express a request while ordering food, offer a similar scenario in which they can try the suggested wording.
+Example: if a learner struggled to make a request while ordering food, offer a similar scenario to try the suggested wording.
 
-### 6.8 Reports
+### 6.9 Insights Reports
 
-| ID | Confirmed requirement |
+| ID | Requirement |
 | --- | --- |
-| RPT-01 | Keep reports inside the existing Progress tab; do not add a separate Reports tab. |
-| RPT-02 | Present real-conversation results and AI practice results separately within this area. |
+| RPT-01 | Keep reports inside Insights; do not add a duplicate progress dashboard to Home. |
+| RPT-02 | Evaluate and present real-conversation results and AI practice results separately. |
 | RPT-03 | Provide This Week, This Month, and All Time filters. |
 | RPT-04 | Default to This Week. |
-| RPT-05 | Make skill progress and its supporting evidence available in the reports. |
+| RPT-05 | Show skill progress bars supported by concrete examples from the learner's own speech. |
+| RPT-06 | Show counts that can be checked against captures (for example, new expressions used in real conversations), not a score. |
+| RPT-07 | Do not repeat the full Learn content list. |
+| RPT-08 | For AI-only learners, show an appropriate empty state for real-conversation reports. |
+| RPT-09 | Never present AI practice performance as evidence of real-world improvement. |
 
-TBD: calendar-week boundaries, time-zone handling, and exact report layout. No new Home progress dashboard is required.
+**Skill progress bars.** Skill measures cover natural expressions, grammar, sentence structure, pronunciation, and cultural context, assessed only from the learner's own speech. Each bar opens to concrete examples, such as an earlier and a more recent instance of the same kind of moment. A full bar means the skill is shown consistently in observed conversations, not mastery of the language. Detailed scoring rubrics, evidence thresholds, and aggregation methods are to validate; progress bars are approved as a presentation format, not a scoring formula. Missing evidence must not count as failure or regression.
 
-### 6.9 Notifications
+TBD: calendar-week boundaries, time-zone handling, and exact report layout.
 
-| ID | Confirmed requirement |
+### 6.10 AI-Only Mode
+
+| ID | Requirement |
 | --- | --- |
-| NTF-01 | Offer a notification when post-conversation feedback is ready. |
-| NTF-02 | Let users disable these notifications. |
-| NTF-03 | Let users ignore the notification and review feedback later. |
-| NTF-04 | Do not expose conversation quotations on the lock screen. |
+| AIO-01 | Let learners turn recording prompts off completely and keep using AI conversation practice. |
+| AIO-02 | Turning prompts off does not disable manual recording. |
+| AIO-03 | Learn and Practice work for AI-only learners; Insights shows AI practice results and an empty state for real-conversation reports. |
+| AIO-04 | AI-only mode is the learner's choice. Do not assign it based on country of residence; learners can switch it on or off at any time. |
 
-Example copy: "Your latest conversation has 2 points to review." Final copy is TBD. Delivery timing, batching, and frequency controls need validation to avoid excessive notifications.
+### 6.11 Notifications
 
-## 7. Primary User Journey
+| ID | Requirement |
+| --- | --- |
+| NTF-01 | Deliver recording prompts as notifications the learner can accept or ignore; no recording starts unless they accept. |
+| NTF-02 | Offer a notification when post-conversation feedback is ready. |
+| NTF-03 | Let learners turn each kind of notification off. |
+| NTF-04 | Let learners ignore a notification and review feedback later. |
+| NTF-05 | Do not show conversation quotations on the lock screen. |
+| NTF-06 | Do not frame captures or practice as quotas, streaks, or missed tasks in any notification (see REC-11 to REC-14). |
 
-1. In a short onboarding, the learner picks their language, rates their level, and names the contexts where they speak it.
-2. The learner understands the ongoing-recording behavior and activates it.
-3. Recording continues while enabled. The learner can pause before sensitive interactions and manually resume later.
-4. The system identifies a completed conversation, produces a transcript, and separates learner speech from other speakers.
-5. It generates a Top 3 summary of improvements, plus all other learning points and contextual expressions worth learning.
-6. The learner receives a notification if enabled and opens the feedback when convenient.
-7. The learner reviews original wording and suggested alternatives (opening a one-line reason if they want it), saves useful expressions to Vocab, or listens to pronunciation comparisons.
-8. The learner optionally practices related situations with the AI partner.
-9. In later real conversations, the system looks for evidence of improvement in the learner's own speech.
-10. Progress reports show real-conversation progress and AI practice results separately, defaulting to This Week.
+Example copy: "Your latest conversation has 2 points to review." Final copy, delivery timing, batching, and frequency are TBD.
+
+### 6.12 Language and Dialect Support
+
+The product must be transparent about what it supports. This PRD does not define a supported-language list; specific coverage is TBD.
+
+| ID | Requirement |
+| --- | --- |
+| LNG-01 | Clearly show which languages are supported. |
+| LNG-02 | For each language, show which capabilities are available: AI conversation, transcription, pronunciation feedback, and skill assessment. |
+| LNG-03 | Clearly state known limitations in dialect or accent coverage. |
+| LNG-04 | Do not give confident assessments for language varieties the product does not support. Where coverage is limited, say so instead of scoring. |
+| LNG-05 | Do not automatically treat accent differences that do not affect understanding as errors (see PRO-03). |
+
+TBD: the supported languages, the capabilities available for each, known dialect and accent limitations, and how limited coverage is communicated in the interface.
+
+## 7. Primary User Journeys
+
+**Learner in a target-language environment**
+
+1. In a short onboarding, the learner picks their language and sees which capabilities it supports, rates their level, says how often they use the language and where they speak it, chooses to receive recording prompts, and optionally connects a calendar.
+2. Before a conversation, the learner either accepts a recording prompt or taps manual quick-record. Nothing is recorded before that. For a class discussion or their own presentation, they use manual quick-record.
+3. A prompted recording runs for its set duration unless stopped early; a manual recording runs until the learner stops it. The app clearly shows that recording is active.
+4. After two usable captures in a day, proactive prompts stop for that day; manual recording stays available. Days with fewer captures, or none, carry no penalty.
+5. The capture is analyzed, assessing only the learner's own speech. Audio and the complete transcript are deleted; learning outputs are kept, and the learner can delete individual outputs (proposed safeguard).
+6. The learner gets a feedback-ready notification if enabled and opens the feedback when convenient.
+7. For each of up to three top points, the learner sees brief context, what they said, and what to try. Additional points appear below when relevant.
+8. The learner saves useful items to Learn, or starts an optional related practice.
+9. In Learn, the learner reviews This week's picks, Expressions, Pronunciation (with model playback), and Speaking Tips.
+10. In later captures, the system looks for evidence of improvement in the learner's own speech.
+11. Insights shows real-conversation progress and AI practice results separately, defaulting to This Week.
+
+**Learner outside a target-language country**
+
+1. In onboarding, the learner says they use the language in online conversations and a weekly class. They are offered the same options as everyone else; AI-only mode is not preselected.
+2. They record selected online conversations with prompts or quick-record, and record class discussions manually.
+3. From there, the journey follows steps 5–11 above.
+
+**AI-only learner**
+
+1. In onboarding, the learner chooses to turn recording prompts off (AI-only mode). Manual recording stays available if they later want it.
+2. Learn shows This week's picks based on AI practice and stated learning needs.
+3. The learner practices with the AI partner.
+4. Insights shows AI practice results and an empty state for real-conversation reports. AI performance is not presented as real-world improvement.
 
 ## 8. Prototype Requirements and Acceptance Criteria
 
-The updated prototype should make the confirmed experience reviewable without claiming unbuilt recording or scoring capabilities.
+The prototype should make these requirements reviewable without claiming unbuilt recording, analysis, or scoring capabilities. Status reflects the current prototype at the site root.
 
-| Area | Acceptance criteria |
-| --- | --- |
-| Existing navigation | Home, Vocab, Practice, and Progress remain available. |
-| Onboarding | A short onboarding asks for language, level, and contexts, and activates recording; optional steps can be skipped. |
-| Recording state | Active and paused states are distinguishable; Pause changes the state and Resume is required to reactivate it. |
-| Feedback | A conversation shows a Top 3 summary at the top, each with context, original wording, and a suggested alternative; a one-line reason opens on tap. All other learning points are listed below. |
-| Learning content | Automatically extracted items can be manually saved to Vocab; saving does not start practice. |
-| Speaker distinction | Examples show whether the learner or another person spoke; other speakers do not contribute to the learner's score. |
-| Pronunciation | Learner and model audio controls are separate and user initiated; no playable other-speaker audio appears. |
-| Skill evidence | Progress bars link to inspectable examples rather than appearing as unexplained scores. |
-| Practice | A feedback item can lead to optional related AI practice. |
-| Reports | Real conversation and AI practice remain separate in Progress; This Week is the default, with This Month and All Time available. |
-| Notifications | A feedback-ready notification is represented, can be disabled, and contains no conversation quotations. |
+| Area | Acceptance criteria | Current prototype |
+| --- | --- | --- |
+| Navigation | Tabs read Home / Learn / Practice / Insights, each with its stated purpose. | Tabs read Home / Vocab / Practice / Progress |
+| Onboarding | Asks for language, level, frequency of use, and speaking contexts; explains the two recording modes; offers prompts or AI-only mode without preselecting by location; offers an optional calendar connection. | Partly: language, level, contexts; no frequency question; recording step shows the earlier always-on design |
+| Language support | Supported languages and per-language capabilities are shown; known dialect or accent limits are stated; unsupported varieties get no confident assessment. | Not built |
+| Prompted recording | A prompt can be accepted or ignored; nothing records before acceptance; recording shows as active, can be stopped early, and ends after its duration; prompts stop after two usable captures that day. | Not built |
+| No daily quota | No required daily count or duration, no penalty for declined or ignored prompts, and no "recordings left today" messaging anywhere. | Not built (no prompts yet); check existing copy when prompts are added |
+| Manual quick-record | A one-tap entry starts recording; the learner stops it manually; active recording is clearly shown; available even with prompts off; fits conversations, classes, and the learner's own presentations. | Not built (prototype shows an always-on pause/resume pill) |
+| Calendar | Calendar connection is optional and never starts recording. | Not built |
+| Data retention | Prototype documentation states that audio and complete transcripts are deleted after analysis and which learning outputs are kept. | Not built |
+| Learning-output safeguards (proposed) | A learner can delete an individual learning output; sample outputs avoid unnecessary names, company, or medical details. | Not built |
+| Feedback | Up to three points, each as brief context → original wording → suggested alternative, with more points when relevant; no "Why?" field required. | Built (also shows an optional "Why?") |
+| Learn | Expressions, Pronunciation, and Speaking Tips, each in its own format; suggested vs saved is clear; saving does not start practice. | Partly: one Vocab list with New / Saved / Practiced filters and flashcards |
+| This week's picks | Two highlighted expressions at the top of Learn, each savable. | Not built |
+| Pronunciation | Tap-to-play model pronunciation and a text cue; no playback of the learner's own audio. | Partly: model playback built; also shows "Your audio (simulated)", which should be removed |
+| Speaker distinction | Examples show who spoke; other speakers do not count toward the learner's progress. | Built |
+| Practice | A feedback item can lead to optional related AI practice. | Built |
+| Insights | Real conversations and AI practice separate; This Week default plus This Month and All Time; skill bars open to examples; empty real-conversation state for AI-only learners. | Partly: built as Progress; AI-only empty state not built |
+| Notifications | Recording prompts and feedback-ready notifications are represented, can be turned off, and contain no quotations. | Partly: feedback-ready banner and toggle built; recording prompts not built |
 
-Use representative sample conversations where backend functions are unavailable. Label simulated scores and states clearly in prototype documentation. Exact scoring and continuous-recording feasibility remain validation tasks.
+Use representative sample conversations where backend functions are unavailable, and label simulated states and sample data clearly.
 
 ## 9. Validation Plan
 
 **Usability and desirability**
 
-- Does onboarding give enough context that the conversations and feedback make sense without a sample?
-- Do learners feel the feedback matches their level?
-- Can users understand the recording state and pause it without assistance?
-- Do they understand that a pause will remain until they manually resume?
-- Do they find the Top 3 relevant and easy to act on? Do they open the one-line reasons?
-- Can they distinguish extracted expressions, saved items, and practice actions?
-- Can they understand a progress bar by inspecting its supporting examples?
-- Can they distinguish real-conversation performance from AI practice performance?
-- Are feedback notifications useful without feeling disruptive?
+- Do learners understand that nothing is recorded until they accept a prompt or start a recording?
+- Do they accept prompts, and do 2–3 minutes capture enough of a conversation?
+- Do users remember to use quick-record during relevant moments?
+- Can they find and operate the quick-record shortcut with minimal effort?
+- Do prompts arrive at inappropriate or disruptive times, with and without a calendar connection?
+- Do users understand exactly when recording starts and stops, and can they stop it without help?
+- Do users understand exactly what is deleted after analysis and what remains?
+- How do privacy expectations differ across speaking contexts (everyday conversations, classes, work, presentations)?
+- Do users read the two-capture threshold as a goal they must meet?
+- How do needs vary by language level and by how often the learner is exposed to the target language?
+- Do learners understand which capabilities are available for their language and variety?
+- Does onboarding give enough context that the feedback makes sense, and does feedback match their level?
+- Do they find the top points relevant and easy to act on?
+- Do they understand the difference between Learn (content) and Insights (whether they apply it)?
+- Do the three Learn categories and their formats match how learners think about the content?
+- Are This week's picks useful?
+- Is model pronunciation with a text cue enough without hearing their own audio?
+- Do AI-only learners find the product useful, and do they understand the real-conversation empty state?
+- Can learners distinguish real-conversation performance from AI practice performance?
+- Are notifications useful without feeling disruptive?
 
-Where possible, evaluate feedback from conversations the participant actually completed, addressing a limitation of the earlier study.
+- Is feedback more useful when based on a conversation the participant actually completed?
+
+Where possible, test with realistic interactions, including conversations the participant actually completed, rather than only predetermined sample conversations.
 
 **Technical validation**
 
-- Background capture reliability and battery impact.
-- Accurate speaker attribution and preservation of learner-only audio examples.
-- Conversation segmentation and feedback readiness.
-- Transcription accuracy, including mixed-language conversations.
-- Contextually appropriate recommendations and pronunciation assessment.
+- Prompt timing and acceptance; quick-record entry points on each platform.
+- Speaker attribution and transcription quality on short captures and long multi-speaker recordings (classes, presentations), including mixed-language conversations.
+- Coverage and accuracy for each supported language, dialect, and accent.
+- Deleting audio and complete transcripts reliably after analysis.
+- Whether unnecessary sensitive details can be reduced in retained outputs while keeping feedback useful (proposed safeguards SAF-01 and SAF-02).
+- Future capabilities: whether intonation, pausing, and speech chunking can be assessed reliably.
+- Contextually appropriate recommendations, weekly pick selection, and pronunciation assessment.
 - Level estimation from onboarding and early conversations.
-- Stable skill scoring supported by sufficient evidence.
+- Stable skill measures supported by sufficient evidence.
 
 ## 10. Proposed Success Measures
 
@@ -316,51 +507,69 @@ These are evaluation proposals, not confirmed numerical targets. Set definitions
 
 | Measure | What it helps evaluate |
 | --- | --- |
+| Prompt acceptance rate and usable captures per day | Whether prompted recording fits into the learner's day. |
+| Manual quick-record use | Whether learners capture conversations on their own initiative. |
 | Feedback usefulness rating | Whether recommendations are relevant and actionable. |
-| Save and optional practice usage | Whether users choose to engage with extracted learning opportunities. |
+| Save and optional practice usage | Whether learners engage with learning content. |
 | Later application of recommendations | Whether learning transfers into real conversations. |
-| Progress-report comprehension | Whether users correctly understand what the bars and evidence represent. |
-| Notification usefulness and disable rate | Whether reminders support engagement without excessive interruption. |
-| Recording-state comprehension and pause-task success | Whether users can control capture confidently. |
+| Insights comprehension | Whether learners correctly understand the bars and examples. |
+| Recording-state comprehension | Whether learners know when they are being recorded and can stop it. |
+| Notification usefulness and disable rate | Whether notifications help without excessive interruption. |
 | Onboarding completion and perceived level fit | Whether the starting level estimate makes early feedback feel right. |
 | Assessment agreement with human review | Whether feedback and skill judgments are credible. |
 
-Do not use raw recording duration or vocabulary count alone as evidence of learning success.
+Do not use raw recording duration or vocabulary count alone as evidence of learning success. Captures per day is a team evaluation measure, never a target shown to learners.
 
-## 11. Outstanding Implementation Decisions
+## 11. Current Prototype Summary
 
-These items remain unresolved and must not be presented as validated behavior:
+For reviewers comparing the prototype at the site root with this document. The prototype predates some confirmed decisions:
 
-| Item | Required next step |
+- **Onboarding:** three steps; the last turns on always-on recording. No frequency-of-use question, language-support information, prompt choice, AI-only mode, or calendar step.
+- **Home:** an always-on Recording / Paused pill with Pause and Resume, a feedback-ready banner, a notifications toggle, and the latest conversation's Top 3. No prompted recording or manual quick-record.
+- **Conversation feedback:** Top 3 as context → "You said" → "Try" (built), an optional "Why?", Save, I know this, and "Try it in a chat"; then all learning points. Pronunciation points show "Your audio (simulated)" and "Model".
+- **Vocab:** one list with New / Saved / Practiced filters and flashcards; no categories or weekly picks.
+- **Practice:** pick a person from your conversations; recap compares then and now.
+- **Progress:** real conversations and AI practice, time filters, counts, skill bars with Before / Now examples.
+
+Recording, notifications, learner audio, skill levels, and earlier periods are simulated or sample data.
+
+## 12. Remaining Technical and Operational TBDs
+
+| Area | TBD |
 | --- | --- |
-| Participant recording controls | Define participant notice/consent and situations where recording should not proceed. Ongoing recording is the product's core assumption, and some places, including California where the team is based, generally require every party's consent to record a private conversation. Get advice before any real-world use. |
-| Ongoing recording feasibility | Test platform support, battery use, interruptions, and recovery. |
-| Speaker identification | Define enrollment or identification method and uncertainty handling. |
-| Other-speaker audio handling | Define temporary processing and deletion so retained learning records contain only their text, expressions, and context. |
-| User data controls | Define deletion, export, storage location, access controls, and retention periods. |
-| Level calibration | Define how onboarding answers and early conversations estimate what the learner already knows, and test how accurate it is. |
-| Conversation boundaries | Test how the system separates interactions and determines when feedback is ready. |
-| Scoring | Define skill rubrics, baseline, evidence thresholds, aggregation, and uncertainty displays. |
-| Feedback prioritization | Define how the system chooses the Top 3 recommendations. |
-| Reports and navigation | Resolve the detailed layout within Progress and calendar/time-zone semantics. |
-| Notifications | Test delivery delay, batching, and frequency. |
+| Prompted recording | Exact default duration; allowed duration settings; definition of a usable capture; prompt frequency when prompts are ignored or declined. |
+| Manual quick-record | Feasibility of a Control Center or Shazam-like shortcut on each platform; handling of long recordings such as classes. |
+| Language support | Supported languages; capabilities available for each; known dialect and accent limitations; how limited coverage is shown. |
+| Retained-output safeguards | Sensitive-detail detection methods; whether learners review outputs before they are kept; behavior of individual deletion. |
+| Calendar | Timing rules; permissions requested; how suitable and excluded events are identified and handled. |
+| Data retention | Exact deletion timing; temporary retention during processing; failure handling; storage location and processor behavior; learner deletion controls. |
+| AI practice data | Whether AI chat transcripts follow the same deletion policy. |
+| Participant consent | Participant notice/consent and situations where recording should not proceed; legal advice before real-world use. |
+| Speaker identification | Identification method and handling of uncertain attribution. |
+| Level calibration | How onboarding answers and early conversations estimate what the learner already knows. |
+| Feedback prioritization | How the top points are chosen. |
+| Weekly picks | Selection method; behavior when there are fewer than two good candidates. |
+| Scoring | Skill rubrics, baseline, evidence thresholds, aggregation, and uncertainty display. |
+| Reports | Calendar-week boundaries, time-zone handling, and detailed Learn and Insights layouts. |
+| Notifications | Final copy, delivery timing, batching, and frequency. |
+| Future assessment | Whether and how to assess intonation, pausing, and speech chunking. |
 
-## 12. Changes from Prototype A
+## 13. Changes from Prototype A
 
 | Area | Updated requirement |
 | --- | --- |
-| Audience | Focus on learners living in a target-language environment. |
-| Onboarding | New short onboarding: language, self-rated level, contexts, and recording activation. |
-| Learning focus | Expand from vocabulary and expressions to actual speaking performance. |
-| Recording | First-time activation followed by ongoing capture, with one-tap pause and manual resume; no daily prompt. |
-| Feedback | A Top 3 summary of improvements at the top, showing context, original wording, and alternatives, with an optional one-line reason; all other learning points listed below. |
-| Expressions | Context-based recommendations without weekly quotas; retain automatic extraction, manual saving to Vocab, and flashcard review. |
-| Pronunciation | Learner/model audio comparison focused on intelligibility and recurring issues. |
-| Progress | Skill bars supported by evidence; scoring rules remain to validate. Replaces the fixed weekly goals ("3 new phrases used", "5 practiced") in Prototype A. |
-| Speaker scope | Assess only the learner; retain other speakers' text and contextual expressions for learning. |
-| Practice | Keep optional AI partner practice tied to real-conversation feedback. |
-| Reports | Keep both assessment types separate inside Progress; This Week, This Month, and All Time filters. |
-| Notifications | Optional post-conversation feedback notifications without lock-screen quotations. |
-| Navigation | Preserve the existing four tabs (Home, Vocab, Practice, Progress); simplify content and clarify actions. |
+| Audience | Primary: learners in a target-language environment. Learners elsewhere can use real-conversation features too; country is not a requirement. Secondary: learners who rely mainly on AI practice (AI-only mode, chosen by the learner). |
+| Onboarding | New short onboarding: language (with its supported capabilities), level, frequency of use, speaking contexts, recording prompt choice, optional calendar connection. |
+| Recording | Two opt-in modes, prompted (default 2–3 minutes, stop early, prompts end after two usable captures a day, which is not a daily goal) and manual quick-record for conversations, classes, and presentations. No always-on or automatic recording. |
+| Language support | Supported languages, per-language capabilities, and dialect or accent limits are shown; no confident assessment of unsupported varieties. |
+| Calendar | Optional connection to time prompts; never starts recording. |
+| Data | Audio and complete transcripts deleted after analysis; only learning outputs kept. Proposed: minimize sensitive details in outputs and let learners delete individual outputs. |
+| Feedback | Up to three points as brief context → original wording → suggested alternative; more when relevant; no required "Why?". |
+| Learn | Separate tab with Expressions, Pronunciation, and Speaking Tips, each in its own format; suggested vs saved clear; two weekly picks. |
+| Pronunciation | Tap-to-play model pronunciation and text cues; no playback of the learner's own audio. |
+| Insights | Formerly Progress. Real conversations and AI practice separate; time filters; skill bars with examples; AI-only empty state; no fixed weekly goals. |
+| Practice | Optional AI practice tied to real-conversation feedback or stated needs. |
+| Notifications | Recording prompts and feedback-ready notifications, each optional, no lock-screen quotations. |
+| Navigation | Home / Learn / Practice / Insights. |
 
-**Source basis:** team discussion transcript dated November 10, 2026; recommendation slides 10–13; subsequent product-owner decisions confirmed on November 12, 2026 (including tabs, Top 3 layout, optional reason, and onboarding). Later confirmed decisions supersede earlier proposals where explicitly documented above.
+**Source basis:** team discussion transcript dated November 10, 2026; recommendation slides 10–13; confirmed team decisions of November 12, 2026, which replace earlier conflicting requirements (including always-on recording, persistent playback of user audio, and keeping full transcripts); and additions from the follow-up team discussion of November 12, 2026 (language support, manual-recording use cases, audience, no daily quota, retained-output safeguards, validation).
