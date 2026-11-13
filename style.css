@@ -635,6 +635,7 @@ mark.new { background: linear-gradient(transparent 45%, #b5e6cd 45%); font-weigh
 .lang-sample { color: var(--faint); font-size: 10.5px; }
 .cap-note { margin: 8px 0 0; color: var(--peach-ink); font-size: 12.5px; line-height: 1.45; }
 .ob-skip { margin-top: 10px; }
+.ob-fine { font-size: 11px; color: var(--faint); }
 .button-cta small { font-weight: 500; opacity: .8; }
 
 /* ---------- Learn (§6.6) ---------- */
