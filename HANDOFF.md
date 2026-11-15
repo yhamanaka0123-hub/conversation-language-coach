@@ -1,4 +1,7 @@
-# Handoff — where this prototype stands (Oct 20, 2026)
+# Handoff — where this prototype stood (Oct 20, 2026)
+
+> Historical note, kept as written. For the current state see [`README.md`](README.md) and
+> [`docs/PRD.md`](docs/PRD.md) (v2.4, §14 lists the Nov 13 changes).
 
 Context for whoever (person or coding agent) picks this up next. Delete or update as it goes stale.
 
