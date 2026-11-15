@@ -1,4 +1,6 @@
-// Practice: the AI coach suggests what to practice, then the AI plays the other person.
+// Practice (PRD §6.8, v2.4): one AI partner. The learner picks a topic (Work, School, Friends,
+// Family, or Surprise me) and the tone follows it, or replays a real conversation they recorded
+// (its transcript is kept unless they deleted it), with the AI playing the other person.
 // The AI runs through /api/practice (see api/practice.mjs). When it is unavailable
 // (opened as a local file, no key, free-tier limit reached) the session falls back to the
 // fixed script in data.js with keyword-match feedback.
@@ -22,10 +24,10 @@ async function checkAI() {
 }
 document.addEventListener("DOMContentLoaded", checkAI);
 
-const convoPayload = c => ({
-  title: c.title, partner: c.partner, partnerNote: c.partnerNote, people: c.people,
-  place: c.place, scene: c.scene.join(" "), summary: c.summary
-});
+const convoPayload = c => c.topic
+  ? { kind: "topic", title: c.label, partner: c.partner, people: "", place: "", scene: c.scene.join(" "), summary: c.summary }
+  : { kind: "replay", title: c.title, partner: c.partner, partnerNote: c.partnerNote, people: c.people,
+      place: c.place, scene: c.scene.join(" "), summary: c.summary };
 const targetPayload = ids => ids.map(id => {
   const i = byId[id];
   return { id, phrase: bare(practiceText(i)), meaning: i.kind === "phrase" ? i.meaning : i.why[ctxOf(i.convo)],
@@ -53,20 +55,30 @@ const planKey = p => `${p.cid}:${p.targets.join(",")}:${ctxOf(p.cid)}`;
 // Rule for one person: their saved phrases first. With none saved, phrases from that chat
 // not marked as known (new ones, then ones practiced before). No targets means a free replay.
 function planFor(cid, one) {
+  if (topicById[cid]) return planForTopic(cid, one);
   const items = itemsIn(cid).filter(i => !isPron(i));   // pronunciation can't be judged in a text chat
   const pool = ["practice", "new", "learned"].map(st => items.filter(i => statusOf(i.id) === st)).find(l => l.length) || [];
   return { cid, targets: pool.slice(0, one ? 1 : 3).map(i => i.id), saved: Boolean(pool.length) && statusOf(pool[0].id) === "practice" };
 }
 
+// A topic chat: the learner's saved phrases from any conversation, in the topic's register
+// first. None saved means a free chat on the topic.
+function planForTopic(tid, one) {
+  const ctx = topicById[tid].context;
+  const saved = ITEMS.filter(i => i.convo && statusOf(i.id) === "practice" && !isPron(i));
+  const pool = [...saved.filter(i => ctxOf(i.convo) === ctx), ...saved.filter(i => ctxOf(i.convo) !== ctx)];
+  return { cid: tid, targets: pool.slice(0, one ? 1 : 3).map(i => i.id), saved: pool.length > 0 };
+}
+
 function templateSuggestion(p) {
-  const c = convoById[p.cid];
+  const c = sourceOf(p.cid);
   return { opener: c.script[0].ai, fromAI: false };
 }
 const suggestionFor = p => AI.suggestions[planKey(p)] || templateSuggestion(p);
 
 async function fetchSuggestion(p) {
   const key = planKey(p);
-  if (AI.status !== "live" || !p.targets.length || AI.suggestions[key] || AI.fetching[key]) return;
+  if (AI.status !== "live" || topicById[p.cid] || !p.targets.length || AI.suggestions[key] || AI.fetching[key]) return;
   AI.fetching[key] = true;
   const c = convoById[p.cid];
   try {
@@ -77,55 +89,80 @@ async function fetchSuggestion(p) {
   if (UI.route.name === "practice") render();
 }
 
-// ---------- Pick who to chat with ----------
-// Each person from your conversations is a character. The cast row at the top lets you pick
-// someone; the stage below shows who you picked (default: the rule's suggestion).
-const pickedId = () => (convoById[UI.pick] && UI.pick) || pickPlan()?.cid || CONVOS[0]?.id;
+// ---------- Pick a topic, or a conversation to replay ----------
+// Topics the learner said they speak in (onboarding) get a star.
+const TOPIC_FOR_CONTEXT = { Work: "t-work", School: "t-school", Friends: "t-friends", Family: "t-family" };
+const yourTopics = () => (S.profile.contexts || []).map(c => TOPIC_FOR_CONTEXT[c]).filter(Boolean);
+const replays = () => CONVOS.filter(c => hasTranscript(c.id));
+// Default: the conversation with the most saved phrases, otherwise a topic.
+function pickedId() {
+  if (topicById[UI.pick] || hasTranscript(UI.pick)) return UI.pick;
+  const plan = pickPlan();
+  return plan && hasTranscript(plan.cid) ? plan.cid : yourTopics()[0] || TOPICS[0].id;
+}
 
 function stage(c, p) {
   const s = suggestionFor(p);
-  const loading = p.targets.length && AI.status === "live" && !AI.suggestions[planKey(p)];
-  return `<section class="stage stage-${ctxOf(c.id)} ${UI.stageIn ? "stage-in" : ""}" aria-labelledby="stage-name">
+  const loading = p.targets.length && AI.status === "live" && !c.topic && !AI.suggestions[planKey(p)];
+  return `<section class="stage stage-${ctxOf(c.id)} ${UI.stageIn ? "stage-in" : ""}" id="stage" aria-labelledby="stage-name">
     <div class="stage-top">
-      <div class="stage-person">${person(c, 92)}</div>
+      <div class="stage-person">${faceOf(c, c.topic ? 76 : 92)}</div>
       <div class="stage-who">
-        <h2 id="stage-name">${esc(c.partner)}</h2>
-        <p class="card-meta">${homeTag(c)}<span>${esc(c.role || "")}</span></p>
-        <p class="stage-invite">${esc(c.invite || c.title)}</p>
+        <h2 id="stage-name">${esc(c.topic ? `${c.emoji} ${c.label}` : c.partner)}</h2>
+        <p class="card-meta">${homeTag(c)}<span>${c.topic ? "AI partner" : `Replay · ${esc(c.role || "")}`}</span></p>
+        <p class="stage-invite">${esc(c.topic ? c.summary : c.invite || c.title)}</p>
       </div>
     </div>
     <p class="stage-bubble ${loading ? "typing" : ""}" ${loading ? `aria-label="${esc(c.partner)} is getting ready"` : ""}>${loading ? "<i></i><i></i><i></i>" : esc(s.opener)}</p>
     ${p.targets.length ? `
       <p class="feature-label">${p.saved ? "You’ll try your saved phrases" : `From your ${esc(c.short || "conversation")}, you could try`}</p>
       <div class="hint-row">${p.targets.map(id => `<span class="hint-chip">${icon("spark", 14)} ${esc(bare(practiceText(byId[id])))}</span>`).join("")}</div>`
-    : `<p class="feature-label">No phrases this time. Just chat.</p>`}
+    : `<p class="feature-label">No saved phrases yet. Just chat.</p>`}
     <div class="suggest-actions">
-      <button class="button button-primary" type="button" data-act="start" data-id="${c.id}">Chat with ${esc(c.partner)} ${icon("next", 18)}</button>
+      <button class="button button-primary" type="button" data-act="start" data-id="${c.id}">${c.topic ? "Start chatting" : `Replay with ${esc(c.partner)}`} ${icon("next", 18)}</button>
       ${p.targets.length > 1 ? `<button class="button button-quiet" type="button" data-act="start" data-id="${c.id}" data-one="1">Just one phrase</button>` : ""}
     </div>
   </section>`;
 }
 
-function castCard(c, picked, suggested) {
+function topicCard(t, picked) {
+  const mine = yourTopics().includes(t.id);
+  return `<button class="topic-card topic-${t.context} ${picked ? "picked" : ""}" type="button" data-act="pick" data-id="${t.id}" aria-pressed="${picked}">
+    ${mine ? `<span class="cast-star" title="You speak in this context">★<span class="sr-only"> From your answers</span></span>` : ""}
+    <span class="topic-emoji" aria-hidden="true">${t.emoji}</span>
+    <strong>${esc(t.label)}</strong>
+    <small>${t.context === "casual" ? "Casual · some slang" : "Polished"}</small>
+  </button>`;
+}
+
+function replayRow(c, picked) {
   const saved = itemsIn(c.id).filter(i => statusOf(i.id) === "practice").length;
-  const chats = (S.chats || {})[c.id] || 0;
-  return `<button class="cast-card ${picked ? "picked" : ""}" type="button" data-act="pick" data-id="${c.id}" aria-pressed="${picked}">
-    ${suggested ? `<span class="cast-star" title="Suggested">★<span class="sr-only"> Suggested</span></span>` : ""}
-    <span class="cast-face face-${ctxOf(c.id)}">${person(c, 52)}</span>
-    <strong>${esc(c.partner)}</strong>
-    <span class="cast-meta ${saved ? "" : "quiet"}">${saved ? `${saved} saved` : "Replay"}${chats ? ` · 💬${chats}` : ""}</span>
+  return `<button class="small-card replay-row ${picked ? "picked" : ""}" type="button" data-act="pick" data-id="${c.id}" aria-pressed="${picked}">
+    ${artTile(c)}
+    <span class="small-body">
+      <span class="small-title">${esc(c.title)}</span>
+      <span class="card-meta">${homeTag(c)}<span>${esc(c.when.replace(" · ", ", "))}</span></span>
+      <span class="small-summary">${saved ? `${saved} saved to try` : "Replay the same situation"}</span>
+    </span>
+    ${icon("chevron", 18)}
   </button>`;
 }
 
 SCREENS.practice = () => {
-  if (!CONVOS.length) return `
-    ${pageHeader({ eyebrow: "PRACTICE", title: "Who do you want to chat with?" })}
-    <div class="empty">${mascot(64, false, "think")}<p>After your next conversation, the people you talked with show up here.</p></div>`;
-  const id = pickedId(), c = convoById[id], suggested = pickPlan()?.cid;
+  const id = pickedId(), c = sourceOf(id);
+  const list = replays();
   return `
-  ${pageHeader({ eyebrow: "PRACTICE", title: "Who do you want to chat with?", action: aiBadge() })}
-  <div class="cast" role="group" aria-label="Your people">${CONVOS.map(x => castCard(x, x.id === id, x.id === suggested)).join("")}</div>
-  ${stage(c, planFor(id))}`;
+  ${pageHeader({ eyebrow: "PRACTICE", title: "What do you want to talk about?", action: aiBadge() })}
+  <p class="section-intro">One AI partner. Friends and Family are casual, with everyday slang; Work and School stay polished.</p>
+  <div class="topic-grid" role="group" aria-label="Topics">
+    ${TOPICS.map(t => topicCard(t, t.id === id)).join("")}
+    <button class="topic-card topic-surprise" type="button" data-act="surprise"><span class="topic-emoji" aria-hidden="true">🎲</span><strong>Surprise me</strong><small>Any topic</small></button>
+  </div>
+  ${stage(c, planFor(id))}
+  <div class="section-heading compact"><div><p class="eyebrow">FROM YOUR RECORDINGS</p><h2>Replay a real conversation</h2></div></div>
+  ${list.length ? `<p class="section-intro">The AI plays the other person in the same situation, so you can try a better way to say it.</p>
+    <div class="small-list">${list.map(x => replayRow(x, x.id === id)).join("")}</div>`
+  : `<div class="empty">${mascot(56, false, "think")}<p>Conversations you record show up here to replay.</p></div>`}`;
 };
 
 afterRender.practice = () => {
@@ -137,19 +174,23 @@ ACTIONS.pick = el => {
   UI.pick = el.dataset.id;
   UI.stageIn = true;
   render();
-  document.querySelector(`.cast-card[data-id="${el.dataset.id}"]`)?.focus({ preventScroll: true });
+  document.getElementById("stage")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+};
+ACTIONS.surprise = () => {
+  const others = TOPICS.filter(t => t.id !== pickedId());
+  ACTIONS.pick({ dataset: { id: others[Math.floor(Math.random() * others.length)].id } });
 };
 
 // ---------- Session screen ----------
 SCREENS.session = () => {
-  const s = UI.session, c = convoById[s.cid];
+  const s = UI.session, c = sourceOf(s.cid);
   const left = MAX_TURNS - s.userTurns;
   return `
     <div class="practice-header">
       <button class="icon-button" type="button" data-act="quit" aria-label="End practice">${icon("back")}</button>
       <div>
-        <h1>Practice with ${esc(c.partner)}</h1>
-        <p>${s.mode === "ai" ? `<span class="online-dot"></span>AI plays ${esc(c.partner)}` : "Practice script (AI offline)"}</p>
+        <h1>${c.topic ? `${esc(c.label)} chat` : `Replay with ${esc(c.partner)}`}</h1>
+        <p>${s.mode === "ai" ? `<span class="online-dot"></span>${c.topic ? `AI partner · ${ctxLabel(c.context).toLowerCase()} tone` : `AI plays ${esc(c.partner)}`}` : "Practice script (AI offline)"}</p>
       </div>
       <button class="finish-link" type="button" data-act="finish">Finish</button>
     </div>
@@ -172,11 +213,11 @@ SCREENS.session = () => {
 
     <div class="chat">
       ${s.log.map(m => m.who === "ai" ? `
-        <div class="message-row"><span class="chat-face face-${ctxOf(c.id)}">${person(c, 34)}</span><div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble">${esc(m.text)}</div></div></div>`
+        <div class="message-row"><span class="chat-face face-${ctxOf(c.id)}">${faceOf(c, 34)}</span><div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble">${esc(m.text)}</div></div></div>`
       : m.who === "me" ? `
         <div class="message-row user-row"><div><span class="speaker">YOU</span><div class="bubble user-bubble">${esc(m.text)}</div></div></div>`
       : `<div class="feedback ${m.tone}">${mascot(32, false, m.tone === "good" ? "cheer" : "happy")}<p>${m.html}</p></div>`).join("")}
-      ${s.pending ? `<div class="message-row"><span class="chat-face face-${ctxOf(c.id)}">${person(c, 34)}</span><div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble typing" aria-label="${esc(c.partner)} is typing"><i></i><i></i><i></i></div></div></div>` : ""}
+      ${s.pending ? `<div class="message-row"><span class="chat-face face-${ctxOf(c.id)}">${faceOf(c, 34)}</span><div><span class="speaker">${esc(c.partner.toUpperCase())} · AI</span><div class="bubble ai-bubble typing" aria-label="${esc(c.partner)} is typing"><i></i><i></i><i></i></div></div></div>` : ""}
     </div>
 
     <div class="practice-controls">
@@ -203,9 +244,9 @@ afterRender.session = () => {
 // phrase you used, what was said in the real conversation next to what you said now.
 function compareLine(r, c) {
   const n = r.used.length;
-  if (!r.targets.length) return [`Nice chat with ${esc(c.partner)}. Every conversation counts.`, "happy"];
+  if (!r.targets.length) return [`Nice ${c.topic ? `${esc(c.label)} chat` : `chat with ${esc(c.partner)}`}. Every conversation counts.`, "happy"];
   if (r.prev && r.prev.targets) {
-    if (n > r.prev.used) return [`<strong>${n}</strong> this time, up from ${r.prev.used} last time with ${esc(c.partner)}. 📈`, "cheer"];
+    if (n > r.prev.used) return [`<strong>${n}</strong> this time, up from ${r.prev.used} last time${c.topic ? "" : ` with ${esc(c.partner)}`}. 📈`, "cheer"];
     if (n === r.prev.used && n) return [`${n} again, same as last time. <strong>Steady!</strong>`, "cheer"];
     if (n < r.prev.used) return [`${n} this time (${r.prev.used} last time). Some chats are harder, and that’s fine.`, "happy"];
   }
@@ -217,7 +258,7 @@ function compareLine(r, c) {
 function thenNow(id, line, c) {
   const i = byId[id];
   const then = i.kind === "rephrase"
-    ? { who: "You said, in the real chat", text: i.said }
+    ? { who: "You said, in a real chat", text: i.said }
     : { who: `${i.speaker} said`, text: i.sentence };
   const low = line.toLowerCase(), w = matchWords(i).find(x => low.includes(x));
   const hl = w ? line.substr(low.indexOf(w), w.length) : "";
@@ -228,11 +269,11 @@ function thenNow(id, line, c) {
 }
 
 SCREENS.recap = () => {
-  const r = UI.route.r, c = convoById[r.cid];
+  const r = UI.route.r, c = sourceOf(r.cid);
   const [line, mood] = compareLine(r, c);
   const shown = r.used.filter(id => r.lines && r.lines[id]);
   return `
-    ${pageHeader({ eyebrow: "PRACTICE RECAP", title: r.targets.length ? `You used ${r.used.length} of ${r.targets.length} with ${esc(c.partner)}` : `Chat with ${esc(c.partner)} done` })}
+    ${pageHeader({ eyebrow: "PRACTICE RECAP", title: r.targets.length ? `You used ${r.used.length} of ${r.targets.length}${c.topic ? ` in your ${esc(c.label)} chat` : ` with ${esc(c.partner)}`}` : `${esc(chatName(c))} done` })}
     ${coachSays(line, mood)}
     ${shown.length ? `<div class="section-heading compact"><div><p class="eyebrow">THEN AND NOW</p><h2>How you said it today</h2></div></div>
       <div class="stack">${shown.map(id => thenNow(id, r.lines[id], c)).join("")}</div>` : ""}
@@ -247,7 +288,7 @@ SCREENS.recap = () => {
     </div>` : ""}
     <button class="text-link recap-report" type="button" data-act="reportAi">See your practice report ${icon("next", 15)}</button>
     <div class="stack recap-actions">
-      <button class="button button-primary full-button" type="button" data-act="start" data-id="${r.cid}">Chat with ${esc(c.partner)} again</button>
+      <button class="button button-primary full-button" type="button" data-act="start" data-id="${r.cid}">${c.topic ? `Another ${esc(c.label)} chat` : `Replay with ${esc(c.partner)} again`}</button>
       <button class="button button-quiet full-button" type="button" data-act="go" data-to="home">Back to home</button>
     </div>`;
 };
@@ -257,7 +298,7 @@ SCREENS.recap = () => {
 function startPractice(cid, one, targets) {
   const plan = targets ? { cid, targets } : planFor(cid, one);
   const mode = AI.status === "live" ? "ai" : "script";
-  const opener = mode === "ai" ? suggestionFor(plan).opener : convoById[cid].script[0].ai;
+  const opener = mode === "ai" ? suggestionFor(plan).opener : sourceOf(cid).script[0].ai;
   UI.session = { cid, targets: plan.targets, used: [], lines: {}, mode, userTurns: 0, turn: 0, done: false, pending: false, peek: null, suggested: [],
     log: [{ who: "ai", text: opener }] };
   go({ name: "session" });
@@ -269,7 +310,7 @@ function praise(ids, cid) {
 
 // Scripted step: fixed next line, keyword-match feedback.
 function scriptStep(text) {
-  const s = UI.session, c = convoById[s.cid];
+  const s = UI.session, c = sourceOf(s.cid);
   const step = c.script[Math.min(s.turn, c.script.length - 1)];
   const hits = s.targets.filter(id => !s.used.includes(id) && uses(text, byId[id]));
   s.used.push(...hits);
@@ -289,7 +330,7 @@ async function reply(text) {
   s.log.push({ who: "me", text });
   if (s.mode !== "ai") { scriptStep(text); return render(); }
 
-  const c = convoById[s.cid];
+  const c = sourceOf(s.cid);
   s.pending = true;
   render();
   try {
@@ -367,7 +408,7 @@ function listen(btn) {
 
 // Types the script's sample answer, for browsers without speech recognition.
 function typeSample(btn, input) {
-  const c = convoById[UI.session.cid];
+  const c = sourceOf(UI.session.cid);
   const text = c.script[Math.min(UI.session.turn, c.script.length - 1)].sample;
   let k = 0;
   input.value = "";
@@ -381,7 +422,14 @@ function typeSample(btn, input) {
 }
 
 ACTIONS.start = el => startPractice(el.dataset.id, el.dataset.one === "1");
-ACTIONS.practiceItem = el => { const i = byId[el.dataset.id]; UI.pick = i.convo; startPractice(i.convo, false, [i.id]); };
+// Practice one feedback point: replay its conversation, or, if that transcript was deleted, a
+// topic chat in the same register.
+ACTIONS.practiceItem = el => {
+  const i = byId[el.dataset.id];
+  const src = hasTranscript(i.convo) ? i.convo : ctxOf(i.convo) === "professional" ? "t-work" : "t-friends";
+  UI.pick = src;
+  startPractice(src, false, [i.id]);
+};
 ACTIONS.reportAi = () => { UI.report = "ai"; go({ name: "report" }); };
 ACTIONS.quit = () => { UI.micTimer?.stop?.(); UI.session = null; go({ name: "practice" }); };
 ACTIONS.finish = () => { UI.micTimer?.stop?.(); finishPractice(); };

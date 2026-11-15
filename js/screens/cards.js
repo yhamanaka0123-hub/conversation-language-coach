@@ -1,5 +1,5 @@
 // Flashcards: a low-effort way to review without talking to the AI.
-// Front: who said it and what it means ("How would Maya say it?"). Back: the phrase in the
+// Front: who said it and what it means ("How would Sam say it?"). Back: the phrase in the
 // original sentence, with a listen button. "Got it" / "Not yet" by button or swipe.
 // Familiarity is about remembering a card, not about speaking: new -> getting there -> remembered.
 

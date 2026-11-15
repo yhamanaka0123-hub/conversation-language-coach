@@ -6,21 +6,25 @@ const ACTIONS = {};   // data-act value -> (element) => void
 const FORMS = {};     // form id -> (form) => void
 
 // ---------- State (saved in this browser only) ----------
-const KEY = "clc-demo-v4";   // v4: PRD v2.3 (opt-in recording, Learn, Insights)
+const KEY = "clc-demo-v5";   // v5: PRD v2.4 (prompts per day, topics, kept transcripts)
 const byId = Object.fromEntries(ITEMS.map(i => [i.id, i]));
 const convoById = Object.fromEntries(CONVOS.map(c => [c.id, c]));
+// Practice topics (PRD §6.8) are looked up like conversations, but never listed on Home.
+const topicById = Object.fromEntries(TOPICS.map(t => [t.id, { ...t, topic: true, partner: PARTNER, title: t.label, short: t.label.toLowerCase() }]));
 
 function freshState() {
   const status = {};
   ITEMS.forEach(i => { status[i.id] = i.seed || "new"; });
-  // Recording is opt-in (PRD §6.1): prompts: show recording prompts (off = AI-only mode);
-  // duration: prompted-recording length in minutes; captures: usable captures today (prompts stop
-  // at 2, manual ones count). seen: conversations whose feedback was opened. profile: onboarding.
-  return { v: 4, status, ctx: {}, sessions: 0, chats: {}, history: {}, cards: {},
-    onboarded: false, profile: {}, prompts: true, duration: 2, captures: 0, calendar: false, notify: true, seen: {} };
+  // Recording is opt-in (PRD §6.1): prompts: show recording prompts (off = AI-only mode, only
+  // from Settings); perDay: prompts a day the learner chose (1, 2 or 5; prompts stop once that
+  // many usable captures are made, manual ones count); duration: prompted-recording length in
+  // minutes. seen: conversations whose feedback was opened. profile: onboarding answers.
+  // noTranscript: conversations whose kept transcript the learner deleted (DAT-04).
+  return { v: 5, status, ctx: {}, sessions: 0, chats: {}, history: {}, cards: {},
+    onboarded: false, profile: {}, prompts: true, perDay: 2, duration: 2, captures: 0, calendar: false, notify: true, seen: {}, noTranscript: {} };
 }
 function loadState() {
-  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 4) return s; } catch (e) {}
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 5) return s; } catch (e) {}
   return freshState();
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
@@ -31,14 +35,18 @@ const UI = { route: { name: S.onboarded ? "home" : "onboard" }, bankFilter: null
 
 // ---------- Helpers ----------
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const ctxOf = cid => S.ctx[cid] || convoById[cid].context;
+const ctxOf = cid => S.ctx[cid] || (convoById[cid] || topicById[cid]).context;
+// A practice source: a real conversation to replay, or a topic.
+const sourceOf = id => convoById[id] || topicById[id];
+const perDay = () => S.perDay || 2;
+const hasTranscript = cid => Boolean(convoById[cid]) && !(S.noTranscript || {})[cid];
 const ctxOfItem = i => i.convo ? ctxOf(i.convo) : i.sourceContext;
 const ctxLabel = c => c === "casual" ? "Casual" : "Professional";
 const statusOf = id => S.status[id];
 // Learning outputs the learner deleted (proposed safeguard SAF-03) are gone everywhere.
 const gone = id => statusOf(id) === "deleted";
-// AI-only mode (§6.10): the learner chose no recording prompts and has not recorded anything.
-const aiOnly = () => S.prompts === false && S.profile.mode === "ai" && !S.recorded;
+// AI-only mode (§6.10): prompts turned off in Settings and nothing recorded yet.
+const aiOnly = () => S.prompts === false && !S.recorded;
 const learnedItems = () => ITEMS.filter(i => statusOf(i.id) === "learned");
 const learnedCount = () => learnedItems().length;
 const itemsIn = cid => ITEMS.filter(i => i.convo === cid && !gone(i.id));
@@ -50,7 +58,7 @@ const uses = (text, i) => matchWords(i).some(w => norm(text).includes(w));
 const highlight = (s, h) => h ? esc(s).replace(esc(h), `<mark>${esc(h)}</mark>`) : esc(s);
 const plural = (n, word, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;
 // Improvement points: the skill each belongs to, and a conversation's Top 3 (FDB-02).
-const AREA = { expression: "Expression", grammar: "Grammar", structure: "Structure", pronunciation: "Pronunciation", culture: "Culture" };
+const AREA = { expression: "Expression", grammar: "Grammar", structure: "Structure", pronunciation: "Pronunciation" };
 const topOf = cid => itemsIn(cid).filter(i => i.top && statusOf(i.id) !== "known").sort((a, b) => a.top - b.top).slice(0, 3);
 const isPron = i => i.area === "pronunciation";
 // Read text aloud with the browser's synthetic voice (model pronunciation only; the learner's
@@ -132,6 +140,11 @@ const person = (c, size = 64) => {
   </svg>`;
 };
 
+// Who the learner talks with in practice: the real person for a replay, the coach for a topic.
+const faceOf = (c, size) => c.topic ? mascot(size, false, "talk") : person(c, size);
+// How a practice source is named: "Friends chat" for a topic, the person for a replay.
+const chatName = c => c.topic ? `${c.label} chat` : c.partner;
+
 // The coach talking: small mascot plus a speech bubble. html is trusted markup.
 const coachSays = (html, mood = "happy", size = 46) =>
   `<div class="coach-says">${mascot(size, false, mood)}<p class="coach-bubble">${html}</p></div>`;
@@ -175,8 +188,8 @@ const NAV_ICONS = {
     <path class="ni-star" d="m16 10.4 1.8 3.5 3.9.6-2.8 2.7.7 3.9-3.6-1.9-3.6 1.9.7-3.9-2.8-2.7 3.9-.6Z"/>`
 };
 // Which bottom-nav item is highlighted for each route.
-const NAV_FOR = { home: "home", convo: "home", bank: "bank", cards: "bank", practice: "practice", session: "practice", recap: "practice", report: "report" };
-const NO_NAV = ["session", "cards", "onboard"];
+const NAV_FOR = { phone: "home", home: "home", convo: "home", bank: "bank", cards: "bank", practice: "practice", session: "practice", recap: "practice", report: "report" };
+const NO_NAV = ["session", "cards", "onboard", "phone"];
 
 function go(route) { UI.route = route; UI.enter = true; render(); UI.enter = false; window.scrollTo(0, 0); }
 
@@ -200,7 +213,7 @@ function render() {
   const view = document.getElementById("view");
   view.className = `screen screen-${UI.route.name}${UI.enter ? " enter" : ""}`;
   // An active recording stays visible on every screen (REC-08); Home shows its own bar.
-  const live = UI.rec && !["home", "onboard"].includes(UI.route.name) && typeof recordingBar === "function" ? recordingBar() : "";
+  const live = UI.rec && !["home", "onboard", "phone"].includes(UI.route.name) && typeof recordingBar === "function" ? recordingBar() : "";
   view.innerHTML = live + SCREENS[UI.route.name]();
   renderNav();
   if (typeof afterRender[UI.route.name] === "function") afterRender[UI.route.name]();
