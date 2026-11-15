@@ -53,7 +53,7 @@ working on different screens don't touch the same file.
 | FR-1/2/3 pick up, save, review phrases | Conversation detail + Learn (*Save* / *I know this*) |
 | FR-4 conversation context | Context tag on each conversation; switch Casual/Professional in the detail view |
 | FR-5/6 "You could also say" + save | *You could also say* cards; wording changes with context |
-| FR-7/8 practice with AI + light feedback | Practice replay with Maya / Daniel, coach notes after each reply |
+| FR-7/8 practice with AI + light feedback | Practice replay with Sam / Daniel, coach notes after each reply |
 | FR-9 cheer on progress (no quotas) | Coach greeting milestones; Insights reports with evidence |
 
 ## AI practice partner

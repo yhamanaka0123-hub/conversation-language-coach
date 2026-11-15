@@ -27,13 +27,13 @@ const PICKS = [
 // look.hair is "bob", "short" or "bun"; look.glasses adds glasses.
 const CONVOS = [
   {
-    id: "maya", title: "Coffee chat with Maya", context: "casual",
-    when: "Today · 3:40 PM", length: "18 min", mine: 7, short: "coffee chat", art: "coffee", people: "Maya (classmate)", place: "Free Speech Café",
-    summary: "You caught up with Maya after class. She's buried in internship recruiting, invited you on a Sunday hike, and pushed your Friday dinner.",
-    partner: "Maya", partnerNote: "Plays your classmate, same tone as today",
+    id: "maya", title: "Coffee chat with Sam", context: "casual",
+    when: "Today · 3:40 PM", length: "18 min", mine: 7, short: "coffee chat", art: "coffee", people: "Sam (classmate)", place: "Free Speech Café",
+    summary: "You caught up with Sam after class. Sam's buried in internship recruiting, invited you on a Sunday hike, and pushed your Friday dinner.",
+    partner: "Sam", partnerNote: "Plays your classmate, same tone as today",
     role: "classmate", invite: "Coffee chat after class",
     look: { hair: "bob", hairColor: "#4a2f25", skin: "#f1c7a3", shirt: "#f08a5d" },
-    scene: ["Free Speech Café, after class.", "Maya is catching up on your week and weekend plans."],
+    scene: ["Free Speech Café, after class.", "Sam is catching up on your week and weekend plans."],
     script: [
       { ai: "Hey! Sorry I'm late, it's been a week. How are you holding up?", hint: "maya-r1",
         sample: "Honestly, I'm wiped out from all these assignments." },
@@ -116,13 +116,13 @@ const CONVOS = [
 //   prototype's synthetic voice reads for "your audio" and "model"; nothing is recorded).
 const ITEMS = [
   { id: "maya-p1", convo: "maya", kind: "phrase", text: "I'm swamped", meaning: "I'm extremely busy; too much to do.",
-    sentence: "Honestly, I'm swamped this week with recruiting stuff.", hl: "I'm swamped", speaker: "Maya", at: "02:14", match: ["swamped"] },
+    sentence: "Honestly, I'm swamped this week with recruiting stuff.", hl: "I'm swamped", speaker: "Sam", at: "02:14", match: ["swamped"] },
   { id: "maya-p2", convo: "maya", kind: "phrase", text: "take a rain check", meaning: "Politely postpone an invitation to another time.",
-    sentence: "Can I take a rain check on Friday dinner?", hl: "take a rain check", speaker: "Maya", at: "09:51", match: ["rain check"] },
+    sentence: "Can I take a rain check on Friday dinner?", hl: "take a rain check", speaker: "Sam", at: "09:51", match: ["rain check"] },
   { id: "maya-p3", convo: "maya", kind: "phrase", text: "a long shot", meaning: "Something unlikely to succeed, but worth trying.",
-    sentence: "Applying there is a long shot, but why not.", hl: "a long shot", speaker: "Maya", at: "12:30", match: ["long shot"] },
+    sentence: "Applying there is a long shot, but why not.", hl: "a long shot", speaker: "Sam", at: "12:30", match: ["long shot"] },
   { id: "maya-p4", convo: "maya", kind: "phrase", text: "count me in", meaning: "Yes, include me; I want to join.",
-    sentence: "If you're doing the hike Sunday, count me in.", hl: "count me in", speaker: "Maya", at: "15:02", match: ["count me in"] },
+    sentence: "If you're doing the hike Sunday, count me in.", hl: "count me in", speaker: "Sam", at: "15:02", match: ["count me in"] },
   { id: "maya-r1", convo: "maya", kind: "rephrase", area: "expression", top: 1, said: "I am very tired because of many assignments.", at: "01:40",
     alt: { casual: "I'm wiped out from all these assignments.", professional: "I've been stretched a bit thin with deadlines this week." },
     why: { casual: "With a friend, a vivid everyday phrase sounds more relaxed.",
@@ -222,30 +222,54 @@ const USES = [
 // Progress reports (v2.4). Order: pronunciation, grammar, sentence structure, natural
 // expressions (cultural context and slang are part of natural expressions). Sample data: the prototype doesn't score speech yet.
 // level: 0-100 per period; evidence: how many of the learner's own sentences it rests on.
-// before / now: the same kind of moment, earlier and recently, in the learner's own words;
-// mark = the words that changed; change = one line saying what got better.
+// wins: up to 3 pairs of the same kind of moment, earlier (before) and recently (now), in the
+// learner's own words; mark = the words that changed; change = one line on what got better.
+// What hasn't improved yet is in MISTAKES, shown under its skill as "to grow further".
 const SKILLS = [
   { id: "pronunciation", name: "Pronunciation", level: { week: 40, month: 38, all: 34 }, evidence: { week: 3, month: 8, all: 19 },
-    before: { when: "Oct 13 · Lab meeting", text: "“develop” said as DE-ve-lop", mark: "DE-ve-lop" },
-    now: { when: "Oct 19 · Weekly product sync", text: "“develop” said as dih-VEL-up", mark: "dih-VEL-up" },
-    change: "The stress moved to the second syllable, where it belongs." },
+    wins: [
+      { before: { when: "Oct 13 · Lab meeting", text: "“develop” said as DE-ve-lop", mark: "DE-ve-lop" },
+        now: { when: "Oct 19 · Weekly product sync", text: "“develop” said as dih-VEL-up", mark: "dih-VEL-up" },
+        change: "The stress moved to the second syllable, where it belongs." },
+      { before: { when: "Oct 9 · Office hours", text: "“record” (a noun) said as re-CORD", mark: "re-CORD" },
+        now: { when: "Oct 19 · Office hours", text: "“record” (a noun) said as REK-erd", mark: "REK-erd" },
+        change: "As a noun, “record” stresses the first syllable." }
+    ] },
   { id: "grammar", name: "Grammar", level: { week: 48, month: 44, all: 36 }, evidence: { week: 4, month: 11, all: 26 },
-    before: { when: "Oct 6 · Coffee with Maya", text: "Yesterday I go to the library.", mark: "go" },
-    now: { when: "Oct 20 · Lunch with Priya", text: "I went to the store yesterday.", mark: "went" },
-    change: "Past tense for things that already happened: go → went." },
+    wins: [
+      { before: { when: "Oct 6 · Coffee with Sam", text: "Yesterday I go to the library.", mark: "go" },
+        now: { when: "Oct 20 · Lunch with Priya", text: "I went to the store yesterday.", mark: "went" },
+        change: "Past tense for things that already happened: go → went." },
+      { before: { when: "Oct 8 · Lab meeting", text: "I am agree with Lena.", mark: "am agree" },
+        now: { when: "Oct 19 · Weekly product sync", text: "I agree with Lena on that.", mark: "agree" },
+        change: "“Agree” is already a verb, so it doesn't need “am”." },
+      { before: { when: "Oct 12 · Office hours", text: "Thank you for the many informations.", mark: "many informations" },
+        now: { when: "Oct 19 · Office hours", text: "Thanks for all the information.", mark: "all the information" },
+        change: "“Information” has no plural: all the information." }
+    ] },
   { id: "structure", name: "Sentence structure", level: { week: 44, month: 45, all: 39 }, evidence: { week: 2, month: 7, all: 15 },
-    before: { when: "Oct 12 · Office hours", text: "The draft, I think, maybe is not finished.", mark: "The draft, I think, maybe is not" },
-    now: { when: "Oct 19 · Office hours", text: "I don't think the draft is finished yet.", mark: "I don't think the draft is" },
-    change: "Starting with “I don't think” makes the point clear right away." },
+    wins: [
+      { before: { when: "Oct 12 · Office hours", text: "The draft, I think, maybe is not finished.", mark: "The draft, I think, maybe is not" },
+        now: { when: "Oct 19 · Office hours", text: "I don't think the draft is finished yet.", mark: "I don't think the draft is" },
+        change: "Starting with “I don't think” makes the point clear right away." }
+    ] },
   { id: "expression", name: "Natural expressions (slang)", level: { week: 62, month: 54, all: 41 }, evidence: { week: 3, month: 9, all: 21 },
-    before: { when: "Oct 8 · Lab meeting", text: "Can I meet you shortly before Friday?", mark: "meet you shortly" },
-    now: { when: "Oct 19 · Weekly product sync", text: "Can we touch base before Friday?", mark: "touch base" },
-    change: "“Touch base” is how colleagues say a quick check-in." }
+    wins: [
+      { before: { when: "Oct 8 · Lab meeting", text: "Can I meet you shortly before Friday?", mark: "meet you shortly" },
+        now: { when: "Oct 19 · Weekly product sync", text: "Can we touch base before Friday?", mark: "touch base" },
+        change: "“Touch base” is how colleagues say a quick check-in." },
+      { before: { when: "Oct 15 · Lab meeting", text: "I want to say my opinion.", mark: "I want to say my opinion" },
+        now: { when: "Oct 19 · Weekly product sync", text: "If I could add one thing...", mark: "If I could add one thing" },
+        change: "A softer way to take the floor in a meeting." },
+      { before: { when: "Oct 11 · Lunch with Priya", text: "Shall we go together?", mark: "Shall we go together" },
+        now: { when: "Oct 18 · Coffee chat with Sam", text: "Want to come with?", mark: "Want to come with" },
+        change: "Between friends, the shorter question sounds relaxed." }
+    ] }
 ];
 // The summary at the top of Progress and the takeaway card, per period (sample).
 const INSIGHTS = {
   week: { title: "More natural, fewer verb slips.", sub: "You used a new phrase at work and got past tense right in two chats.",
-    takeaway: "You try new phrases more in casual chats than in meetings.", note: "Your coffee chat with Maya had the most new phrases." },
+    takeaway: "You try new phrases more in casual chats than in meetings.", note: "Your coffee chat with Sam had the most new phrases." },
   month: { title: "Steady progress this month.", sub: "Grammar and natural expressions moved the most.",
     takeaway: "Your longest conversations were with friends over food.", note: "Lunch and coffee chats ran 15 minutes or more." },
   all: { title: "You've come a long way.", sub: "Since you started, every skill has moved up.",
@@ -261,22 +285,31 @@ const EARLIER = {
   all: { conversations: 27, minutes: 186, sessions: 7, practiced: 15, used: 9, tips: 81, applied: 22 }
 };
 
-// Recurring mistakes in Insights (v2.4): the same kind of slip, seen again in later real
-// conversations, with the latest instance and what to try. Sample data, like SKILLS.
+// Recurring mistakes in Insights (v2.4), shown under their skill as "to grow further": the same
+// kind of slip seen again in later real conversations, with the latest instance and what to
+// try. skill = a SKILLS id. Sample data, like SKILLS.
 // times: per period, how often it showed up; status: "still" (keeps happening) or "fewer".
 const MISTAKES = [
-  { id: "m-past", skill: "Grammar", label: "“have” + past tense for finished times",
+  { id: "m-past", skill: "grammar", label: "“have” + past tense for finished times",
     times: { week: 3, month: 7, all: 12 }, status: "still",
-    latest: { when: "Today · Coffee chat with Maya", text: "I have went to Tilden last month.", mark: "have went" },
+    latest: { when: "Today · Coffee chat with Sam", text: "I have went to Tilden last month.", mark: "have went" },
     try: "I went to Tilden last month.", tip: "With a finished time (last month, yesterday), use the simple past." },
-  { id: "m-does", skill: "Grammar", label: "“don't” with one person",
+  { id: "m-does", skill: "grammar", label: "“don't” with one person",
     times: { week: 2, month: 5, all: 9 }, status: "still",
     latest: { when: "Today · Lunch with Priya", text: "The landlord don't answer my messages.", mark: "don't" },
     try: "The landlord doesn't answer my messages.", tip: "He, she or one person takes “doesn't”." },
-  { id: "m-stress", skill: "Pronunciation", label: "Stress on the last syllable",
+  { id: "m-stress", skill: "pronunciation", label: "Stress on the last syllable",
     times: { week: 2, month: 6, all: 14 }, status: "fewer",
     latest: { when: "Mon · Office hours with Prof. Chen", text: "“determine” said as de-ter-MINE", mark: "de-ter-MINE" },
-    try: "de-TER-min", tip: "Fewer than last month. Long words usually stress an early syllable." }
+    try: "de-TER-min", tip: "Fewer than last month. Long words usually stress an early syllable." },
+  { id: "m-lead", skill: "structure", label: "The question comes last",
+    times: { week: 2, month: 6, all: 11 }, status: "still",
+    latest: { when: "Mon · Office hours with Prof. Chen", text: "About the interviews, how many is enough, ten?", mark: "About the interviews," },
+    try: "How many interviews would be enough? Would ten work?", tip: "Lead with the question, then add the detail. It's easier to follow." },
+  { id: "m-very", skill: "expression", label: "“very” + a plain word",
+    times: { week: 2, month: 4, all: 8 }, status: "still",
+    latest: { when: "Today · Coffee chat with Sam", text: "I am very tired because of many assignments.", mark: "very tired" },
+    try: "I'm wiped out from all these assignments.", tip: "With friends, one vivid phrase sounds more natural than “very” + a word." }
 ];
 
 // Practice topics (v2.4): one AI partner, and the learner picks what to talk about: Work,

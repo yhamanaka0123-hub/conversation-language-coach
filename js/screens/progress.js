@@ -29,38 +29,47 @@ const levelWord = n => n < 35 ? "Starting out" : n < 55 ? "Getting there" : n < 
 const LONGER = { week: "month", month: "all" };
 const trendOf = (k, p) => !LONGER[p] ? "" : k.level[p] > k.level[LONGER[p]] ? "up" : "steady";
 const marked = (side, cls) => highlight(side.text, side.mark).replace("<mark>", `<mark class="${cls}">`);
+// Quote a line in the learner's words, unless it already starts with a quote.
+const quoted = (side, cls) => side.text.startsWith("“") ? marked(side, cls) : `“${marked(side, cls)}”`;
+const toGrow = k => MISTAKES.filter(m => m.skill === k.id);
 
-// One skill: name, trend, bar; opens to Before vs Now in the learner's own words, with the
-// changed words marked and one line on what got better (SKL-03).
+// One improvement: the same kind of moment before and now, with what got better.
+const winRow = w => `<div class="win">
+    <div class="ev ev-then"><span class="ev-label">Before</span><span class="ev-when">${esc(w.before.when)}</span><p>${quoted(w.before, "old")}</p></div>
+    <div class="ev ev-now"><span class="ev-label">${icon("check", 13)} Now</span><span class="ev-when">${esc(w.now.when)}</span><p>${quoted(w.now, "new")}</p></div>
+    <p class="ev-change">${icon("spark", 14)} ${esc(w.change)}</p>
+  </div>`;
+
+// Something that keeps coming back (RPT-10), framed as the next step, never as a penalty.
+function growRow(m, p) {
+  return `<div class="mistake mistake-${m.status}">
+    <div class="mistake-top"><p class="mistake-label">${esc(m.label)}</p>
+      <span class="mistake-count">${m.status === "still" ? "Still showing up" : "↓ Showing up less"} · ${plural(m.times[p], "time")}</span></div>
+    <div class="ev ev-then"><span class="ev-label">Latest</span><span class="ev-when">${esc(m.latest.when)}</span><p>${quoted(m.latest, "old")}</p></div>
+    <p class="mistake-try"><strong>Try:</strong> “${esc(m.try)}”</p>
+    <p class="ev-change">${icon("spark", 14)} ${esc(m.tip)}</p>
+  </div>`;
+}
+
+// One skill: name, trend, bar, and how many things to work on. It opens to up to three
+// improvements in the learner's own words (SKL-03), then what would help it grow further.
 function skillRow(k, p) {
-  const n = k.level[p], t = trendOf(k, p);
+  const n = k.level[p], t = trendOf(k, p), grow = toGrow(k);
   return `<details class="skill">
     <summary>
       <span class="skill-top"><span class="skill-name">${esc(k.name)}</span>
         ${t ? `<span class="trend trend-${t}">${t === "up" ? "↑ Improving" : "→ Steady"}</span>` : ""}
         ${icon("chevron", 16)}</span>
       <span class="skill-bar" role="img" aria-label="${esc(k.name)}: ${levelWord(n)}"><span style="width:${n}%"></span></span>
-      <small>${levelWord(n)} · from ${plural(k.evidence[p], "thing", "things")} you said</small>
+      <small>${levelWord(n)} · from ${plural(k.evidence[p], "thing", "things")} you said${grow.length ? ` · <b class="grow-count">${plural(grow.length, "thing")} to work on</b>` : ""}</small>
     </summary>
     <div class="skill-evidence">
-      <div class="ev ev-then"><span class="ev-label">Before</span><span class="ev-when">${esc(k.before.when)}</span><p>“${marked(k.before, "old")}”</p></div>
-      <div class="ev ev-now"><span class="ev-label">${icon("check", 13)} Now</span><span class="ev-when">${esc(k.now.when)}</span><p>“${marked(k.now, "new")}”</p></div>
-      <p class="ev-change">${icon("spark", 14)} ${esc(k.change)}</p>
+      <p class="ev-head">${icon("check", 14)} What got better</p>
+      ${k.wins.slice(0, 3).map(winRow).join("")}
+      ${grow.length ? `<p class="ev-head ev-grow">${icon("spark", 14)} To grow further, work on this</p>
+        ${grow.map(m => growRow(m, p)).join("")}` : ""}
     </div>
   </details>`;
-}
-
-// Recurring mistakes (RPT-10): the same kind of slip seen again in later real conversations,
-// with the latest instance and what to try. "Still showing up" is information, not a penalty.
-function mistakeRow(m, p) {
-  return `<div class="mistake mistake-${m.status}">
-    <div class="mistake-top"><span class="area-chip">${esc(m.skill)}</span>
-      <span class="mistake-count">${m.status === "still" ? "Still showing up" : "↓ Showing up less"} · ${plural(m.times[p], "time")}</span></div>
-    <p class="mistake-label">${esc(m.label)}</p>
-    <div class="ev ev-then"><span class="ev-label">Latest</span><span class="ev-when">${esc(m.latest.when)}</span><p>${m.latest.text.startsWith("“") ? marked(m.latest, "old") : `“${marked(m.latest, "old")}”`}</p></div>
-    <p class="mistake-try"><strong>Try:</strong> “${esc(m.try)}”</p>
-    <p class="ev-change">${icon("spark", 14)} ${esc(m.tip)}</p>
-  </div>`;
 }
 
 function realReport(p) {
@@ -81,12 +90,9 @@ function realReport(p) {
         <div class="metric"><strong>${applied}<small>/${tips}</small></strong><span>tips you applied later</span></div>
       </div>
     </section>
-    <div class="section-heading compact skills-head"><div><h2>Skill progress</h2></div><span class="hint">Tap a skill to compare</span></div>
+    <div class="section-heading compact skills-head"><div><h2>Skill progress</h2></div><span class="hint">Tap a skill to see examples</span></div>
     <div class="skill-list">${SKILLS.map(k => skillRow(k, p)).join("")}</div>
     <p class="section-intro bar-note">A full bar means you use the skill consistently, not that you’ve mastered it.</p>
-    <div class="section-heading compact"><div><p class="eyebrow">NOT THERE YET</p><h2>Mistakes that keep coming back</h2></div></div>
-    <p class="section-intro">Everyone has a few. These are the ones worth a second look.</p>
-    <div class="stack">${MISTAKES.map(m => mistakeRow(m, p)).join("")}</div>
     <section class="takeaway">
       <p class="eyebrow">${PERIODS[p].toUpperCase()}’S TAKEAWAY</p>
       <h3>${esc(ins.takeaway)}</h3>

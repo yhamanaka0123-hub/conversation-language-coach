@@ -1,22 +1,38 @@
-// Onboarding (PRD §6.0): language (with what it supports), level (self-rated, plus an optional
-// CEFR level, test score or linked learning app), how often and where the learner speaks it,
+// Onboarding (PRD §6.0): language (with what it supports), level (a test score or linked app sets
+// it when the learner has one; otherwise they pick from five levels, each with its CEFR range),
+// how often and where the learner speaks it,
 // how recording works and how many prompts a day (2 recommended), and an optional calendar.
 // AI-only mode is not offered here; prompts can be turned off later in Settings (§6.10).
 // Answers go to S.profile.
 // Shown on first launch and after Reset demo.
 
-const OB_STEPS = 4;
+const OB_STEPS = 5;   // language, level, how and where, recording, calendar
 const OB_LANGS = ["English", "Spanish", "Japanese", "Mandarin"];
 const OB_SPEAKS = ["Mandarin", "Japanese", "Korean", "Spanish", "Hindi", "Other"];
+// Five levels, each with its CEFR range so a learner who knows theirs can match it (ONB-09).
 const OB_LEVELS = [
-  ["getby", "I get by", "Everyday things, with some searching for words"],
-  ["comfortable", "I'm comfortable", "I keep up in most conversations"],
-  ["natural", "I'm fluent", "I want to sound more natural"]
+  ["beginner", "Beginner", "A1", "Simple phrases and greetings"],
+  ["elementary", "Elementary", "A2", "Everyday things, with some searching for words"],
+  ["intermediate", "Intermediate", "B1", "I keep up in most everyday conversations"],
+  ["upper", "Upper-intermediate", "B2", "Fine at work or school; I want to sound more natural"],
+  ["advanced", "Advanced", "C1–C2", "Fluent; I want to fine-tune"]
 ];
-// Optional, more objective level (ONB-09). Linking an app is simulated.
-const OB_CEFR = ["A1", "A2", "B1", "B2", "C1", "C2"];
-const OB_TESTS = ["TOEFL", "IELTS", "Duolingo English Test"];
-const OB_APPS = ["Duolingo", "Speak", "Memrise"];
+const levelName = k => (OB_LEVELS.find(l => l[0] === k) || [])[1];
+// A test score sets a starting level (approximate bands; the real mapping is TBD, §12).
+// Each: [name, max score, [lowest score for elementary, intermediate, upper, advanced]].
+const OB_TESTS = [
+  ["TOEFL iBT", 120, [0, 42, 72, 95]],
+  ["IELTS", 9, [0, 4, 5.5, 7]],
+  ["Duolingo English Test", 160, [10, 60, 100, 130]]
+];
+function levelFromScore(test, score) {
+  const t = OB_TESTS.find(x => x[0] === test), n = Number(score);
+  if (!t || !score || isNaN(n) || n < 0 || n > t[1]) return null;
+  const band = t[2].filter(min => n >= min).length;   // 0..4
+  return ["beginner", "elementary", "intermediate", "upper", "advanced"][band];
+}
+// Linking an app is simulated: each returns a sample level.
+const OB_APPS = { Duolingo: "intermediate", Speak: "intermediate", Memrise: "elementary" };
 // Prompts a day (ONB-04, REC-04). The first is recommended and preselected.
 const OB_PER_DAY = [[2, "2 a day", "Recommended"], [1, "1 a day", "A lighter start"], [5, "Up to 5 a day", "For days full of conversations"]];
 const OB_FREQ = ["Every day", "A few times a week", "About once a week", "Rarely"];
@@ -24,7 +40,7 @@ const OB_FREQ = ["Every day", "A few times a week", "About once a week", "Rarely
 const OB_CONTEXTS = ["Work", "School", "Friends", "Family", "Other"];
 const CAP_MARK = { yes: ["✓", "available"], limited: ["◐", "limited"], no: ["×", "not yet"] };
 
-const obProfile = () => (UI.ob = UI.ob || { step: 0, lang: "English", speaks: [], level: null, freq: null, contexts: [], cefr: null, test: "TOEFL", score: "", apps: [], perDay: 2 });
+const obProfile = () => (UI.ob = UI.ob || { step: 0, lang: "English", speaks: [], level: null, freq: null, contexts: [], levelFrom: null, test: "TOEFL iBT", score: "", app: null, perDay: 2 });
 const chip = (act, value, on, label = value) =>
   `<button type="button" class="ob-chip ${on ? "on" : ""}" aria-pressed="${on}" data-act="${act}" data-v="${esc(value)}">${esc(label)}</button>`;
 
@@ -50,29 +66,33 @@ function obBody(p) {
     <p class="ob-q">Which languages do you already speak?</p>
     <div class="ob-chips">${OB_SPEAKS.map(l => chip("obSpeak", l, p.speaks.includes(l))).join("")}</div>`;
   if (p.step === 1) return `
-    <h1>How do you use ${esc(p.lang)}?</h1>
-    <div class="ob-levels" role="radiogroup" aria-label="Your speaking level">
-      ${OB_LEVELS.map(([k, name, hint]) => `<button type="button" class="ob-level ${p.level === k ? "on" : ""}" role="radio" aria-checked="${p.level === k}" data-act="obLevel" data-v="${k}">
-        <strong>${name}</strong><small>${hint}</small></button>`).join("")}
-    </div>
-    <details class="ob-more" ${p.cefr || p.score || p.apps.length ? "open" : ""}>
-      <summary>Know your level? <small>Optional · helps match feedback to you</small></summary>
-      <p class="ob-q">CEFR level</p>
-      <div class="ob-chips">${OB_CEFR.map(l => chip("obCefr", l, p.cefr === l)).join("")}</div>
-      <p class="ob-q">Or a test score</p>
+    <h1>What's your ${esc(p.lang)} level?</h1>
+    <section class="ob-proof">
+      <p class="ob-q">Have a test score or a learning app? <small>Optional</small></p>
       <div class="ob-score">
-        <select id="ob-test" aria-label="Test">${OB_TESTS.map(t => `<option ${p.test === t ? "selected" : ""}>${t}</option>`).join("")}</select>
-        <input id="ob-score" inputmode="numeric" placeholder="Score" value="${esc(p.score)}" aria-label="Score">
+        <select id="ob-test" aria-label="Test">${OB_TESTS.map(([t]) => `<option ${p.test === t ? "selected" : ""}>${t}</option>`).join("")}</select>
+        <input id="ob-score" inputmode="decimal" placeholder="Score" value="${esc(p.score)}" aria-label="Score">
+        <button type="button" class="button button-secondary" data-act="obUseScore">Use</button>
       </div>
-      <p class="ob-q">Or link a learning app <small>(simulated)</small></p>
-      <div class="ob-chips">${OB_APPS.map(a => chip("obApp", a, p.apps.includes(a), p.apps.includes(a) ? `✓ ${a}` : a)).join("")}</div>
-    </details>
+      ${p.scoreError ? `<p class="ob-error">${esc(p.scoreError)}</p>` : ""}
+      <div class="ob-chips">${Object.keys(OB_APPS).map(a => chip("obApp", a, p.app === a, p.app === a ? `✓ ${a}` : `+ ${a}`)).join("")}</div>
+      <small class="lang-sample">Link a learning app (simulated)</small>
+    </section>
+    ${p.levelFrom ? `<p class="ob-from">${icon("check", 15)}<span>Set from ${esc(p.levelFrom)}: <strong>${esc(levelName(p.level))}</strong>. It's a starting point; change it below if it doesn't feel right.</span></p>` : ""}
+    <p class="ob-q">${p.levelFrom ? "Your level" : "Or pick the one closest to you"}</p>
+    <div class="ob-levels" role="radiogroup" aria-label="Your speaking level">
+      ${OB_LEVELS.map(([k, name, cefr, hint]) => `<button type="button" class="ob-level ${p.level === k ? "on" : ""}" role="radio" aria-checked="${p.level === k}" data-act="obLevel" data-v="${k}">
+        <strong>${name} <span class="cefr">${cefr}</span></strong><small>${hint}</small></button>`).join("")}
+    </div>
+    <p class="ob-note">We'll fine-tune it from your first conversations.</p>`;
+  if (p.step === 2) return `
+    <h1>How do you use ${esc(p.lang)}?</h1>
     <p class="ob-q">How often do you speak it?</p>
     <div class="ob-chips">${OB_FREQ.map(f => chip("obFreq", f, p.freq === f)).join("")}</div>
     <p class="ob-q">Where do you speak it?</p>
     <div class="ob-chips">${OB_CONTEXTS.map(c => chip("obContext", c, p.contexts.includes(c))).join("")}</div>
     <p class="ob-note">You can change this anytime.</p>`;
-  if (p.step === 2) return `
+  if (p.step === 3) return `
     <h1>You decide what gets recorded</h1>
     <ul class="ob-points">
       <li>${icon("bell", 18)}<span><strong>Prompts:</strong> we'll ask before a chat. It records 2–3 min, only if you accept.</span></li>
@@ -115,11 +135,23 @@ SCREENS.onboard = () => {
 const obToggle = (list, v) => list.includes(v) ? list.filter(x => x !== v) : [...list, v];
 ACTIONS.obLang = el => { obProfile().lang = el.dataset.v; render(); };
 ACTIONS.obSpeak = el => { const p = obProfile(); p.speaks = obToggle(p.speaks, el.dataset.v); render(); };
-ACTIONS.obLevel = el => { obProfile().level = el.dataset.v; render(); };
+// Picking a level by hand overrides one set from a score or app.
+ACTIONS.obLevel = el => { const p = obProfile(); p.level = el.dataset.v; p.levelFrom = null; render(); };
 ACTIONS.obFreq = el => { obProfile().freq = el.dataset.v; render(); };
 ACTIONS.obContext = el => { const p = obProfile(); p.contexts = obToggle(p.contexts, el.dataset.v); render(); };
-ACTIONS.obCefr = el => { const p = obProfile(); p.cefr = p.cefr === el.dataset.v ? null : el.dataset.v; render(); };
-ACTIONS.obApp = el => { const p = obProfile(); p.apps = obToggle(p.apps, el.dataset.v); render(); };
+ACTIONS.obUseScore = () => {
+  const p = obProfile(), lvl = levelFromScore(p.test, p.score);
+  const max = OB_TESTS.find(t => t[0] === p.test)[1];
+  p.scoreError = lvl ? null : `Enter a ${p.test} score between 0 and ${max}.`;
+  if (lvl) { p.level = lvl; p.levelFrom = `${p.test} ${p.score}`; p.app = null; }
+  render();
+};
+ACTIONS.obApp = el => {
+  const p = obProfile(), a = el.dataset.v;
+  if (p.app === a) { p.app = null; if (p.levelFrom?.startsWith(a)) p.levelFrom = null; }
+  else { p.app = a; p.level = OB_APPS[a]; p.levelFrom = `${a} (sample)`; p.scoreError = null; }
+  render();
+};
 ACTIONS.obPerDay = el => { obProfile().perDay = Number(el.dataset.v); render(); };
 // The test and score fields keep their values without re-rendering while typing.
 document.addEventListener("input", e => {
@@ -130,8 +162,8 @@ document.addEventListener("change", e => { if (e.target.id === "ob-test") obProf
 ACTIONS.obNext = () => { const p = obProfile(); p.step = Math.min(OB_STEPS - 1, p.step + 1); go({ name: "onboard" }); };
 ACTIONS.obBack = () => { const p = obProfile(); p.step = Math.max(0, p.step - 1); go({ name: "onboard" }); };
 ACTIONS.obDone = el => {
-  const { lang, speaks, level, freq, contexts, cefr, test, score, apps, perDay } = obProfile();
-  S.profile = { lang, speaks, level, freq, contexts, cefr, test: score ? test : null, score, apps };
+  const { lang, speaks, level, levelFrom, freq, contexts, test, score, app, perDay } = obProfile();
+  S.profile = { lang, speaks, level, levelFrom, freq, contexts, test: levelFrom && score ? test : null, score: levelFrom && score ? score : "", app };
   S.prompts = true;
   S.perDay = perDay;
   S.calendar = el.dataset.cal === "1";
