@@ -22,8 +22,8 @@ said → try, model pronunciation) → *Save* → Learn → Practice: pick Work 
 practice, skills (pronunciation, grammar, structure, natural expressions), each opening to up to three
 improvements and then what to work on to grow further.
 *Phone demo* (top bar, or Settings) shows the lock screen (prompt notification, countdown with
-+1 min and Stop) and the Control Center record button. The gear on Home opens Settings (prompts on
-or off = AI-only mode, prompts a day, length in minutes, notifications, calendar). A conversation
++1 min and Stop) and the Control Center record button. The gear on Home opens Settings (your level,
+where you speak it, prompts on or off = AI-only mode, prompts a day, length in minutes, notifications, calendar). A conversation
 page can delete its kept transcript, which removes its replay. *Reset demo* restarts onboarding.
 
 ## Where things live (who edits what)
