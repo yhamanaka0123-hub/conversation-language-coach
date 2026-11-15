@@ -224,6 +224,8 @@ function coachLines(fresh, cheer) {
 }
 
 SCREENS.home = () => {
+  // Settings open: show only Settings (and an active recording, which stays visible, REC-08).
+  if (UI.settings) return `${recordingBar()}${settingsPanel()}`;
   const fresh = CONVOS.find(c => itemsWith(c.id, "new").length);
   const featured = fresh || CONVOS[0];
   const rest = CONVOS.filter(c => c !== featured);
@@ -239,7 +241,6 @@ SCREENS.home = () => {
         ${UI.rec ? "" : `<button class="rec-quick" type="button" data-act="recQuick">${icon("mic", 15)} Record</button>`}
       </div>
     </header>
-    ${settingsPanel()}
     ${recordingBar()}
     ${capturedNote()}
     ${recordPrompt()}
@@ -292,7 +293,7 @@ ACTIONS.recExtend = () => {
 };
 ACTIONS.promptLater = () => { UI.promptOff = true; render(); };   // no penalty (REC-12)
 ACTIONS.capturedClose = () => { UI.captured = null; render(); };
-ACTIONS.settings = () => { UI.settings = !UI.settings; UI.refocus = ".gear"; render(); };
+ACTIONS.settings = () => { UI.settings = !UI.settings; UI.refocus = UI.settings ? ".settings .push-close" : ".gear"; window.scrollTo(0, 0); render(); };
 ACTIONS.setPrompts = () => { S.prompts = !S.prompts; save(); render(); };
 ACTIONS.setPerDay = el => { S.perDay = Number(el.dataset.v); save(); render(); };
 ACTIONS.setDuration = el => { S.duration = Math.max(1, Math.min(10, Number(el.dataset.v))); save(); render(); };
