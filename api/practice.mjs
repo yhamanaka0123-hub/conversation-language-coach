@@ -2,10 +2,11 @@
 //   GET  /api/practice                  -> { configured, ok, model }   (is the AI partner available?)
 //   POST /api/practice {mode:"suggest"} -> { message, opener }
 //   POST /api/practice {mode:"turn"}    -> { used, feedback: {type, id, text}, reply, done }
+//     convo.kind "topic" uses the topic-chat prompt; otherwise a replay of a real conversation.
 // The key comes from the GROQ_API_KEY environment variable set in Vercel. It never reaches
 // the browser. If anything fails, the page falls back to the scripted practice.
 
-import { SUGGEST_PROMPT, TURN_PROMPT } from "../prompts/practice.mjs";
+import { SUGGEST_PROMPT, TURN_PROMPT, TOPIC_TURN_PROMPT, REGISTER } from "../prompts/practice.mjs";
 
 const GROQ_URL = "https://api.groq.com/openai/v1";
 // Groq retires models from time to time (llama-3.3-70b-versatile went in Aug 2026), so the
@@ -36,6 +37,7 @@ async function readBody(req) {
 // to send arbitrary large prompts.
 function cleanConvo(c = {}) {
   return {
+    kind: c.kind === "topic" ? "topic" : "replay",
     title: cut(c.title, 80), partner: cut(c.partner, 30), partnerNote: cut(c.partnerNote, 80),
     people: cut(c.people, 80), place: cut(c.place, 60), scene: cut(c.scene, 160), summary: cut(c.summary, 500)
   };
@@ -128,8 +130,9 @@ async function turn(body) {
   const history = (Array.isArray(body.history) ? body.history : []).slice(-12)
     .map(m => `${m.role === "user" ? "Learner" : convo.partner}: ${cut(m.text, 400)}`).join("\n");
   const turnsLeft = Math.max(0, Math.min(10, Number(body.turnsLeft) || 0));
-  const out = await groq(fill(TURN_PROMPT, {
-    ...convo, context: context(body.context), targets: targetLines(targets),
+  const ctx = context(body.context);
+  const out = await groq(fill(convo.kind === "topic" ? TOPIC_TURN_PROMPT : TURN_PROMPT, {
+    ...convo, context: ctx, register: REGISTER[ctx], targets: targetLines(targets),
     used: (Array.isArray(body.used) ? body.used : []).filter(id => ids.includes(id)).join(", ") || "none",
     suggested: (Array.isArray(body.suggested) ? body.suggested : []).filter(id => ids.includes(id)).join(", ") || "none",
     turnsLeft: String(turnsLeft), history, reply: cut(body.reply, 400)

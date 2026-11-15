@@ -83,10 +83,11 @@ function smallCard(c) {
 }
 
 // ---------- Recording (PRD §6.1): opt-in only, simulated ----------
-// Two modes: a prompt the learner accepts (default 2–3 min, can stop early) and manual
-// quick-record (runs until stopped). Nothing is captured before the learner acts. Two usable
-// captures in a day stop proactive prompts; manual recording always stays available. The count
-// is never shown as a goal (REC-11..14).
+// Two modes: a prompt the learner accepts (set length, can stop early; extending happens on the
+// lock screen, see phone.js) and manual quick-record (runs until stopped). Nothing is captured
+// before the learner acts. Once the learner has as many usable captures as prompts a day they
+// chose (1, 2 or 5), proactive prompts stop; manual recording always stays available. The
+// count is never shown as a goal (REC-11..14).
 const MIN_USABLE = 5;   // seconds; the real definition of a usable capture is TBD
 const clock = sec => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
 
@@ -113,7 +114,7 @@ function stopRec(quiet) {
   const usable = sec >= MIN_USABLE;
   if (usable) { S.captures = (S.captures || 0) + 1; S.recorded = true; save(); }
   UI.captured = { sec, usable, mode: r.mode };
-  if (UI.route.name === "home") render();
+  if (["home", "phone"].includes(UI.route.name)) render();
 }
 
 function recordingBar() {
@@ -125,7 +126,6 @@ function recordingBar() {
     <p><strong>Recording</strong><small>${r.mode === "prompted" ? "Stops on its own" : "No time limit · runs until you stop it"}</small></p>
     <span class="rec-time" id="rec-time">${r.limit ? `${clock(sec)} / ${clock(r.limit)}` : clock(sec)}</span>
     <span class="rec-buttons">
-      ${r.limit ? `<button class="rec-extend" type="button" data-act="recExtend" aria-label="Add one minute">${icon("clock", 15)} +1 min</button>` : ""}
       <button class="rec-stop" type="button" data-act="recStop">${icon("stop", 14)} Stop</button>
     </span>
   </section>`;
@@ -133,7 +133,7 @@ function recordingBar() {
 
 // A recording prompt (REC-01, NTF-01), shown in-app here the way a notification would arrive.
 function recordPrompt() {
-  if (UI.rec || UI.captured || !S.prompts || UI.promptOff || (S.captures || 0) >= 2) return "";
+  if (UI.rec || UI.captured || !S.prompts || UI.promptOff || (S.captures || 0) >= perDay()) return "";
   return `<section class="rec-prompt">
     ${mascot(40, false, "talk")}
     <div>
@@ -152,27 +152,35 @@ function capturedNote() {
   const c = UI.captured;
   if (!c || UI.rec) return "";
   const note = c.usable
-    ? `<strong>Captured ${clock(c.sec)}.</strong> Feedback will appear here. The audio is deleted after analysis.`
+    ? `<strong>Captured ${clock(c.sec)}.</strong> Feedback will appear here. The audio is deleted after analysis; the transcript is kept for replay.`
     : `<strong>That was too short to analyze</strong>, so it wasn't kept.`;
-  const promptsDone = c.usable && S.prompts && (S.captures || 0) === 2
+  const promptsDone = c.usable && S.prompts && (S.captures || 0) === perDay()
     ? `<br><span class="captured-sub">No more prompts today. Record still works.</span>` : "";
   return `<div class="captured" role="status">${icon(c.usable ? "check" : "clock", 16)}<p>${note}${promptsDone}</p>
     <button class="push-close" type="button" data-act="capturedClose" aria-label="Dismiss">×</button></div>`;
 }
 
-// Settings sheet: prompts (off = AI-only mode), prompted length, notifications, calendar, data.
+// Settings sheet: prompts (off = AI-only mode), prompts a day, prompted length (a number, in
+// minutes), notifications, calendar, data.
 function settingsPanel() {
   if (!UI.settings) return "";
   const toggle = (act, on, label, sub) => `<button class="set-row" type="button" data-act="${act}" role="switch" aria-checked="${on}">
       <span><strong>${label}</strong><small>${sub}</small></span><span class="switch ${on ? "on" : ""}" aria-hidden="true"></span></button>`;
   return `<section class="settings" aria-label="Settings">
     <div class="settings-head"><h2>Settings</h2><button class="push-close" type="button" data-act="settings" aria-label="Close settings">×</button></div>
-    ${toggle("setPrompts", S.prompts, "Recording prompts", S.prompts ? "Up to 2 a day" : "Off (AI-only mode)")}
-    <div class="set-row set-static"><span><strong>Prompted recording length</strong></span>
-      <span class="set-chips">${[2, 3].map(m => `<button type="button" class="ob-chip ${S.duration === m ? "on" : ""}" aria-pressed="${S.duration === m}" data-act="setDuration" data-v="${m}">${m} min</button>`).join("")}</span></div>
+    ${toggle("setPrompts", S.prompts, "Recording prompts", S.prompts ? `Up to ${perDay()} a day` : "Off (AI-only mode). Record still works.")}
+    ${S.prompts ? `<div class="set-row set-static"><span><strong>Prompts a day</strong></span>
+      <span class="set-chips">${[2, 1, 5].map(n => `<button type="button" class="ob-chip ${perDay() === n ? "on" : ""}" aria-pressed="${perDay() === n}" data-act="setPerDay" data-v="${n}">${n === 5 ? "Up to 5" : n}${n === 2 ? " · recommended" : ""}</button>`).join("")}</span></div>` : ""}
+    <div class="set-row set-static"><span><strong>Prompted recording length</strong><small>Ends on its own. Add time from the lock screen.</small></span>
+      <span class="stepper" role="group" aria-label="Minutes">
+        <button type="button" data-act="setDuration" data-v="${S.duration - 1}" ${S.duration <= 1 ? "disabled" : ""} aria-label="One minute less">−</button>
+        <output aria-live="polite">${S.duration} min</output>
+        <button type="button" data-act="setDuration" data-v="${S.duration + 1}" ${S.duration >= 10 ? "disabled" : ""} aria-label="One minute more">+</button>
+      </span></div>
     ${toggle("setNotify", S.notify, "Feedback-ready notifications", "No quotes on the lock screen")}
     ${toggle("setCalendar", S.calendar, "Calendar (optional)", S.calendar ? "Connected (simulated). Never starts recording." : "Never starts recording")}
-    <p class="set-data">${icon("lock", 14)} Audio and full transcripts are deleted after analysis. Delete any saved item in Learn.</p>
+    <p class="set-data">${icon("lock", 14)} Audio is deleted after analysis. Transcripts are kept so you can replay a chat; delete one from its conversation page. Delete any saved item in Learn.</p>
+    <button class="text-link" type="button" data-act="go" data-to="phone">See the lock screen and Control Center ${icon("next", 14)}</button>
   </section>`;
 }
 
@@ -244,7 +252,7 @@ SCREENS.home = () => {
 
     ${aiOnly() ? `<section class="empty-home">
       <h2>No real conversations yet.</h2>
-      <p>You're in AI-only mode. Practice with an AI partner anytime. If you'd like feedback on a real conversation, tap Record.</p>
+      <p>Recording prompts are off (AI-only mode). Practice with the AI partner anytime. If you'd like feedback on a real conversation, tap Record.</p>
       <button class="button-cta" type="button" data-act="go" data-to="practice">Practice with AI ${icon("next", 18)}</button>
     </section>` : featured ? topPreview(featured) : `<section class="empty-home">
       <h2>Your next conversation is a starting point.</h2>
@@ -271,7 +279,7 @@ ACTIONS.openfb = el => { S.seen[el.dataset.id] = true; save(); go({ name: "convo
 ACTIONS.recQuick = () => startRec("manual");
 ACTIONS.recPrompt = () => startRec("prompted");
 ACTIONS.recStop = () => stopRec();
-// A prompted recording can run longer: each tap adds a minute (REC-03).
+// A prompted recording can run longer: each tap on the lock screen adds a minute (REC-03).
 ACTIONS.recExtend = () => {
   const r = UI.rec; if (!r || !r.limit) return;
   r.limit += 60;
@@ -281,8 +289,9 @@ ACTIONS.recExtend = () => {
 ACTIONS.promptLater = () => { UI.promptOff = true; render(); };   // no penalty (REC-12)
 ACTIONS.capturedClose = () => { UI.captured = null; render(); };
 ACTIONS.settings = () => { UI.settings = !UI.settings; UI.refocus = ".gear"; render(); };
-ACTIONS.setPrompts = () => { S.prompts = !S.prompts; S.profile.mode = S.prompts ? "prompts" : "ai"; save(); render(); };
-ACTIONS.setDuration = el => { S.duration = Number(el.dataset.v); save(); render(); };
+ACTIONS.setPrompts = () => { S.prompts = !S.prompts; save(); render(); };
+ACTIONS.setPerDay = el => { S.perDay = Number(el.dataset.v); save(); render(); };
+ACTIONS.setDuration = el => { S.duration = Math.max(1, Math.min(10, Number(el.dataset.v))); save(); render(); };
 ACTIONS.setNotify = () => { S.notify = !S.notify; save(); render(); };
 ACTIONS.setCalendar = () => { S.calendar = !S.calendar; save(); render(); };
 ACTIONS.pushClose = el => el.closest(".push")?.remove();

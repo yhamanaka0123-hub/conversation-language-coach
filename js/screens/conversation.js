@@ -8,7 +8,7 @@
 function itemActions(i, practice) {
   const s = statusOf(i.id);
   const chat = practice && !isPron(i) && i.convo
-    ? `<button class="text-link" type="button" data-act="practiceItem" data-id="${i.id}">Try it in a chat with ${esc(convoById[i.convo].partner)}</button>` : "";
+    ? `<button class="text-link" type="button" data-act="practiceItem" data-id="${i.id}">${hasTranscript(i.convo) ? `Try it in a chat with ${esc(convoById[i.convo].partner)}` : "Try it in a practice chat"}</button>` : "";
   if (s === "new") return `<div class="phrase-actions">
       <button class="button button-secondary" type="button" data-act="mark" data-id="${i.id}" data-status="practice">${icon("bookmark", 16)} Save</button>
       <button class="button button-quiet" type="button" data-act="mark" data-id="${i.id}" data-status="known">${icon("check", 16)} I know this</button>
@@ -111,14 +111,21 @@ SCREENS.convo = () => {
     ${more.length ? `<h3 class="sub-heading">${icon("spark", 16)} More ways to improve <small>from your own words</small></h3>
       <div class="phrase-list">${more.map(i => suggestionCard(i)).join("")}</div>` : ""}
 
-    <p class="data-note">${icon("lock", 14)} Audio and full transcript deleted after analysis. Only the lines above are kept.</p>
-
-    <div class="sticky-action">
-      <button class="button button-primary full-button" type="button" data-act="start" data-id="${c.id}">
-        Practice with ${esc(c.partner)} ${icon("next", 18)}
-      </button>
-      <p>Optional · ~3 min · AI plays ${esc(c.partner)}</p>
-    </div>`;
+    ${hasTranscript(c.id)
+      ? `<p class="data-note">${icon("lock", 14)} Audio was deleted after analysis. The transcript is kept so you can replay this chat.
+          ${UI.confirmTx === c.id
+            ? `<span class="tx-confirm">Delete it? Replay won't be available. <button class="text-link danger" type="button" data-act="delTx" data-id="${c.id}">Delete</button> <button class="text-link" type="button" data-act="askDelTx" data-id="">Keep</button></span>`
+            : `<button class="text-link" type="button" data-act="askDelTx" data-id="${c.id}">${icon("trash", 13)} Delete transcript</button>`}</p>
+        <div class="sticky-action">
+          <button class="button button-primary full-button" type="button" data-act="start" data-id="${c.id}">
+            Replay with ${esc(c.partner)} ${icon("next", 18)}
+          </button>
+          <p>Optional · ~3 min · AI plays ${esc(c.partner)} in the same situation</p>
+        </div>`
+      : `<p class="data-note">${icon("lock", 14)} Audio and transcript deleted. Only the lines above are kept. You can still practice them in a topic chat.</p>`}`;
 };
 
+// Deleting a kept transcript (DAT-04): asks once, in place. Learning points above stay.
+ACTIONS.askDelTx = el => { UI.confirmTx = el.dataset.id || null; render(); };
+ACTIONS.delTx = el => { S.noTranscript = { ...(S.noTranscript || {}), [el.dataset.id]: true }; UI.confirmTx = null; save(); render(); };
 ACTIONS.ctx = el => { S.ctx[el.dataset.id] = el.dataset.ctx; save(); render(); };

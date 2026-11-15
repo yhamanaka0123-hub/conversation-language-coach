@@ -50,6 +50,19 @@ function skillRow(k, p) {
   </details>`;
 }
 
+// Recurring mistakes (RPT-10): the same kind of slip seen again in later real conversations,
+// with the latest instance and what to try. "Still showing up" is information, not a penalty.
+function mistakeRow(m, p) {
+  return `<div class="mistake mistake-${m.status}">
+    <div class="mistake-top"><span class="area-chip">${esc(m.skill)}</span>
+      <span class="mistake-count">${m.status === "still" ? "Still showing up" : "↓ Showing up less"} · ${plural(m.times[p], "time")}</span></div>
+    <p class="mistake-label">${esc(m.label)}</p>
+    <div class="ev ev-then"><span class="ev-label">Latest</span><span class="ev-when">${esc(m.latest.when)}</span><p>${m.latest.text.startsWith("“") ? marked(m.latest, "old") : `“${marked(m.latest, "old")}”`}</p></div>
+    <p class="mistake-try"><strong>Try:</strong> “${esc(m.try)}”</p>
+    <p class="ev-change">${icon("spark", 14)} ${esc(m.tip)}</p>
+  </div>`;
+}
+
 function realReport(p) {
   const extra = p === "week" ? { conversations: 0, minutes: 0, used: 0, tips: 0, applied: 0 } : EARLIER[p];
   const minutes = CONVOS.reduce((a, c) => a + (c.mine || 0), 0) + extra.minutes;
@@ -71,6 +84,9 @@ function realReport(p) {
     <div class="section-heading compact skills-head"><div><h2>Skill progress</h2></div><span class="hint">Tap a skill to compare</span></div>
     <div class="skill-list">${SKILLS.map(k => skillRow(k, p)).join("")}</div>
     <p class="section-intro bar-note">A full bar means you use the skill consistently, not that you’ve mastered it.</p>
+    <div class="section-heading compact"><div><p class="eyebrow">NOT THERE YET</p><h2>Mistakes that keep coming back</h2></div></div>
+    <p class="section-intro">Everyone has a few. These are the ones worth a second look.</p>
+    <div class="stack">${MISTAKES.map(m => mistakeRow(m, p)).join("")}</div>
     <section class="takeaway">
       <p class="eyebrow">${PERIODS[p].toUpperCase()}’S TAKEAWAY</p>
       <h3>${esc(ins.takeaway)}</h3>
@@ -83,7 +99,7 @@ function realReport(p) {
 function aiReport(p) {
   const extra = p === "week" ? { sessions: 0, practiced: 0 } : EARLIER[p];
   const sessions = (S.sessions || 0) + extra.sessions;
-  const chats = CONVOS.filter(c => (S.history || {})[c.id]?.length);
+  const chats = [...TOPICS.map(t => topicById[t.id]), ...CONVOS].filter(c => (S.history || {})[c.id]?.length);
   const practiced = learnedItems();
   return `
     <div class="stat-row">
@@ -91,11 +107,11 @@ function aiReport(p) {
       ${statTile("chat", practiced.length + extra.practiced, "phrases used in practice", "stat-spoke")}
     </div>
     <p class="section-intro sep-note">${icon("spark", 14)} Practice results stay separate from your real-conversation progress.</p>
-    <div class="section-heading compact"><div><p class="eyebrow">LATEST CHAT WITH EACH PERSON</p><h2>Your practice chats</h2></div></div>
+    <div class="section-heading compact"><div><p class="eyebrow">LATEST CHAT PER TOPIC OR REPLAY</p><h2>Your practice chats</h2></div></div>
     ${chats.length ? `<div class="stack">${chats.map(c => {
       const h = S.history[c.id], last = h[h.length - 1], prev = h[h.length - 2];
-      return `<div class="chat-row"><span class="chat-face face-${ctxOf(c.id)}">${person(c, 34)}</span>
-        <p><strong>${esc(c.partner)}</strong><small>${last.targets ? `${last.used} of ${plural(last.targets, "phrase")} used` : "Free chat"}${prev && prev.targets ? ` · ${prev.used} last time` : ""}</small></p></div>`;
+      return `<div class="chat-row"><span class="chat-face face-${ctxOf(c.id)}">${faceOf(c, 34)}</span>
+        <p><strong>${esc(chatName(c))}</strong><small>${last.targets ? `${last.used} of ${plural(last.targets, "phrase")} used` : "Free chat"}${prev && prev.targets ? ` · ${prev.used} last time` : ""}</small></p></div>`;
     }).join("")}</div>`
     : `<div class="empty">${mascot(56, false, "think")}<p>No practice chats ${p === "week" ? "this week" : "yet"}. Practice is optional, whenever you like.</p>
         <button class="button button-secondary" type="button" data-act="go" data-to="practice">Open Practice</button></div>`}
@@ -107,7 +123,7 @@ function aiReport(p) {
 // real-world progress (RPT-09).
 function realEmpty() {
   return `<div class="empty">${mascot(64, false, "think")}
-    <p><strong>No real-conversation report yet.</strong> You're in AI-only mode. This report appears after you record a real conversation. Your AI practice results are on the other tab, and they don't count here.</p>
+    <p><strong>No real-conversation report yet.</strong> Recording prompts are off (AI-only mode). This report appears after you record a real conversation. Your AI practice results are on the other tab, and they don't count here.</p>
     <button class="button button-secondary" type="button" data-act="go" data-to="home">Go to Home to record</button></div>`;
 }
 
@@ -127,7 +143,7 @@ SCREENS.report = () => {
       ${Object.entries(PERIODS).map(([k, l]) => `<button type="button" class="${p === k ? "on" : ""}" aria-pressed="${p === k}" data-act="period" data-v="${k}">${l}</button>`).join("")}
     </div>
     ${empty ? realEmpty() : view === "real" ? realReport(p) : aiReport(p)}
-    <p class="footnote">Skill levels and examples are sample data.</p>`;
+    <p class="footnote">Skill levels, examples and recurring mistakes are sample data.</p>`;
 };
 
 ACTIONS.reportView = el => { UI.report = el.dataset.v; render(); };

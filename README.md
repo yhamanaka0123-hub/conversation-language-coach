@@ -5,21 +5,23 @@
 
 `v1/` is an archived copy: don't edit it. New work happens in the root files. v1 keeps its own demo progress (`clc-proto-v1` in localStorage) and shares `/api/practice` with the latest version.
 
-The current PRD is v2.3 (Nov 12, 2026): [`docs/PRD.md`](docs/PRD.md). The v1 prototype was built from [`docs/PRD-v1.md`](docs/PRD-v1.md) (Oct 20, 2026).
+The current PRD is v2.4 (Nov 15, 2026, after the Nov 13 prototype review): [`docs/PRD.md`](docs/PRD.md). The v1 prototype was built from [`docs/PRD-v1.md`](docs/PRD-v1.md) (Oct 20, 2026).
 Visual design comes from the team's Figma Make prototype; behaviour and sample data
 come from the first clickable build. Plain HTML/CSS/JS, no build step:
 open `index.html` in a browser (the AI practice partner needs the Vercel deploy; opened
 as a local file, Practice uses the fixed script).
 
-**Golden path (per [PRD v2.3](docs/PRD.md)):** onboarding (language and what it supports, level,
-how often and where you speak it, recording prompts or AI-only, optional calendar) → Home: accept
-the recording prompt (2–3 min, stop early) or tap *Record* (runs until you stop) → *See all
-feedback* (context → you said → try, model pronunciation) → *Save* → Learn: This week's picks,
-Expressions / Pronunciation / Speaking Tips, suggested vs saved, delete an item → *Try it in a chat
-with Maya* → recap → Insights: Real conversations / AI practice, This week / month / all time.
-The gear on Home opens Settings (prompts, prompted length, notifications, calendar). Prompts stop
-after 2 captures a day; Record always works. Choosing AI-only in onboarding shows the empty states.
-*Reset demo* restarts onboarding.
+**Golden path (per [PRD v2.4](docs/PRD.md)):** onboarding (language and what it supports, level with
+optional CEFR / test score / app link, how often and where you speak it, how recording works and
+prompts a day: 2 recommended, optional calendar) → Home: accept the recording prompt (ends at its
+set length, stop early) or tap *Record* (runs until you stop) → *See all feedback* (context → you
+said → try, model pronunciation) → *Save* → Learn → Practice: pick Work / School / Friends / Family
+/ Surprise me, or replay a recorded conversation → recap → Insights: Real conversations / AI
+practice, skills (pronunciation, grammar, structure, natural expressions), recurring mistakes.
+*Phone demo* (top bar, or Settings) shows the lock screen (prompt notification, countdown with
++1 min and Stop) and the Control Center record button. The gear on Home opens Settings (prompts on
+or off = AI-only mode, prompts a day, length in minutes, notifications, calendar). A conversation
+page can delete its kept transcript, which removes its replay. *Reset demo* restarts onboarding.
 
 ## Where things live (who edits what)
 
@@ -28,15 +30,16 @@ after 2 captures a day; Record always works. Choosing AI-only in onboarding show
 | `js/data.js` | Conversations, phrases, suggestions, AI partner scripts. No coding needed beyond keeping the format. |
 | `style.css` | All colors, fonts and layout (from the Figma Make design). |
 | `js/core.js` | Shared state, helpers, icons, bottom nav, page header. Change with care: every screen uses it. |
-| `js/screens/onboard.js` | Onboarding: language with its (sample) capabilities, level, frequency, contexts, recording prompts or AI-only, optional calendar |
+| `js/screens/onboard.js` | Onboarding: language with its (sample) capabilities, level (plus optional CEFR, test score, linked app), frequency, contexts, how recording works and prompts a day (2 recommended), optional calendar |
 | `js/screens/home.js` | Home: quick record, recording prompt (stops after 2 captures a day), live recording bar, Settings, feedback-ready notification, tappable coach, latest conversation's Top 3, more from your day; AI-only empty state |
 | `js/screens/conversation.js` | Conversation detail: Top 3 to try next (context → you said → try; pronunciation cue and model audio), then all learning points; Save is separate from practice; deletion note |
 | `js/screens/bank.js` | Learn: This week's picks, review card for saved items, Expressions / Pronunciation / Speaking Tips (each its own format) / Saved, suggested vs saved, delete an item |
 | `js/screens/cards.js` | Flashcard review of saved items: expressions (meaning → phrase), pronunciation (word → stress, cue, model audio), speaking tips (you said → try); Got it / Not yet; familiarity 🌱 new → 🌿 getting there → 🌳 remembered |
-| `js/screens/practice.js` | Pick anyone to chat with (character cards drawn from `look` in data.js; saved phrases first, otherwise phrases from that chat, or a free chat), AI practice session, recap (then vs now, compared with your last chat with that person), scripted fallback |
+| `js/screens/practice.js` | One AI partner: pick a topic (`TOPICS` in data.js: Work, School, Friends, Family, Surprise me; tone follows the topic) or replay a recorded conversation (only while its transcript is kept); AI practice session, recap, scripted fallback |
+| `js/screens/phone.js` | Phone demo: lock screen (prompt notification, recording countdown with +1 min and Stop) and Control Center record button. Simulated |
 | `api/practice.mjs` | Vercel serverless function that calls the AI model (Groq). Holds the only use of the API key. |
-| `prompts/practice.mjs` | The live prompts for the coach suggestion and each practice turn |
-| `js/screens/progress.js` | Insights: Real conversations vs AI practice, This week / month / all time, skill bars with earlier vs recent examples (sample data); AI-only empty state |
+| `prompts/practice.mjs` | The live prompts: coach suggestion, a replay turn, a topic-chat turn, and the casual / polished tone (`REGISTER`) |
+| `js/screens/progress.js` | Insights: Real conversations vs AI practice, This week / month / all time, skill bars with earlier vs recent examples, recurring mistakes (`MISTAKES`, sample data); AI-only empty state |
 
 Each screen file adds one entry to `SCREENS` and its buttons to `ACTIONS`, so two people
 working on different screens don't touch the same file.
