@@ -806,4 +806,3 @@ mark.new { background: linear-gradient(transparent 45%, #b5e6cd 45%); font-weigh
 .connect-note { color: var(--plum-muted); font-size: 12.5px !important; }
 .connect-actions { display: flex; gap: 8px; }
 .connect-actions .button { flex: 1; }
-.skill-about { color: var(--plum-muted); font-size: 12px; line-height: 1.4; }

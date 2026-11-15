@@ -253,7 +253,7 @@ const SKILLS = [
         now: { when: "Oct 19 · Office hours", text: "I don't think the draft is finished yet.", mark: "I don't think the draft is" },
         change: "Starting with “I don't think” makes the point clear right away." }
     ] },
-  { id: "expression", name: "Natural expressions (slang)", about: "Everyday phrasing and slang instead of textbook phrasing, fitting the situation. Not right or wrong.", level: { week: 62, month: 54, all: 41 }, evidence: { week: 3, month: 9, all: 21 },
+  { id: "expression", name: "Natural expressions/slang", level: { week: 62, month: 54, all: 41 }, evidence: { week: 3, month: 9, all: 21 },
     wins: [
       { before: { when: "Oct 8 · Lab meeting", text: "Can I meet you shortly before Friday?", mark: "meet you shortly" },
         now: { when: "Oct 19 · Weekly product sync", text: "Can we touch base before Friday?", mark: "touch base" },
