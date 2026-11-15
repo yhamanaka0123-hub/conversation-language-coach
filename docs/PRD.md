@@ -385,6 +385,14 @@ TBD: the AI partner's name (the product name is tentatively Afterchat), and how 
 
 **Skill progress bars.** Skill measures, in this order, are pronunciation, grammar, sentence structure, and natural expressions (slang), assessed only from the learner's own speech. Cultural context is part of natural expressions rather than a separate measure, since the team could not draw a clear line between the two. Pronunciation, grammar, and structure can be compared with a standard; natural expressions depend more on context, which the examples should make clear. Each skill opens to up to three examples of what got better (an earlier and a more recent instance of the same kind of moment), followed by what to work on next (RPT-10). Each bar opens to concrete examples, such as an earlier and a more recent instance of the same kind of moment. A full bar means the skill is shown consistently in observed conversations, not mastery of the language. Detailed scoring rubrics, evidence thresholds, and aggregation methods are to validate; progress bars are approved as a presentation format, not a scoring formula. Missing evidence must not count as failure or regression.
 
+**How natural expressions are measured.** Unlike pronunciation, grammar, and structure, natural expressions are not right or wrong; they depend on the situation. The measure looks at the learner's own speech for:
+
+1. **Natural phrasing instead of textbook phrasing.** Moments where the learner used an everyday or idiomatic expression, including slang, where a literal, classroom-style phrasing was possible (for example, "touch base" rather than "meet you shortly", or "If I could add one thing" rather than "I want to say my opinion"). This includes using, in a later conversation, an expression the product suggested.
+2. **Fit with the situation.** Casual expressions and slang with friends and family; more polished phrasing at work and school. Using more slang does not by itself count as progress, and slang in a formal setting does not count toward the skill.
+3. **Examples, not a verdict.** The bar opens to earlier and recent examples of the same kind of moment, and the learner is never told an expression was "wrong".
+
+The skill carries a one-line description in Insights so learners know what it looks at. The progress bar reflects how consistently these moments appear across the learner's real conversations. Detection of natural versus textbook phrasing, the scoring rubric, and evidence thresholds are to validate (§12).
+
 TBD: calendar-week boundaries, time-zone handling, and exact report layout.
 
 ### 6.10 AI-Only Mode
@@ -580,7 +588,7 @@ The prototype at the site root follows this PRD (updated Nov 13, 2026). What it 
 | Level calibration | How onboarding answers, test scores or app data, and early conversations estimate what the learner already knows. |
 | Feedback prioritization | How the top points are chosen. |
 | Weekly picks | Selection method; behavior when there are fewer than two good candidates. |
-| Scoring | Skill rubrics, baseline, evidence thresholds, aggregation, and uncertainty display. |
+| Scoring | Skill rubrics, baseline, evidence thresholds, aggregation, and uncertainty display; for natural expressions, how natural versus textbook phrasing and fit with the situation are detected (§6.9). |
 | Reports | Calendar-week boundaries, time-zone handling, and detailed Learn and Insights layouts. |
 | Notifications | Final copy, delivery timing, batching, and frequency. |
 | Future assessment | Whether and how to assess intonation, pausing, and speech chunking. |
@@ -616,6 +624,7 @@ The prototype at the site root follows this PRD (updated Nov 13, 2026). What it 
 | Data | Transcripts are kept; audio is still deleted; learners can delete a transcript (DAT-02, DAT-04, DAT-05). | Learners record by choice, and replaying a real conversation needs its transcript. |
 | Practice | One AI partner; topics Work, School, Friends, Family, Surprise me; tone follows the topic; replay of recorded conversations; no persona cast or learner-made personas (PRA-01, PRA-06 to PRA-09). | Named characters implied the app knew who the learner talked to, and custom personas would be too much work and clutter. |
 | Insights | Cultural context merged into natural expressions (slang); order is pronunciation, grammar, sentence structure, natural expressions; each skill shows up to three improvements, then what to work on to grow further (RPT-10). | The team could not tell cultural context and natural expressions apart; learners want to see what keeps going wrong, framed as what would help them improve. |
+| Insights | Natural expressions defined as natural phrasing (including slang) instead of textbook phrasing, judged by fit with the situation and shown with examples rather than as right or wrong (§6.9). | The team asked how this skill could be measured; it was described in the review as the use of everyday expressions and slang you would not learn in a classroom. |
 | Learn | Kept as its own tab. | Insights shows up to three examples per skill; Learn holds everything. |
 | Naming | Product name tentatively **Afterchat** (feedback arrives after a chat; no app with that exact name was found in a quick search, while "Speak Easy" is taken by several AI English apps). The AI partner's name is still TBD. The sample friend "Maya" is renamed "Sam". | Many class projects' AI defaulted to "Maya", so the name read as the AI rather than a friend. |
 

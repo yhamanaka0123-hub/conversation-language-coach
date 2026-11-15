@@ -60,6 +60,7 @@ function skillRow(k, p) {
       <span class="skill-top"><span class="skill-name">${esc(k.name)}</span>
         ${t ? `<span class="trend trend-${t}">${t === "up" ? "↑ Improving" : "→ Steady"}</span>` : ""}
         ${icon("chevron", 16)}</span>
+      ${k.about ? `<span class="skill-about">${esc(k.about)}</span>` : ""}
       <span class="skill-bar" role="img" aria-label="${esc(k.name)}: ${levelWord(n)}"><span style="width:${n}%"></span></span>
       <small>${levelWord(n)} · from ${plural(k.evidence[p], "thing", "things")} you said${grow.length ? ` · <b class="grow-count">${plural(grow.length, "thing")} to work on</b>` : ""}</small>
     </summary>
