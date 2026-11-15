@@ -12,7 +12,7 @@ function lockPrompt() {
   if (!S.prompts || UI.promptOff || (S.captures || 0) >= perDay())
     return `<p class="lock-quiet">No recording prompt right now.${S.prompts ? "" : " Prompts are off in Settings."}</p>`;
   return `<div class="lock-note">
-    <div class="lock-app">${mascot(22)}<strong>Coach</strong><small>now</small></div>
+    <div class="lock-app">${mascot(22)}<strong>${APP_NAME}</strong><small>now</small></div>
     <p>About to chat? Record ${S.duration} min for feedback.</p>
     <small class="lock-sub">Nothing is recorded until you tap Record.</small>
     <div class="lock-actions">
@@ -44,7 +44,7 @@ function lockScreen() {
     <div class="lock-stack">
       ${UI.rec ? liveActivity() : lockPrompt()}
       ${S.notify && fresh && !UI.rec ? `<button class="lock-note lock-fb" type="button" data-act="openfb" data-id="${fresh.id}">
-        <span class="lock-app">${mascot(22)}<strong>Coach</strong><small>2m ago</small></span>
+        <span class="lock-app">${mascot(22)}<strong>${APP_NAME}</strong><small>2m ago</small></span>
         <p>Your latest conversation has ${plural(topOf(fresh.id).length, "point")} to review.</p></button>` : ""}
     </div>
   </div>`;
@@ -61,7 +61,7 @@ function controlCenter() {
       ${tile("🔦")}${tile("⏱")}${tile("🧮")}${tile("📷")}
       <button type="button" class="cc-coach ${r ? "on" : ""}" data-act="ccRecord" aria-pressed="${!!r}">
         ${icon(r ? "stop" : "mic", 24)}
-        <span>${r ? `Recording <b id="rec-time">${r.limit ? `${clock(sec)} / ${clock(r.limit)}` : clock(sec)}</b>` : "Coach · Record"}</span>
+        <span>${r ? `Recording <b id="rec-time">${r.limit ? `${clock(sec)} / ${clock(r.limit)}` : clock(sec)}</b>` : `${APP_NAME} · Record`}</span>
       </button>
     </div>
     <p class="cc-hint">${r ? "Tap again to stop." : "One tap starts a recording that runs until you stop it."}</p>

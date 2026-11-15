@@ -1,6 +1,8 @@
 // Sample data for the prototype. Edit freely: conversations, phrases and the AI scripts
 // all live here, so content changes never touch the screen code.
 
+// Product name: tentative until the team confirms it (PRD §12).
+const APP_NAME = "Afterchat";
 const USER = "Yuka";
 const TODAY = "Tuesday, Oct 20";
 

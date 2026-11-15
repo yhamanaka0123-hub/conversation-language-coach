@@ -1,4 +1,6 @@
-# Conversation Language Coach — clickable prototype
+# Afterchat (tentative name) — clickable prototype
+
+Formerly "Conversation Language Coach". The product name is tentative until the team confirms it; it is set in one place, `APP_NAME` in `js/data.js`. The AI partner is still called "Coach" (`PARTNER`).
 
 **Live preview:** https://conversation-language-coach.vercel.app/
 **Prototype v1 (as used in user testing, frozen):** https://conversation-language-coach.vercel.app/v1/ · git tag `v1-prototype`

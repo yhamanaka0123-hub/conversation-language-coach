@@ -192,7 +192,7 @@ function notification(c) {
   if (!S.notify || !c || S.seen[c.id] || UI.pushShown[c.id] || !topOf(c.id).length) return "";
   return `<div class="push" role="status">
     <button class="push-body" type="button" data-act="openfb" data-id="${c.id}">
-      ${mascot(26)}<span><span class="push-app"><strong>Coach</strong><small>now</small></span>
+      ${mascot(26)}<span><span class="push-app"><strong>${APP_NAME}</strong><small>now</small></span>
       Your latest conversation has ${plural(topOf(c.id).length, "point")} to review.</span>
     </button>
     <button class="push-close" type="button" data-act="pushClose" aria-label="Dismiss">×</button>

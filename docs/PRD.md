@@ -1,4 +1,4 @@
-# PRD v2.4: Conversation Language Coach
+# PRD v2.4: Afterchat (tentative name)
 
 Version 2.4 · November 15, 2026 · INFO 213 · Team 12
 Status: Confirmed product direction. Proposed safeguards and capabilities still to validate are marked as such; technical and operational details marked TBD are listed in §12.
@@ -6,7 +6,7 @@ Version 1 (Oct 20, 2026) is kept in [`PRD-v1.md`](PRD-v1.md). The prototype as t
 
 ## 1. Overview
 
-The Conversation Language Coach helps language learners improve everyday speaking through feedback grounded in their real conversations. Learners record selected conversations by accepting a short prompt or by starting a recording themselves. The product turns each capture into concrete feedback and learning content, supports optional AI practice, and shows progress through reports backed by examples. Captured audio is deleted after analysis. Transcripts of the conversations a learner chose to record are kept, so they can replay a conversation in practice, and the learner can delete any of them.
+Afterchat (tentative name; formerly "Conversation Language Coach") helps language learners improve everyday speaking through feedback grounded in their real conversations. Learners record selected conversations by accepting a short prompt or by starting a recording themselves. The product turns each capture into concrete feedback and learning content, supports optional AI practice, and shows progress through reports backed by examples. Captured audio is deleted after analysis. Transcripts of the conversations a learner chose to record are kept, so they can replay a conversation in practice, and the learner can delete any of them.
 
 This iteration builds on Prototype A (#1 "Learn, Practice, Track"). It incorporates the depth and specificity of Prototype B's feedback (#2 "Habit-Stack Nudges") and the simplicity of Prototype C's experience (#3 "Double Subtitles").
 
@@ -366,7 +366,7 @@ Because captured audio is deleted after analysis, the product does not offer pla
 
 Example: if a learner struggled to turn down plans in a coffee chat, they can replay that coffee chat, or pick Friends and try the suggested wording there.
 
-TBD: the AI partner's name (the team will vote; the product name is chosen the same way), and how the tone instructions are tuned per topic.
+TBD: the AI partner's name (the product name is tentatively Afterchat), and how the tone instructions are tuned per topic.
 
 ### 6.9 Insights Reports
 
@@ -574,7 +574,7 @@ The prototype at the site root follows this PRD (updated Nov 13, 2026). What it 
 | Data retention | Exact audio deletion timing; how long transcripts are kept by default; failure handling; storage location and processor behavior; bulk deletion. |
 | AI practice data | Whether AI chat transcripts are kept. |
 | Level inputs | Which learning apps can share level data; how test scores map to a starting level. |
-| Naming | The product name and the AI partner's name (team vote). |
+| Naming | Confirming the product name (tentatively Afterchat, Nov 15) and choosing the AI partner's name. |
 | Participant consent | Participant notice/consent and situations where recording should not proceed; legal advice before real-world use. |
 | Speaker identification | Identification method and handling of uncertain attribution. |
 | Level calibration | How onboarding answers, optional CEFR or test scores, and early conversations estimate what the learner already knows. |
@@ -617,6 +617,6 @@ The prototype at the site root follows this PRD (updated Nov 13, 2026). What it 
 | Practice | One AI partner; topics Work, School, Friends, Family, Surprise me; tone follows the topic; replay of recorded conversations; no persona cast or learner-made personas (PRA-01, PRA-06 to PRA-09). | Named characters implied the app knew who the learner talked to, and custom personas would be too much work and clutter. |
 | Insights | Cultural context merged into natural expressions (slang); order is pronunciation, grammar, sentence structure, natural expressions; recurring mistakes added (RPT-10). | The team could not tell cultural context and natural expressions apart; learners want to see what keeps going wrong, not only what improved. |
 | Learn | Kept as its own tab. | Insights shows up to three examples per skill; Learn holds everything. |
-| Naming | "Maya" is only a sample friend's name. The product and AI partner names are TBD (team vote). | Many class projects defaulted to "Maya". |
+| Naming | Product name tentatively **Afterchat** (feedback arrives after a chat; no app with that exact name was found in a quick search, while "Speak Easy" is taken by several AI English apps). The AI partner's name is still TBD. "Maya" is only a sample friend's name. | Many class projects defaulted to "Maya". |
 
 **Source basis:** team discussion transcript dated November 10, 2026; recommendation slides 10–13; confirmed team decisions of November 12, 2026, which replace earlier conflicting requirements (including always-on recording, persistent playback of user audio, and keeping full transcripts); additions from the follow-up team discussion of November 12, 2026 (language support, manual-recording use cases, audience, no daily quota, retained-output safeguards, validation); and the prototype review of November 13, 2026 (§14), which replaces the November 12 decision to delete full transcripts.
