@@ -139,7 +139,7 @@ Participants reviewed predetermined conversation content rather than feedback ge
 | --- | --- |
 | ONB-01 | Ask for the target language and the languages the learner already speaks. When the learner picks a language, show which capabilities are available for it (§6.12). |
 | ONB-02 | Ask for the learner's level (ONB-09), how often the learner uses the language, and the contexts where they speak it: Work, School, Friends, Family, or Other (the same four as the Practice topics, §6.8). |
-| ONB-09 | Ask for the level on its own page. If the learner has a test score (e.g. TOEFL iBT, IELTS, Duolingo English Test) or a learning app (e.g. Duolingo, Speak, Memrise), it sets a starting level. Otherwise the learner picks one of five levels: Beginner (A1), Elementary (A2), Intermediate (B1), Upper-intermediate (B2), Advanced (C1–C2), each with a one-line description. The CEFR range is shown next to each level, so no separate CEFR question is needed. A level set from a score or app can be changed by hand. |
+| ONB-09 | Ask for the level on its own page. If the learner has a test score (e.g. TOEFL iBT, IELTS, Duolingo English Test) or connects a learning app (e.g. Duolingo, Speak, Memrise), it sets a starting level. Connecting an app shows a permission step that says what the product will read (course level and progress) and that it changes nothing in the app; once connected, the learner sees what was shared and can disconnect. Otherwise the learner picks one of five levels: Beginner (A1), Elementary (A2), Intermediate (B1), Upper-intermediate (B2), Advanced (C1–C2), each with a one-line description. The CEFR range is shown next to each level, so no separate CEFR question is needed. A level set from a score or app can be changed by hand. |
 | ONB-03 | Removed Nov 12: onboarding does not show a feedback sample. |
 | ONB-04 | Explain the two recording modes, that nothing is recorded until the learner accepts a prompt or starts a recording, and what is kept (transcripts, deletable) and deleted (audio). Onboarding does not offer AI-only mode; the product is built around prompted recording, and prompts can be turned off later in Settings (§6.10). |
 | ONB-10 | Ask how many recording prompts a day the learner wants: 2 a day (shown first, labeled Recommended, and preselected), 1 a day, or up to 5 a day. Changeable in Settings. |
@@ -556,7 +556,7 @@ The prototype at the site root follows this PRD (updated Nov 13, 2026). What it 
 - **Calendar:** the connection is a toggle only.
 - **Language support:** the capabilities shown in onboarding are sample values; real coverage is TBD (§6.12).
 - **AI-only mode:** turned on from Settings; shown as empty states on Home and Insights; Learn and Practice still use the sample content.
-- **Level:** a test score sets a level from approximate bands; linking a learning app returns a sample level.
+- **Level:** a test score sets a level from approximate bands; connecting a learning app shows a simulated permission step and returns a sample level.
 - **Transcripts:** "kept" is a label; deleting one hides its replay.
 - **Practice:** topic chats and replays use the live AI when available, otherwise a fixed script. The AI partner is called "Coach" until the team picks a name.
 - **Proposed safeguards:** deleting an item in Learn works; minimizing sensitive details is not built.

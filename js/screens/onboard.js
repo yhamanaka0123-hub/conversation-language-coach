@@ -31,8 +31,42 @@ function levelFromScore(test, score) {
   const band = t[2].filter(min => n >= min).length;   // 0..4
   return ["beginner", "elementary", "intermediate", "upper", "advanced"][band];
 }
-// Linking an app is simulated: each returns a sample level.
-const OB_APPS = { Duolingo: "intermediate", Speak: "intermediate", Memrise: "elementary" };
+// Learning apps the learner can connect (simulated): what the app would share, and the
+// starting level it suggests. Real integrations and what each app can share are TBD (§12).
+const OB_APPS = {
+  Duolingo: { color: "#58cc02", level: "intermediate", cefr: "B1", detail: "English course · Unit 12" },
+  Speak: { color: "#1f6feb", level: "intermediate", cefr: "B1", detail: "Level 3 of 5" },
+  Memrise: { color: "#ffbb00", level: "elementary", cefr: "A2", detail: "English · Beginner 2" }
+};
+const appBadge = a => `<span class="app-badge" style="background:${OB_APPS[a].color}" aria-hidden="true">${a[0]}</span>`;
+
+// One row per app: Connect, or what it shared once connected.
+function appRow(p, a) {
+  const on = p.app === a, x = OB_APPS[a];
+  return `<div class="app-row ${on ? "on" : ""}">
+    ${appBadge(a)}
+    <span class="app-name"><strong>${a}</strong>${on ? `<small>${icon("check", 12)} Connected · ${esc(x.detail)} · about ${x.cefr}</small>` : ""}</span>
+    ${on ? `<button type="button" class="text-link" data-act="obDisconnect">Disconnect</button>`
+      : `<button type="button" class="button button-secondary app-connect" data-act="obConnect" data-v="${a}">Connect</button>`}
+  </div>`;
+}
+
+// The permission step a real connection would ask for (simulated).
+function connectSheet(p) {
+  const a = p.connecting; if (!a) return "";
+  return `<section class="connect-sheet" role="dialog" aria-label="Connect ${a}">
+    <div class="connect-head">${appBadge(a)}<span>${icon("next", 16)}</span>${mascot(30)}</div>
+    <h2>Connect ${a} to ${APP_NAME}?</h2>
+    <p>${APP_NAME} will read:</p>
+    <ul><li>Your course level</li><li>Your progress in the course</li></ul>
+    <p class="connect-note">It won't post anything or change your ${a} account. You can disconnect anytime.</p>
+    <div class="connect-actions">
+      <button type="button" class="button button-primary" data-act="obAllow">Allow</button>
+      <button type="button" class="button button-quiet" data-act="obCancelConnect">Cancel</button>
+    </div>
+    <small class="lang-sample">Simulated: nothing is connected</small>
+  </section>`;
+}
 // Prompts a day (ONB-04, REC-04). The first is recommended and preselected.
 const OB_PER_DAY = [[2, "2 a day", "Recommended"], [1, "1 a day", "A lighter start"], [5, "Up to 5 a day", "For days full of conversations"]];
 const OB_FREQ = ["Every day", "A few times a week", "About once a week", "Rarely"];
@@ -68,18 +102,21 @@ function obBody(p) {
   if (p.step === 1) return `
     <h1>What's your ${esc(p.lang)} level?</h1>
     <section class="ob-proof">
-      <p class="ob-q">Have a test score or a learning app? <small>Optional</small></p>
+      <p class="ob-q">Connect a learning app <small>Optional · we'll start from your level there</small></p>
+      <div class="app-list">${Object.keys(OB_APPS).map(a => appRow(p, a)).join("")}</div>
+      ${connectSheet(p)}
+    </section>
+    <section class="ob-proof">
+      <p class="ob-q">Or enter a test score <small>Optional</small></p>
       <div class="ob-score">
         <select id="ob-test" aria-label="Test">${OB_TESTS.map(([t]) => `<option ${p.test === t ? "selected" : ""}>${t}</option>`).join("")}</select>
         <input id="ob-score" inputmode="decimal" placeholder="Score" value="${esc(p.score)}" aria-label="Score">
         <button type="button" class="button button-secondary" data-act="obUseScore">Use</button>
       </div>
       ${p.scoreError ? `<p class="ob-error">${esc(p.scoreError)}</p>` : ""}
-      <div class="ob-chips">${Object.keys(OB_APPS).map(a => chip("obApp", a, p.app === a, p.app === a ? `✓ ${a}` : `+ ${a}`)).join("")}</div>
-      <small class="lang-sample">Link a learning app (simulated)</small>
     </section>
     ${p.levelFrom ? `<p class="ob-from">${icon("check", 15)}<span>Set from ${esc(p.levelFrom)}: <strong>${esc(levelName(p.level))}</strong>. It's a starting point; change it below if it doesn't feel right.</span></p>` : ""}
-    <p class="ob-q">${p.levelFrom ? "Your level" : "Or pick the one closest to you"}</p>
+    <p class="ob-q">${p.levelFrom ? "Your level" : "No app or score? Pick the one closest to you"}</p>
     <div class="ob-levels" role="radiogroup" aria-label="Your speaking level">
       ${OB_LEVELS.map(([k, name, cefr, hint]) => `<button type="button" class="ob-level ${p.level === k ? "on" : ""}" role="radio" aria-checked="${p.level === k}" data-act="obLevel" data-v="${k}">
         <strong>${name} <span class="cefr">${cefr}</span></strong><small>${hint}</small></button>`).join("")}
@@ -143,13 +180,21 @@ ACTIONS.obUseScore = () => {
   const p = obProfile(), lvl = levelFromScore(p.test, p.score);
   const max = OB_TESTS.find(t => t[0] === p.test)[1];
   p.scoreError = lvl ? null : `Enter a ${p.test} score between 0 and ${max}.`;
-  if (lvl) { p.level = lvl; p.levelFrom = `${p.test} ${p.score}`; p.app = null; }
+  if (lvl) { p.level = lvl; p.levelFrom = `${p.test} ${p.score}`; }
   render();
 };
-ACTIONS.obApp = el => {
-  const p = obProfile(), a = el.dataset.v;
-  if (p.app === a) { p.app = null; if (p.levelFrom?.startsWith(a)) p.levelFrom = null; }
-  else { p.app = a; p.level = OB_APPS[a]; p.levelFrom = `${a} (sample)`; p.scoreError = null; }
+// Connecting asks for permission first; allowing sets the starting level from the app.
+ACTIONS.obConnect = el => { obProfile().connecting = el.dataset.v; render(); };
+ACTIONS.obCancelConnect = () => { obProfile().connecting = null; render(); };
+ACTIONS.obAllow = () => {
+  const p = obProfile(), a = p.connecting;
+  p.app = a; p.connecting = null; p.level = OB_APPS[a].level; p.levelFrom = `your ${a} course`; p.scoreError = null;
+  render();
+};
+ACTIONS.obDisconnect = () => {
+  const p = obProfile();
+  if (p.levelFrom === `your ${p.app} course`) p.levelFrom = null;
+  p.app = null;
   render();
 };
 ACTIONS.obPerDay = el => { obProfile().perDay = Number(el.dataset.v); render(); };
