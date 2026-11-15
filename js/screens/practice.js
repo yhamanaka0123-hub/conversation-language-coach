@@ -91,7 +91,7 @@ async function fetchSuggestion(p) {
 
 // ---------- Pick a topic, or a conversation to replay ----------
 // Topics the learner said they speak in (onboarding) get a star.
-const TOPIC_FOR_CONTEXT = { Work: "t-work", "School or classes": "t-school", Friends: "t-friends" };
+const TOPIC_FOR_CONTEXT = { Work: "t-work", School: "t-school", Friends: "t-friends", Family: "t-family" };
 const yourTopics = () => (S.profile.contexts || []).map(c => TOPIC_FOR_CONTEXT[c]).filter(Boolean);
 const replays = () => CONVOS.filter(c => hasTranscript(c.id));
 // Default: the conversation with the most saved phrases, otherwise a topic.

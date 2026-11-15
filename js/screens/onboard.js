@@ -20,7 +20,8 @@ const OB_APPS = ["Duolingo", "Speak", "Memrise"];
 // Prompts a day (ONB-04, REC-04). The first is recommended and preselected.
 const OB_PER_DAY = [[2, "2 a day", "Recommended"], [1, "1 a day", "A lighter start"], [5, "Up to 5 a day", "For days full of conversations"]];
 const OB_FREQ = ["Every day", "A few times a week", "About once a week", "Rarely"];
-const OB_CONTEXTS = ["Work", "School or classes", "Friends", "Errands & services", "Online", "Community", "Travel"];
+// Same four as the Practice topics (TOPICS in data.js), plus Other.
+const OB_CONTEXTS = ["Work", "School", "Friends", "Family", "Other"];
 const CAP_MARK = { yes: ["✓", "available"], limited: ["◐", "limited"], no: ["×", "not yet"] };
 
 const obProfile = () => (UI.ob = UI.ob || { step: 0, lang: "English", speaks: [], level: null, freq: null, contexts: [], cefr: null, test: "TOEFL", score: "", apps: [], perDay: 2 });

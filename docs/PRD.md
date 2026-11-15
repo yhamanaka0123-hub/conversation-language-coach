@@ -138,7 +138,7 @@ Participants reviewed predetermined conversation content rather than feedback ge
 | ID | Requirement |
 | --- | --- |
 | ONB-01 | Ask for the target language and the languages the learner already speaks. When the learner picks a language, show which capabilities are available for it (§6.12). |
-| ONB-02 | Ask for a self-rated speaking level, how often the learner uses the language, and the contexts where they speak it (e.g. work, school, friends, services, online conversations, community activities, travel). |
+| ONB-02 | Ask for a self-rated speaking level, how often the learner uses the language, and the contexts where they speak it: Work, School, Friends, Family, or Other (the same four as the Practice topics, §6.8). |
 | ONB-09 | Offer an optional, more objective level: a CEFR level (A1–C2), a test score (e.g. TOEFL, IELTS, Duolingo English Test), or a linked learning app (e.g. Duolingo, Speak, Memrise). All are optional; self-rating alone is enough to continue. |
 | ONB-03 | Removed Nov 12: onboarding does not show a feedback sample. |
 | ONB-04 | Explain the two recording modes, that nothing is recorded until the learner accepts a prompt or starts a recording, and what is kept (transcripts, deletable) and deleted (audio). Onboarding does not offer AI-only mode; the product is built around prompted recording, and prompts can be turned off later in Settings (§6.10). |
@@ -460,7 +460,7 @@ The prototype should make these requirements reviewable without claiming unbuilt
 | Area | Acceptance criteria | Current prototype |
 | --- | --- | --- |
 | Navigation | Tabs read Home / Learn / Practice / Insights, each with its stated purpose. | Built |
-| Onboarding | Asks for language, level (with optional CEFR, test score, or app link), frequency of use, and speaking contexts; explains the two recording modes and what is kept; asks for prompts a day with 2 first and recommended; no AI-only option; offers an optional calendar connection. | Built (app link and calendar simulated) |
+| Onboarding | Asks for language, level (with optional CEFR, test score, or app link), frequency of use, and speaking contexts (Work, School, Friends, Family, Other); explains the two recording modes and what is kept; asks for prompts a day with 2 first and recommended; no AI-only option; offers an optional calendar connection. | Built (app link and calendar simulated) |
 | Language support | Supported languages and per-language capabilities are shown; known dialect or accent limits are stated; unsupported varieties get no confident assessment. | Built in onboarding (sample coverage values) |
 | Prompted recording | A prompt can be accepted or ignored; nothing records before acceptance; recording shows as active, can be stopped early, and ends after its length; no in-app extend button; prompts stop after the chosen number of usable captures that day; length is set in minutes in Settings. | Built (simulated; nothing is recorded) |
 | Lock screen and Control Center | The prompt arrives as a notification; an active recording shows a countdown with +1 minute and Stop and no quotations; a Control Center button starts and stops a manual recording. | Built as a simulated phone demo |
@@ -609,6 +609,7 @@ The prototype at the site root follows this PRD (updated Nov 13, 2026). What it 
 | --- | --- | --- |
 | Onboarding | AI-only option removed; it now lives only in Settings (ONB-04, AIO-05). | Choosing it in onboarding left the product with almost nothing to do. |
 | Onboarding | Prompts a day: 2 (Recommended, first and preselected), 1, or up to 5 (ONB-10, REC-04). | Start learners on a useful default while letting them make it lighter or heavier. |
+| Onboarding | Speaking contexts are Work, School, Friends, Family, Other, matching the Practice topics (ONB-02). | One set of categories across the app is easier to understand, and Family came up as important in the review. |
 | Onboarding | Optional CEFR level, test score, or linked learning app (ONB-09). | Something more objective than "I'm comfortable" helps match feedback to the learner. |
 | Recording | No +1 minute button in the app; prompted recordings end at their set length; length set as minutes in Settings (REC-02, REC-03). | Learners will not reach for the phone mid-conversation, and a pop-up asking to extend would interrupt. |
 | Recording | Lock-screen countdown with +1 minute and Stop; Control Center button; prompt as a notification (REC-16, REC-17). | The main ways in are outside the app; the in-app Record button stays. |
