@@ -788,3 +788,21 @@ mark.new { background: linear-gradient(transparent 45%, #b5e6cd 45%); font-weigh
 .ob-proof .ob-score select { flex: 1 1 0; }
 .ob-proof .ob-score { display: grid; grid-template-columns: minmax(0, 1fr) 72px auto; }
 .ob-proof .ob-score input, .ob-proof .ob-score select { width: 100%; }
+
+/* Onboarding: connect a learning app (simulated) */
+.ob-proof + .ob-proof { margin-top: 10px; }
+.app-list { display: grid; gap: 8px; }
+.app-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 14px; }
+.app-row.on { border-color: #c9e8d8; background: #f3fbf7; }
+.app-badge { display: grid; flex: none; width: 32px; height: 32px; place-items: center; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 800; }
+.app-name { display: grid; flex: 1; min-width: 0; font-size: 14px; }
+.app-name small { display: flex; align-items: center; gap: 4px; color: var(--mint-ink); font-size: 12px; }
+.app-row .app-connect { min-height: 36px; padding: 6px 14px; }
+.connect-sheet { display: grid; gap: 8px; padding: 16px; border: 1.5px solid var(--violet); border-radius: 18px; background: var(--lavender); box-shadow: var(--shadow); animation: card-in 240ms ease-out both; }
+.connect-sheet h2 { margin: 0; font-size: 17px; }
+.connect-sheet p, .connect-sheet ul { margin: 0; font-size: 13.5px; }
+.connect-sheet ul { padding-left: 18px; }
+.connect-head { display: flex; align-items: center; gap: 8px; color: var(--plum-muted); }
+.connect-note { color: var(--plum-muted); font-size: 12.5px !important; }
+.connect-actions { display: flex; gap: 8px; }
+.connect-actions .button { flex: 1; }
