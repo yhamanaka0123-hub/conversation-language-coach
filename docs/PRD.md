@@ -391,7 +391,7 @@ TBD: the AI partner's name (the product name is tentatively Afterchat), and how 
 2. **Fit with the situation.** Casual expressions and slang with friends and family; more polished phrasing at work and school. Using more slang does not by itself count as progress, and slang in a formal setting does not count toward the skill.
 3. **Examples, not a verdict.** The bar opens to earlier and recent examples of the same kind of moment, and the learner is never told an expression was "wrong".
 
-The progress bar reflects how consistently these moments appear across the learner's real conversations. Detection of natural versus textbook phrasing, the scoring rubric, and evidence thresholds are to validate (§12).
+The skill carries a one-line description in Insights so learners know what it looks at. The progress bar reflects how consistently these moments appear across the learner's real conversations. Detection of natural versus textbook phrasing, the scoring rubric, and evidence thresholds are to validate (§12).
 
 TBD: calendar-week boundaries, time-zone handling, and exact report layout.
 
