@@ -13,13 +13,14 @@ come from the first clickable build. Plain HTML/CSS/JS, no build step:
 open `index.html` in a browser (the AI practice partner needs the Vercel deploy; opened
 as a local file, Practice uses the fixed script).
 
-**Golden path (per [PRD v2.4](docs/PRD.md)):** onboarding (language and what it supports, level with
-optional CEFR / test score / app link, how often and where you speak it, how recording works and
+**Golden path (per [PRD v2.4](docs/PRD.md)):** onboarding (language and what it supports, level: connect a
+learning app or enter a test score, otherwise pick Beginner to Advanced with its CEFR range; how often and where you speak it, how recording works and
 prompts a day: 2 recommended, optional calendar) → Home: accept the recording prompt (ends at its
 set length, stop early) or tap *Record* (runs until you stop) → *See all feedback* (context → you
 said → try, model pronunciation) → *Save* → Learn → Practice: pick Work / School / Friends / Family
 / Surprise me, or replay a recorded conversation → recap → Insights: Real conversations / AI
-practice, skills (pronunciation, grammar, structure, natural expressions), recurring mistakes.
+practice, skills (pronunciation, grammar, structure, natural expressions), each opening to up to three
+improvements and then what to work on to grow further.
 *Phone demo* (top bar, or Settings) shows the lock screen (prompt notification, countdown with
 +1 min and Stop) and the Control Center record button. The gear on Home opens Settings (prompts on
 or off = AI-only mode, prompts a day, length in minutes, notifications, calendar). A conversation
@@ -48,20 +49,28 @@ working on different screens don't touch the same file.
 
 ## PRD requirement → screen
 
-| PRD requirement | Where it shows up |
+| PRD v2.4 requirement | Where it shows up |
 |---|---|
-| FR-1/2/3 pick up, save, review phrases | Conversation detail + Learn (*Save* / *I know this*) |
-| FR-4 conversation context | Context tag on each conversation; switch Casual/Professional in the detail view |
-| FR-5/6 "You could also say" + save | *You could also say* cards; wording changes with context |
-| FR-7/8 practice with AI + light feedback | Practice replay with Sam / Daniel, coach notes after each reply |
-| FR-9 cheer on progress (no quotas) | Coach greeting milestones; Insights reports with evidence |
+| ONB-01..10 onboarding | `onboard.js`: language and capabilities, level page (connect an app / test score / five levels), how often and where, recording and prompts a day, calendar |
+| REC-01..17 recording | Home (prompt, Record, live bar), Settings (prompts a day, length in minutes), Phone demo (lock-screen countdown with +1 min, Control Center) |
+| DAT-01..05 data | Notes in onboarding, Settings and each conversation; *Delete transcript* on a conversation page |
+| FDB-01..08 feedback | Conversation detail: Top 3 (context → you said → try), all learning points, Save |
+| LRN, PCK, PRO | Learn tab: This week's picks, Expressions / Pronunciation / Speaking Tips, flashcards, model audio |
+| PRA-01..09 practice | Practice: topics (Work, School, Friends, Family, Surprise me), replay a recorded conversation, recap |
+| RPT-01..10 insights | Insights: real vs AI practice, time filters, skill bars with improvements and what to work on |
+| AIO-01..05 AI-only | Settings → prompts off; empty states on Home and Insights |
 
 ## AI practice partner
 
 Practice uses a real model through `api/practice.mjs`:
 
-- **What to practice** is chosen by a rule (the conversation with the most saved phrases,
-  up to 3 of them). The AI only words the suggestion and writes the partner's first line.
+- **What to practice** is chosen by a rule, not the AI. Replay: that conversation's saved
+  phrases (up to 3). Topic chat: the learner's saved phrases, those in the topic's tone first.
+  For a replay the AI words the suggestion and writes the partner's first line; a topic chat
+  opens with the fixed first line in `TOPICS`.
+- **Two prompts:** `TURN_PROMPT` for a replay (the AI plays the other person) and
+  `TOPIC_TURN_PROMPT` for a topic chat. Both share the same rules and take a tone from
+  `REGISTER`: casual (Friends, Family, everyday slang) or professional (Work, School, polished).
 - **Each turn** is one model call that returns the partner's next line, a short coach note,
   and which saved phrases the learner used. A session is at most 5 learner replies.
 - **Model:** Groq free tier. The function asks Groq which models exist and uses the first
@@ -82,9 +91,19 @@ To run the AI locally: `npx vercel dev` with `GROQ_API_KEY` in `.env.local` (git
 
 ## Simulated (not real)
 
-Recording (prompts, quick record, the timer: nothing is recorded), the calendar connection,
-deletion after analysis, transcription and speaker ID; language coverage (`LANG_SUPPORT`, sample
-values); phrase detection, the Top 3, weekly picks and other suggestions (hand-written in
-`js/data.js`); the feedback-ready notification; skill levels, their examples and earlier weeks in Insights (`SKILLS`, `EARLIER`); the AI
-partner whenever it falls back to the script. Progress is kept in the browser's localStorage; *Reset demo*
-clears it
+- **Recording:** prompts, quick record, the timer and the prompts-a-day limit work, but nothing is
+  recorded, transcribed or analyzed, and there is no speaker ID. A capture does not create a new
+  conversation. The feedback-ready notification is shown in the app the way a push would arrive.
+- **Phone demo:** the lock screen and Control Center are drawings in the page (`phone.js`); the
+  clock is fixed and the other Control Center tiles do nothing.
+- **Onboarding:** connecting a learning app shows a permission step and returns a sample level
+  (`OB_APPS`); test scores map to levels with approximate bands (`OB_TESTS`); the calendar is a toggle.
+- **Data:** "audio deleted" and "transcript kept" are labels; deleting a transcript hides that
+  conversation's replay.
+- **Content:** language coverage (`LANG_SUPPORT`), phrases, the Top 3, weekly picks and other
+  suggestions, skill levels, improvements, recurring mistakes and earlier weeks in Insights
+  (`SKILLS`, `MISTAKES`, `EARLIER`) are hand-written in `js/data.js`.
+- **AI partner:** live when the Groq key is set; otherwise the fixed script. It is called
+  "Coach" (`PARTNER`) until the team picks a name.
+
+Progress is kept in the browser's localStorage; *Reset demo* clears it.
