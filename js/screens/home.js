@@ -160,14 +160,18 @@ function capturedNote() {
     <button class="push-close" type="button" data-act="capturedClose" aria-label="Dismiss">×</button></div>`;
 }
 
-// Settings sheet: prompts (off = AI-only mode), prompts a day, prompted length (a number, in
-// minutes), notifications, calendar, data.
+// Settings sheet: your level and where you speak (ONB-06, ONB-08), prompts (off = AI-only mode),
+// prompts a day, prompted length (a number, in minutes), notifications, calendar, data.
 function settingsPanel() {
   if (!UI.settings) return "";
   const toggle = (act, on, label, sub) => `<button class="set-row" type="button" data-act="${act}" role="switch" aria-checked="${on}">
       <span><strong>${label}</strong><small>${sub}</small></span><span class="switch ${on ? "on" : ""}" aria-hidden="true"></span></button>`;
   return `<section class="settings" aria-label="Settings">
     <div class="settings-head"><h2>Settings</h2><button class="push-close" type="button" data-act="settings" aria-label="Close settings">×</button></div>
+    <div class="set-row set-static"><span><strong>Your level</strong><small>${S.profile.levelFrom ? `Set from ${esc(S.profile.levelFrom)}. Pick another to change it.` : "A starting point; we fine-tune it from your conversations."}</small></span>
+      <span class="set-chips set-wrap">${OB_LEVELS.map(([k, name, cefr]) => `<button type="button" class="ob-chip ${S.profile.level === k ? "on" : ""}" aria-pressed="${S.profile.level === k}" data-act="setLevel" data-v="${k}">${name} · ${cefr}</button>`).join("")}</span></div>
+    <div class="set-row set-static"><span><strong>Where you speak it</strong><small>Starred topics in Practice follow this.</small></span>
+      <span class="set-chips set-wrap">${OB_CONTEXTS.map(c => { const on = (S.profile.contexts || []).includes(c); return `<button type="button" class="ob-chip ${on ? "on" : ""}" aria-pressed="${on}" data-act="setContext" data-v="${c}">${c}</button>`; }).join("")}</span></div>
     ${toggle("setPrompts", S.prompts, "Recording prompts", S.prompts ? `Up to ${perDay()} a day` : "Off (AI-only mode). Record still works.")}
     ${S.prompts ? `<div class="set-row set-static"><span><strong>Prompts a day</strong></span>
       <span class="set-chips">${[2, 1, 5].map(n => `<button type="button" class="ob-chip ${perDay() === n ? "on" : ""}" aria-pressed="${perDay() === n}" data-act="setPerDay" data-v="${n}">${n === 5 ? "Up to 5" : n}${n === 2 ? " · recommended" : ""}</button>`).join("")}</span></div>` : ""}
@@ -293,6 +297,12 @@ ACTIONS.setPrompts = () => { S.prompts = !S.prompts; save(); render(); };
 ACTIONS.setPerDay = el => { S.perDay = Number(el.dataset.v); save(); render(); };
 ACTIONS.setDuration = el => { S.duration = Math.max(1, Math.min(10, Number(el.dataset.v))); save(); render(); };
 ACTIONS.setNotify = () => { S.notify = !S.notify; save(); render(); };
+ACTIONS.setLevel = el => { S.profile = { ...S.profile, level: el.dataset.v, levelFrom: null }; save(); render(); };
+ACTIONS.setContext = el => {
+  const list = S.profile.contexts || [], v = el.dataset.v;
+  S.profile = { ...S.profile, contexts: list.includes(v) ? list.filter(x => x !== v) : [...list, v] };
+  save(); render();
+};
 ACTIONS.setCalendar = () => { S.calendar = !S.calendar; save(); render(); };
 ACTIONS.pushClose = el => el.closest(".push")?.remove();
 ACTIONS.tip = () => {
