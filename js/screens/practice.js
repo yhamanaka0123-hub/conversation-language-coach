@@ -42,7 +42,7 @@ function aiBadge() {
 // ---------- What to practice (chosen by rules, worded by the AI) ----------
 // Rule: the conversation with the most saved-but-not-learned phrases, up to 3 of them.
 function pickPlan(cid, one) {
-  const pool = cid ? [convoById[cid]] : CONVOS;
+  const pool = cid ? [convoById[cid]] : liveConvos();
   let best = null;
   pool.forEach(c => {
     const saved = itemsIn(c.id).filter(i => statusOf(i.id) === "practice" && !isPron(i));
@@ -65,7 +65,7 @@ function planFor(cid, one) {
 // first. None saved means a free chat on the topic.
 function planForTopic(tid, one) {
   const ctx = topicById[tid].context;
-  const saved = ITEMS.filter(i => i.convo && statusOf(i.id) === "practice" && !isPron(i));
+  const saved = ITEMS.filter(i => i.convo && !gone(i.id) && statusOf(i.id) === "practice" && !isPron(i));
   const pool = [...saved.filter(i => ctxOf(i.convo) === ctx), ...saved.filter(i => ctxOf(i.convo) !== ctx)];
   return { cid: tid, targets: pool.slice(0, one ? 1 : 3).map(i => i.id), saved: pool.length > 0 };
 }
@@ -93,7 +93,7 @@ async function fetchSuggestion(p) {
 // Topics the learner said they speak in (onboarding) get a star.
 const TOPIC_FOR_CONTEXT = { Work: "t-work", School: "t-school", Friends: "t-friends", Family: "t-family" };
 const yourTopics = () => (S.profile.contexts || []).map(c => TOPIC_FOR_CONTEXT[c]).filter(Boolean);
-const replays = () => CONVOS.filter(c => hasTranscript(c.id));
+const replays = () => liveConvos().filter(c => hasTranscript(c.id));
 // Default: the conversation with the most saved phrases, otherwise a topic.
 function pickedId() {
   if (topicById[UI.pick] || hasTranscript(UI.pick)) return UI.pick;

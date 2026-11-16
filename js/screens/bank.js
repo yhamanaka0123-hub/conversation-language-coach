@@ -2,31 +2,24 @@
 // Expressions (expression, meaning, context), Pronunciation (word, model audio, text cue) and
 // Speaking Tips (what you said → what to try). Suggested items (extracted, not saved yet) are
 // kept apart from saved ones (LRN-03); the Saved tab lists everything saved, and the review card
-// on top turns saved items into flashcards. Any item can be deleted (proposed safeguard SAF-03).
+// on top turns saved items into flashcards. Deleting happens per conversation (conversation page)
+// or all at once (Settings), not item by item, so "I know this" is the only way to clear an item.
 
 const LEARN_CATS = { expr: "Expressions", pron: "Pronunciation", tips: "Speaking Tips", saved: "Saved" };
 const catOf = i => i.kind === "phrase" || i.area === "expression" ? "expr" : i.area === "pronunciation" ? "pron" : "tips";
 const isSaved = i => ["practice", "learned"].includes(statusOf(i.id));
-const inLearn = i => !["known", "deleted"].includes(statusOf(i.id));
+const inLearn = i => !gone(i.id) && statusOf(i.id) !== "known";
 
-// Save / I know this / delete. Deleting asks once, in place.
+// Save / I know this (hides it from review; Undo brings it back).
 function learnActions(i) {
-  if (UI.confirmDel === i.id) return `<div class="del-confirm">
-      <p>Delete this learning point? It can't be undone.</p>
-      <button class="button button-danger" type="button" data-act="del" data-id="${i.id}">Delete</button>
-      <button class="button button-quiet" type="button" data-act="delCancel">Cancel</button>
-    </div>`;
-  const trash = `<button class="icon-button del-btn" type="button" data-act="delAsk" data-id="${i.id}" aria-label="Delete this learning point">${icon("trash", 16)}</button>`;
   const s = statusOf(i.id);
   if (s === "new") return `<div class="phrase-actions">
       <button class="button button-secondary" type="button" data-act="mark" data-id="${i.id}" data-status="practice">${icon("bookmark", 16)} Save</button>
       <button class="button button-quiet" type="button" data-act="mark" data-id="${i.id}" data-status="known">${icon("check", 16)} I know this</button>
-      ${trash}
     </div>`;
   return `<div class="item-state">
       <span class="state-pill ${s === "learned" ? "state-learned" : "state-saved"}">${icon(s === "learned" ? "check" : "bookmark", 14)} ${s === "learned" ? "Practiced" : "Saved"}</span>
       ${s === "practice" ? `<button class="undo" type="button" data-act="mark" data-id="${i.id}" data-status="new">Unsave</button>` : ""}
-      ${trash}
     </div>`;
 }
 
@@ -88,7 +81,7 @@ SCREENS.bank = () => {
   const suggested = list.filter(i => statusOf(i.id) === "new");
   const saved = list.filter(isSaved);
   const savedAll = all.filter(i => statusOf(i.id) === "practice").length;
-  const hidden = ITEMS.filter(i => statusOf(i.id) === "known").length;
+  const hidden = ITEMS.filter(i => !gone(i.id) && statusOf(i.id) === "known").length;
   const group = (title, sub, items, empty) => `
     <h3 class="sub-heading">${title} <small>${sub}</small></h3>
     ${items.length ? `<div class="vocab-list">${items.map(i => CARD[catOf(i)](i)).join("")}</div>` : `<p class="empty-line">${empty}</p>`}`;
@@ -116,10 +109,7 @@ SCREENS.bank = () => {
       </div>` : ""}`;
 };
 
-ACTIONS.learnCat = el => { UI.learnCat = el.dataset.c; UI.confirmDel = null; render(); };
-ACTIONS.delAsk = el => { UI.confirmDel = el.dataset.id; render(); };
-ACTIONS.delCancel = () => { UI.confirmDel = null; render(); };
-ACTIONS.del = el => { S.status[el.dataset.id] = "deleted"; UI.confirmDel = null; save(); render(); };
+ACTIONS.learnCat = el => { UI.learnCat = el.dataset.c; render(); };
 
 // Review your saved items as flashcards (js/screens/cards.js), from all three categories.
 function reviewCard() {

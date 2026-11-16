@@ -807,3 +807,4 @@ mark.new { background: linear-gradient(transparent 45%, #b5e6cd 45%); font-weigh
 .connect-actions { display: flex; gap: 8px; }
 .connect-actions .button { flex: 1; }
 .set-chips.set-wrap { flex-wrap: wrap; width: 100%; }
+.convo-delete { display: inline-flex; align-items: center; gap: 4px; margin: 4px 0 12px; }

@@ -74,11 +74,11 @@ function skillRow(k, p) {
 
 function realReport(p) {
   const extra = p === "week" ? { conversations: 0, minutes: 0, used: 0, tips: 0, applied: 0 } : EARLIER[p];
-  const minutes = CONVOS.reduce((a, c) => a + (c.mine || 0), 0) + extra.minutes;
-  const convos = CONVOS.length + extra.conversations;
+  const minutes = liveConvos().reduce((a, c) => a + (c.mine || 0), 0) + extra.minutes;
+  const convos = liveConvos().length + extra.conversations;
   // Three countable things, no score: time speaking, transfer of new phrases, tips applied.
   const used = new Set(USES.map(u => u.item)).size + extra.used;
-  const tips = CONVOS.reduce((a, c) => a + itemsIn(c.id).filter(i => i.top).length, 0) + extra.tips;
+  const tips = liveConvos().reduce((a, c) => a + itemsIn(c.id).filter(i => i.top).length, 0) + extra.tips;
   const applied = APPLIED.length + extra.applied;
   const ins = INSIGHTS[p];
   return `
@@ -99,13 +99,13 @@ function realReport(p) {
       <p>${esc(ins.note)}</p>
     </section>
     <div class="section-heading compact"><div><p class="eyebrow">TRANSFER</p><h2>Used in real conversations</h2></div></div>
-    <div class="used-list">${USES.map(u => `<div class="used-row"><span>⭐</span><p><strong>“${esc(bare(practiceText(byId[u.item])))}”</strong><small>${esc(convoById[u.convo].title)} · “${esc(u.said)}”</small></p></div>`).join("")}</div>`;
+    <div class="used-list">${USES.filter(u => !gone(u.item) && !convoGone(u.convo)).map(u => `<div class="used-row"><span>⭐</span><p><strong>“${esc(bare(practiceText(byId[u.item])))}”</strong><small>${esc(convoById[u.convo].title)} · “${esc(u.said)}”</small></p></div>`).join("")}</div>`;
 }
 
 function aiReport(p) {
   const extra = p === "week" ? { sessions: 0, practiced: 0 } : EARLIER[p];
   const sessions = (S.sessions || 0) + extra.sessions;
-  const chats = [...TOPICS.map(t => topicById[t.id]), ...CONVOS].filter(c => (S.history || {})[c.id]?.length);
+  const chats = [...TOPICS.map(t => topicById[t.id]), ...liveConvos()].filter(c => (S.history || {})[c.id]?.length);
   const practiced = learnedItems();
   return `
     <div class="stat-row">

@@ -37,7 +37,7 @@ function liveActivity() {
 }
 
 function lockScreen() {
-  const fresh = CONVOS.find(c => !S.seen[c.id] && topOf(c.id).length);
+  const fresh = liveConvos().find(c => !S.seen[c.id] && topOf(c.id).length);
   return `<div class="phone-screen lock">
     <p class="lock-clock">${PHONE_TIME}</p>
     <p class="lock-date">${esc(TODAY)}</p>

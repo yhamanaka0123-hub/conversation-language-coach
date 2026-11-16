@@ -112,10 +112,12 @@ SCREENS.convo = () => {
       <div class="phrase-list">${more.map(i => suggestionCard(i)).join("")}</div>` : ""}
 
     ${hasTranscript(c.id)
-      ? `<p class="data-note">${icon("lock", 14)} Audio was deleted after analysis. The transcript is kept so you can replay this chat.
-          ${UI.confirmTx === c.id
-            ? `<span class="tx-confirm">Delete it? Replay won't be available. <button class="text-link danger" type="button" data-act="delTx" data-id="${c.id}">Delete</button> <button class="text-link" type="button" data-act="askDelTx" data-id="">Keep</button></span>`
-            : `<button class="text-link" type="button" data-act="askDelTx" data-id="${c.id}">${icon("trash", 13)} Delete transcript</button>`}</p>
+      ? `<p class="data-note">${icon("lock", 14)} Audio was deleted after analysis. The transcript is kept so you can replay this chat.</p>
+        ${UI.confirmTx === c.id
+          ? `<div class="del-confirm"><p>Delete this conversation? Its transcript and everything learned from it will be removed. This can't be undone.</p>
+              <button class="button button-danger" type="button" data-act="delConvo" data-id="${c.id}">Delete conversation</button>
+              <button class="button button-quiet" type="button" data-act="askDelTx" data-id="">Keep</button></div>`
+          : `<button class="text-link danger convo-delete" type="button" data-act="askDelTx" data-id="${c.id}">${icon("trash", 13)} Delete this conversation</button>`}
         <div class="sticky-action">
           <button class="button button-primary full-button" type="button" data-act="start" data-id="${c.id}">
             Replay with ${esc(c.partner)} ${icon("next", 18)}
@@ -125,7 +127,11 @@ SCREENS.convo = () => {
       : `<p class="data-note">${icon("lock", 14)} Audio and transcript deleted. Only the lines above are kept. You can still practice them in a topic chat.</p>`}`;
 };
 
-// Deleting a kept transcript (DAT-04): asks once, in place. Learning points above stay.
+// Deleting a conversation (DAT-04, SAF-03): asks once, in place, then removes its transcript and
+// every learning point from it (Learn, Practice, Insights), and goes back to Home.
 ACTIONS.askDelTx = el => { UI.confirmTx = el.dataset.id || null; render(); };
-ACTIONS.delTx = el => { S.noTranscript = { ...(S.noTranscript || {}), [el.dataset.id]: true }; UI.confirmTx = null; save(); render(); };
+ACTIONS.delConvo = el => {
+  S.goneConvos = { ...(S.goneConvos || {}), [el.dataset.id]: true };
+  UI.confirmTx = null; save(); go({ name: "home" });
+};
 ACTIONS.ctx = el => { S.ctx[el.dataset.id] = el.dataset.ctx; save(); render(); };

@@ -1,13 +1,15 @@
 // Flashcards: a low-effort way to review without talking to the AI.
-// Front: who said it and what it means ("How would Sam say it?"). Back: the phrase in the
-// original sentence, with a listen button. "Got it" / "Not yet" by button or swipe.
+// Expressions and slang: the phrase on the front ("What does it mean?"), the meaning and where it
+// was said on the back, since slang has many possible answers the other way round.
+// Pronunciation: the word, then the stress and the model's audio. Speaking tips: what you said,
+// then a better way. "Got it" / "Not yet" by button or swipe.
 // Familiarity is about remembering a card, not about speaking: new -> getting there -> remembered.
 
 const ROUND = 10;          // cards per round
 const REMEMBERED = 3;      // "Got it" in a row to count as remembered
 
 // The learner's saved items, from all three Learn categories.
-const deckItems = () => ITEMS.filter(i => ["practice", "learned"].includes(statusOf(i.id)));
+const deckItems = () => ITEMS.filter(i => !gone(i.id) && ["practice", "learned"].includes(statusOf(i.id)));
 const cardOf = id => (S.cards || {})[id] || { seen: 0, streak: 0 };
 const famOf = id => { const k = cardOf(id); return !k.seen ? "new" : k.streak >= REMEMBERED ? "remembered" : "growing"; };
 const FAM = { new: ["🌱", "New"], growing: ["🌿", "Getting there"], remembered: ["🌳", "Remembered"] };
@@ -29,8 +31,8 @@ function cardFaces(i) {
     const who = i.speaker || "Someone";
     return {
       where: c ? `${esc(who)} · ${esc(c.short || c.title)}` : esc(i.source),
-      front: `<p class="fc-meaning">${esc(i.meaning)}</p><p class="fc-ask">${i.speaker ? `How would ${esc(who)} say it?` : "What's the phrase?"}</p>`,
-      back: `<p class="fc-phrase">“${esc(i.text)}”</p>${i.sentence ? `<p class="fc-sentence">${highlight(i.sentence, i.hl)}</p>` : ""}`,
+      front: `<p class="fc-label">Expression</p><p class="fc-phrase">“${esc(i.text)}”</p><p class="fc-ask">What does it mean?</p>`,
+      back: `<p class="fc-meaning">${esc(i.meaning)}</p>${i.sentence ? `<p class="fc-sentence">${esc(who)}: ${highlight(i.sentence, i.hl)}</p>` : ""}`,
       say: i.sentence || i.text
     };
   }
@@ -41,6 +43,13 @@ function cardFaces(i) {
     front: `<p class="fc-label">How do you say it?</p><p class="fc-meaning">“${esc(i.sayModel)}”</p><p class="fc-ask">Where does the stress go?</p>`,
     back: `<p class="fc-phrase">${esc(i.alt[ctx])}</p><p class="fc-sentence">${esc(i.why[ctx])}</p>`,
     say: i.sayModel
+  };
+  // A natural expression from your own words: the phrase first, then what it replaces and when.
+  if (i.area === "expression") return {
+    where: `Expression · ${esc(c.short || c.title)}`,
+    front: `<p class="fc-label">Expression</p><p class="fc-phrase">“${esc(i.alt[ctx])}”</p><p class="fc-ask">When would you say this?</p>`,
+    back: `<p class="fc-meaning">${esc(i.why[ctx])}</p><p class="fc-sentence">Instead of “${esc(i.said)}”</p>`,
+    say: i.alt[ctx]
   };
   return {
     where: `You · ${esc(c.short || c.title)}`,
@@ -86,7 +95,7 @@ SCREENS.cards = () => {
         <button class="fc-btn got" type="button" data-act="grade" data-ok="1">✓ Got it</button>`
       : `<button class="fc-btn flip" type="button" data-act="flipcard">Show answer</button>`}
     </div>
-    <p class="fc-tip">${d.flipped ? "Swipe right if you remembered, left to see it again." : "Try saying it out loud before you flip."}</p>`;
+    <p class="fc-tip">${d.flipped ? "Swipe right if you remembered, left to see it again." : "Think of the answer before you flip."}</p>`;
 };
 
 function roundDone(d) {

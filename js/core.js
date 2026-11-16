@@ -21,7 +21,7 @@ function freshState() {
   // minutes. seen: conversations whose feedback was opened. profile: onboarding answers.
   // noTranscript: conversations whose kept transcript the learner deleted (DAT-04).
   return { v: 5, status, ctx: {}, sessions: 0, chats: {}, history: {}, cards: {},
-    onboarded: false, profile: {}, prompts: true, perDay: 2, duration: 2, captures: 0, calendar: false, notify: true, seen: {}, noTranscript: {} };
+    onboarded: false, profile: {}, prompts: true, perDay: 2, duration: 2, captures: 0, calendar: false, notify: true, seen: {}, noTranscript: {}, goneConvos: {} };
 }
 function loadState() {
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 5) return s; } catch (e) {}
@@ -39,15 +39,17 @@ const ctxOf = cid => S.ctx[cid] || (convoById[cid] || topicById[cid]).context;
 // A practice source: a real conversation to replay, or a topic.
 const sourceOf = id => convoById[id] || topicById[id];
 const perDay = () => S.perDay || 2;
-const hasTranscript = cid => Boolean(convoById[cid]) && !(S.noTranscript || {})[cid];
+const hasTranscript = cid => Boolean(convoById[cid]) && !convoGone(cid) && !(S.noTranscript || {})[cid];
 const ctxOfItem = i => i.convo ? ctxOf(i.convo) : i.sourceContext;
 const ctxLabel = c => c === "casual" ? "Casual" : "Professional";
 const statusOf = id => S.status[id];
-// Learning outputs the learner deleted (proposed safeguard SAF-03) are gone everywhere.
-const gone = id => statusOf(id) === "deleted";
+// A deleted conversation (DAT-04, SAF-03) takes its transcript and every learning point from it.
+const convoGone = cid => Boolean((S.goneConvos || {})[cid]);
+const liveConvos = () => CONVOS.filter(c => !convoGone(c.id));
+const gone = id => statusOf(id) === "deleted" || convoGone(byId[id]?.convo);
 // AI-only mode (§6.10): prompts turned off in Settings and nothing recorded yet.
 const aiOnly = () => S.prompts === false && !S.recorded;
-const learnedItems = () => ITEMS.filter(i => statusOf(i.id) === "learned");
+const learnedItems = () => ITEMS.filter(i => !gone(i.id) && statusOf(i.id) === "learned");
 const learnedCount = () => learnedItems().length;
 const itemsIn = cid => ITEMS.filter(i => i.convo === cid && !gone(i.id));
 const practiceText = i => i.kind === "phrase" ? i.text : i.alt[ctxOf(i.convo)];
@@ -196,7 +198,7 @@ function go(route) { UI.route = route; UI.enter = true; render(); UI.enter = fal
 function renderNav() {
   const nav = document.getElementById("nav");
   nav.hidden = NO_NAV.includes(UI.route.name);
-  const review = ITEMS.filter(i => statusOf(i.id) === "new").length;
+  const review = ITEMS.filter(i => !gone(i.id) && statusOf(i.id) === "new").length;
   const active = NAV_FOR[UI.route.name];
   // The icon hops only when the active tab changes, not on every re-render.
   const hop = active !== UI.navActive;

@@ -24,7 +24,8 @@ improvements and then what to work on to grow further.
 *Phone demo* (top bar, or Settings) shows the lock screen (prompt notification, countdown with
 +1 min and Stop) and the Control Center record button. The gear on Home opens Settings (your level,
 where you speak it, prompts on or off = AI-only mode, prompts a day, length in minutes, notifications, calendar). A conversation
-page can delete its kept transcript, which removes its replay. *Reset demo* restarts onboarding.
+page can delete the whole conversation (transcript and everything learned from it); Settings can
+delete all data. *Reset demo* restarts onboarding.
 
 ## Where things live (who edits what)
 
@@ -98,8 +99,8 @@ To run the AI locally: `npx vercel dev` with `GROQ_API_KEY` in `.env.local` (git
   clock is fixed and the other Control Center tiles do nothing.
 - **Onboarding:** connecting a learning app shows a permission step and returns a sample level
   (`OB_APPS`); test scores map to levels with approximate bands (`OB_TESTS`); the calendar is a toggle.
-- **Data:** "audio deleted" and "transcript kept" are labels; deleting a transcript hides that
-  conversation's replay.
+- **Data:** "audio deleted" and "transcript kept" are labels; deleting a conversation removes it
+  and its learning points everywhere; "Delete all my data" in Settings clears everything.
 - **Content:** language coverage (`LANG_SUPPORT`), phrases, the Top 3, weekly picks and other
   suggestions, skill levels, improvements, recurring mistakes and earlier weeks in Insights
   (`SKILLS`, `MISTAKES`, `EARLIER`) are hand-written in `js/data.js`.
