@@ -1,6 +1,7 @@
 // Practice (PRD §6.8, v2.4): one AI partner. The learner picks a topic (Work, School, Friends,
 // Family, or Surprise me) and the tone follows it, or replays a real conversation they recorded
-// (its transcript is kept unless they deleted it), with the AI playing the other person.
+// (from its topic and the learner's own sentences; the full transcript is never kept), with the AI
+// playing the other person.
 // The AI runs through /api/practice (see api/practice.mjs). When it is unavailable
 // (opened as a local file, no key, free-tier limit reached) the session falls back to the
 // fixed script in data.js with keyword-match feedback.
@@ -93,12 +94,12 @@ async function fetchSuggestion(p) {
 // Topics the learner said they speak in (onboarding) get a star.
 const TOPIC_FOR_CONTEXT = { Work: "t-work", School: "t-school", Friends: "t-friends", Family: "t-family" };
 const yourTopics = () => (S.profile.contexts || []).map(c => TOPIC_FOR_CONTEXT[c]).filter(Boolean);
-const replays = () => liveConvos().filter(c => hasTranscript(c.id));
+const replays = () => liveConvos().filter(c => canReplay(c.id));
 // Default: the conversation with the most saved phrases, otherwise a topic.
 function pickedId() {
-  if (topicById[UI.pick] || hasTranscript(UI.pick)) return UI.pick;
+  if (topicById[UI.pick] || canReplay(UI.pick)) return UI.pick;
   const plan = pickPlan();
-  return plan && hasTranscript(plan.cid) ? plan.cid : yourTopics()[0] || TOPICS[0].id;
+  return plan && canReplay(plan.cid) ? plan.cid : yourTopics()[0] || TOPICS[0].id;
 }
 
 function stage(c, p) {
@@ -160,7 +161,7 @@ SCREENS.practice = () => {
   </div>
   ${stage(c, planFor(id))}
   <div class="section-heading compact"><div><p class="eyebrow">FROM YOUR RECORDINGS</p><h2>Replay a real conversation</h2></div></div>
-  ${list.length ? `<p class="section-intro">The AI plays the other person in the same situation, so you can try a better way to say it.</p>
+  ${list.length ? `<p class="section-intro">The AI recreates the situation from the topic and what you said, so you can try a better way to say it.</p>
     <div class="small-list">${list.map(x => replayRow(x, x.id === id)).join("")}</div>`
   : `<div class="empty">${mascot(56, false, "think")}<p>Conversations you record show up here to replay.</p></div>`}`;
 };
@@ -422,11 +423,11 @@ function typeSample(btn, input) {
 }
 
 ACTIONS.start = el => startPractice(el.dataset.id, el.dataset.one === "1");
-// Practice one feedback point: replay its conversation, or, if that transcript was deleted, a
+// Practice one feedback point: replay its conversation, or, if that conversation was deleted, a
 // topic chat in the same register.
 ACTIONS.practiceItem = el => {
   const i = byId[el.dataset.id];
-  const src = hasTranscript(i.convo) ? i.convo : ctxOf(i.convo) === "professional" ? "t-work" : "t-friends";
+  const src = canReplay(i.convo) ? i.convo : ctxOf(i.convo) === "professional" ? "t-work" : "t-friends";
   UI.pick = src;
   startPractice(src, false, [i.id]);
 };

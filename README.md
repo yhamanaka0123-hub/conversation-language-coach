@@ -24,7 +24,7 @@ improvements and then what to work on to grow further.
 *Phone demo* (top bar, or Settings) shows the lock screen (prompt notification, countdown with
 +1 min and Stop) and the Control Center record button. The gear on Home opens Settings (your level,
 where you speak it, prompts on or off = AI-only mode, prompts a day, length in minutes, notifications, calendar). A conversation
-page can delete the whole conversation (transcript and everything learned from it); Settings can
+page can delete the whole conversation (and everything learned from it); Settings can
 delete all data. *Reset demo* restarts onboarding.
 
 ## Where things live (who edits what)
@@ -39,7 +39,7 @@ delete all data. *Reset demo* restarts onboarding.
 | `js/screens/conversation.js` | Conversation detail: Top 3 to try next (context → you said → try; pronunciation cue and model audio), then all learning points; Save is separate from practice; deletion note |
 | `js/screens/bank.js` | Learn: This week's picks, review card for saved items, Expressions / Pronunciation / Speaking Tips (each its own format) / Saved, suggested vs saved, delete an item |
 | `js/screens/cards.js` | Flashcard review of saved items: expressions (meaning → phrase), pronunciation (word → stress, cue, model audio), speaking tips (you said → try); Got it / Not yet; familiarity 🌱 new → 🌿 getting there → 🌳 remembered |
-| `js/screens/practice.js` | One AI partner: pick a topic (`TOPICS` in data.js: Work, School, Friends, Family, Surprise me; tone follows the topic) or replay a recorded conversation (only while its transcript is kept); AI practice session, recap, scripted fallback |
+| `js/screens/practice.js` | One AI partner: pick a topic (`TOPICS` in data.js: Work, School, Friends, Family, Surprise me; tone follows the topic) or replay a recorded conversation (rebuilt from its topic and the learner's own sentences); AI practice session, recap, scripted fallback |
 | `js/screens/phone.js` | Phone demo: lock screen (prompt notification, recording countdown with +1 min and Stop) and Control Center record button. Simulated |
 | `api/practice.mjs` | Vercel serverless function that calls the AI model (Groq). Holds the only use of the API key. |
 | `prompts/practice.mjs` | The live prompts: coach suggestion, a replay turn, a topic-chat turn, and the casual / polished tone (`REGISTER`) |
@@ -54,7 +54,7 @@ working on different screens don't touch the same file.
 |---|---|
 | ONB-01..10 onboarding | `onboard.js`: language and capabilities, level page (connect an app / test score / five levels), how often and where, recording and prompts a day, calendar |
 | REC-01..17 recording | Home (prompt, Record, live bar), Settings (prompts a day, length in minutes), Phone demo (lock-screen countdown with +1 min, Control Center) |
-| DAT-01..05 data | Notes in onboarding, Settings and each conversation; *Delete transcript* on a conversation page |
+| DAT-01..05 data | Notes in onboarding, Settings and each conversation; *Delete this conversation* on a conversation page; *Delete all my data* in Settings |
 | FDB-01..08 feedback | Conversation detail: Top 3 (context → you said → try), all learning points, Save |
 | LRN, PCK, PRO | Learn tab: This week's picks, Expressions / Pronunciation / Speaking Tips, flashcards, model audio |
 | PRA-01..09 practice | Practice: topics (Work, School, Friends, Family, Surprise me), replay a recorded conversation, recap |
@@ -99,7 +99,7 @@ To run the AI locally: `npx vercel dev` with `GROQ_API_KEY` in `.env.local` (git
   clock is fixed and the other Control Center tiles do nothing.
 - **Onboarding:** connecting a learning app shows a permission step and returns a sample level
   (`OB_APPS`); test scores map to levels with approximate bands (`OB_TESTS`); the calendar is a toggle.
-- **Data:** "audio deleted" and "transcript kept" are labels; deleting a conversation removes it
+- **Data:** "audio and full transcript deleted, topic and your sentences kept" is a label; deleting a conversation removes it
   and its learning points everywhere; "Delete all my data" in Settings clears everything.
 - **Content:** language coverage (`LANG_SUPPORT`), phrases, the Top 3, weekly picks and other
   suggestions, skill levels, improvements, recurring mistakes and earlier weeks in Insights

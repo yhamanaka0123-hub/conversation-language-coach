@@ -134,7 +134,7 @@ function obBody(p) {
     <ul class="ob-points">
       <li>${icon("bell", 18)}<span><strong>Prompts:</strong> we'll ask before a chat. It records 2–3 min, only if you accept.</span></li>
       <li>${icon("mic", 18)}<span><strong>Quick record:</strong> start it yourself from the app or Control Center.</span></li>
-      <li>${icon("lock", 18)}<span>Audio is deleted after analysis. Transcripts are kept so you can replay a chat, and you can delete any of them.</span></li>
+      <li>${icon("lock", 18)}<span>Audio and full transcripts are deleted after analysis. Only the topic and what you said are kept, and you can delete any conversation.</span></li>
     </ul>
     <p class="ob-q">How many prompts a day?</p>
     <div class="ob-levels" role="radiogroup" aria-label="Prompts a day">
