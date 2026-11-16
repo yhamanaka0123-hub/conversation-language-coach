@@ -6,7 +6,7 @@ const ACTIONS = {};   // data-act value -> (element) => void
 const FORMS = {};     // form id -> (form) => void
 
 // ---------- State (saved in this browser only) ----------
-const KEY = "clc-demo-v5";   // v5: PRD v2.4 (prompts per day, topics, kept transcripts)
+const KEY = "clc-demo-v5";   // v5: PRD v2.4 (prompts per day, topics, deletable conversations)
 const byId = Object.fromEntries(ITEMS.map(i => [i.id, i]));
 const convoById = Object.fromEntries(CONVOS.map(c => [c.id, c]));
 // Practice topics (PRD §6.8) are looked up like conversations, but never listed on Home.
@@ -19,9 +19,9 @@ function freshState() {
   // from Settings); perDay: prompts a day the learner chose (1, 2 or 5; prompts stop once that
   // many usable captures are made, manual ones count); duration: prompted-recording length in
   // minutes. seen: conversations whose feedback was opened. profile: onboarding answers.
-  // noTranscript: conversations whose kept transcript the learner deleted (DAT-04).
+  // goneConvos: conversations the learner deleted, with everything learned from them (DAT-04).
   return { v: 5, status, ctx: {}, sessions: 0, chats: {}, history: {}, cards: {},
-    onboarded: false, profile: {}, prompts: true, perDay: 2, duration: 2, captures: 0, calendar: false, notify: true, seen: {}, noTranscript: {}, goneConvos: {} };
+    onboarded: false, profile: {}, prompts: true, perDay: 2, duration: 2, captures: 0, calendar: false, notify: true, seen: {}, goneConvos: {} };
 }
 function loadState() {
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 5) return s; } catch (e) {}
@@ -39,11 +39,14 @@ const ctxOf = cid => S.ctx[cid] || (convoById[cid] || topicById[cid]).context;
 // A practice source: a real conversation to replay, or a topic.
 const sourceOf = id => convoById[id] || topicById[id];
 const perDay = () => S.perDay || 2;
-const hasTranscript = cid => Boolean(convoById[cid]) && !convoGone(cid) && !(S.noTranscript || {})[cid];
+// A recorded conversation can be replayed from its topic and the learner's own sentences (PRA-08);
+// the full transcript is never kept (DAT-02).
+const canReplay = cid => Boolean(convoById[cid]) && !convoGone(cid);
 const ctxOfItem = i => i.convo ? ctxOf(i.convo) : i.sourceContext;
 const ctxLabel = c => c === "casual" ? "Casual" : "Professional";
 const statusOf = id => S.status[id];
-// A deleted conversation (DAT-04, SAF-03) takes its transcript and every learning point from it.
+// A deleted conversation (DAT-04, SAF-03) takes its topic, the learner's sentences and every
+// learning point from it.
 const convoGone = cid => Boolean((S.goneConvos || {})[cid]);
 const liveConvos = () => CONVOS.filter(c => !convoGone(c.id));
 const gone = id => statusOf(id) === "deleted" || convoGone(byId[id]?.convo);

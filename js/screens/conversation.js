@@ -8,7 +8,7 @@
 function itemActions(i, practice) {
   const s = statusOf(i.id);
   const chat = practice && !isPron(i) && i.convo
-    ? `<button class="text-link" type="button" data-act="practiceItem" data-id="${i.id}">${hasTranscript(i.convo) ? `Try it in a chat with ${esc(convoById[i.convo].partner)}` : "Try it in a practice chat"}</button>` : "";
+    ? `<button class="text-link" type="button" data-act="practiceItem" data-id="${i.id}">${canReplay(i.convo) ? `Try it in a chat with ${esc(convoById[i.convo].partner)}` : "Try it in a practice chat"}</button>` : "";
   if (s === "new") return `<div class="phrase-actions">
       <button class="button button-secondary" type="button" data-act="mark" data-id="${i.id}" data-status="practice">${icon("bookmark", 16)} Save</button>
       <button class="button button-quiet" type="button" data-act="mark" data-id="${i.id}" data-status="known">${icon("check", 16)} I know this</button>
@@ -111,10 +111,10 @@ SCREENS.convo = () => {
     ${more.length ? `<h3 class="sub-heading">${icon("spark", 16)} More ways to improve <small>from your own words</small></h3>
       <div class="phrase-list">${more.map(i => suggestionCard(i)).join("")}</div>` : ""}
 
-    ${hasTranscript(c.id)
-      ? `<p class="data-note">${icon("lock", 14)} Audio was deleted after analysis. The transcript is kept so you can replay this chat.</p>
+    ${canReplay(c.id)
+      ? `<p class="data-note">${icon("lock", 14)} Audio and the full transcript were deleted after analysis. Only the topic and what you said are kept, for feedback and replay.</p>
         ${UI.confirmTx === c.id
-          ? `<div class="del-confirm"><p>Delete this conversation? Its transcript and everything learned from it will be removed. This can't be undone.</p>
+          ? `<div class="del-confirm"><p>Delete this conversation? Its topic, what you said, and everything learned from it will be removed. This can't be undone.</p>
               <button class="button button-danger" type="button" data-act="delConvo" data-id="${c.id}">Delete conversation</button>
               <button class="button button-quiet" type="button" data-act="askDelTx" data-id="">Keep</button></div>`
           : `<button class="text-link danger convo-delete" type="button" data-act="askDelTx" data-id="${c.id}">${icon("trash", 13)} Delete this conversation</button>`}
@@ -122,12 +122,12 @@ SCREENS.convo = () => {
           <button class="button button-primary full-button" type="button" data-act="start" data-id="${c.id}">
             Replay with ${esc(c.partner)} ${icon("next", 18)}
           </button>
-          <p>Optional · ~3 min · AI plays ${esc(c.partner)} in the same situation</p>
+          <p>Optional · ~3 min · AI recreates the situation from the topic and what you said</p>
         </div>`
-      : `<p class="data-note">${icon("lock", 14)} Audio and transcript deleted. Only the lines above are kept. You can still practice them in a topic chat.</p>`}`;
+      : `<p class="data-note">${icon("lock", 14)} This conversation was deleted.</p>`}`;
 };
 
-// Deleting a conversation (DAT-04, SAF-03): asks once, in place, then removes its transcript and
+// Deleting a conversation (DAT-04, SAF-03): asks once, in place, then removes what was kept and
 // every learning point from it (Learn, Practice, Insights), and goes back to Home.
 ACTIONS.askDelTx = el => { UI.confirmTx = el.dataset.id || null; render(); };
 ACTIONS.delConvo = el => {

@@ -6,7 +6,7 @@ Version 1 (Oct 20, 2026) is kept in [`PRD-v1.md`](PRD-v1.md). The prototype as t
 
 ## 1. Overview
 
-Afterchat (tentative name; formerly "Conversation Language Coach") helps language learners improve everyday speaking through feedback grounded in their real conversations. Learners record selected conversations by accepting a short prompt or by starting a recording themselves. The product turns each capture into concrete feedback and learning content, supports optional AI practice, and shows progress through reports backed by examples. Captured audio is deleted after analysis. Transcripts of the conversations a learner chose to record are kept, so they can replay a conversation in practice, and the learner can delete any of them.
+Afterchat (tentative name; formerly "Conversation Language Coach") helps language learners improve everyday speaking through feedback grounded in their real conversations. Learners record selected conversations by accepting a short prompt or by starting a recording themselves. The product turns each capture into concrete feedback and learning content, supports optional AI practice, and shows progress through reports backed by examples. Captured audio and complete transcripts are deleted after analysis. The product keeps only each conversation's topic, the learner's own sentences, and the learning outputs, which is enough for feedback, progress, and replaying a conversation in practice. The learner can delete any conversation.
 
 This iteration builds on Prototype A (#1 "Learn, Practice, Track"). It incorporates the depth and specificity of Prototype B's feedback (#2 "Habit-Stack Nudges") and the simplicity of Prototype C's experience (#3 "Double Subtitles").
 
@@ -53,7 +53,7 @@ The team's November 10 discussion synthesized feedback across three prototypes. 
 | Needs extended beyond vocabulary. | Cover expressions, pronunciation, grammar, structure, tone, and cultural context. |
 | Applying feedback in later conversations felt like meaningful growth. | Ground progress in evidence from later real conversations. |
 | Participants resisted forced learning during entertainment. | Keep practice optional and deliver feedback after conversations, not during them. |
-| Recording raised confidentiality and privacy concerns. | Record only after the learner accepts a prompt or starts a recording, show clearly when recording is active, delete audio after analysis, and let the learner delete any kept transcript. |
+| Recording raised confidentiality and privacy concerns. | Record only after the learner accepts a prompt or starts a recording, show clearly when recording is active, delete audio and complete transcripts after analysis, keeping only the topic and the learner's own sentences. |
 | Some participants struggled with navigation and unclear actions, and asked who the people in the sample conversations were. | Give each tab one clear purpose, distinguish saving from practicing, and add a short onboarding. |
 | A participant asked how the app would know which phrases she doesn't already know. | Calibrate to the learner's level through onboarding and early conversations. |
 
@@ -81,7 +81,7 @@ Participants reviewed predetermined conversation content rather than feedback ge
 - Two opt-in recording modes: prompted recording and manual quick-record. Manual recording covers everyday conversations, classroom discussions, and the learner's own presentations and speaking practice.
 - Optional calendar connection to improve prompt timing; calendar events never start recording.
 - AI-only mode: recording prompts can be turned off in Settings while manual recording stays available.
-- Deleting captured audio after analysis; keeping transcripts of recorded conversations for replay, with learner deletion.
+- Deleting captured audio and complete transcripts after analysis; keeping each conversation's topic and the learner's own sentences for feedback, progress, and replay, with learner deletion.
 - Recording from outside the app: the prompt as a notification, a lock-screen countdown for an active recording (add a minute or stop), and a Control Center button (platform feasibility to validate).
 - Proposed safeguards for retained data: minimizing unnecessary sensitive details, and deleting a conversation or all data (§6.4).
 - Up to three prioritized improvement points per conversation, each as brief context → original wording → suggested alternative, with additional points when relevant.
@@ -141,7 +141,7 @@ Participants reviewed predetermined conversation content rather than feedback ge
 | ONB-02 | Ask for the learner's level (ONB-09), how often the learner uses the language, and the contexts where they speak it: Work, School, Friends, Family, or Other (the same four as the Practice topics, §6.8). |
 | ONB-09 | Ask for the level on its own page. If the learner has a test score (e.g. TOEFL iBT, IELTS, Duolingo English Test) or connects a learning app (e.g. Duolingo, Speak, Memrise), it sets a starting level. Connecting an app shows a permission step that says what the product will read (course level and progress) and that it changes nothing in the app; once connected, the learner sees what was shared and can disconnect. Otherwise the learner picks one of five levels: Beginner (A1), Elementary (A2), Intermediate (B1), Upper-intermediate (B2), Advanced (C1–C2), each with a one-line description. The CEFR range is shown next to each level, so no separate CEFR question is needed. A level set from a score or app can be changed by hand. |
 | ONB-03 | Removed Nov 12: onboarding does not show a feedback sample. |
-| ONB-04 | Explain the two recording modes, that nothing is recorded until the learner accepts a prompt or starts a recording, and what is kept (transcripts, deletable) and deleted (audio). Onboarding does not offer AI-only mode; the product is built around prompted recording, and prompts can be turned off later in Settings (§6.10). |
+| ONB-04 | Explain the two recording modes, that nothing is recorded until the learner accepts a prompt or starts a recording, and what is kept (topic and the learner's own sentences, deletable) and deleted (audio and complete transcripts). Onboarding does not offer AI-only mode; the product is built around prompted recording, and prompts can be turned off later in Settings (§6.10). |
 | ONB-10 | Ask how many recording prompts a day the learner wants: 2 a day (shown first, labeled Recommended, and preselected), 1 a day, or up to 5 a day. Changeable in Settings. |
 | ONB-05 | Keep onboarding short; let learners skip optional steps. |
 | ONB-06 | Use onboarding answers (including any test score or linked app) as a starting estimate of level, refine it from the learner's first conversations, and let the learner adjust it. |
@@ -246,14 +246,14 @@ After a capture is analyzed:
 | ID | Requirement |
 | --- | --- |
 | DAT-01 | Delete the captured audio. |
-| DAT-02 | Keep the transcript of a conversation the learner chose to record, so it can be replayed in practice (§6.8). Changed in v2.4: earlier versions deleted it. |
-| DAT-03 | Beyond kept transcripts, retain only learning outputs and the minimum information needed to support them. |
-| DAT-04 | Let the learner delete any conversation. Deleting it removes its transcript and every learning output from it (Learn, flashcards, Practice, Insights), after one confirmation. |
-| DAT-05 | Tell the learner, in onboarding, Settings, and each conversation, that audio is deleted and transcripts are kept until they delete them. |
+| DAT-02 | Delete the complete transcript after analysis. Keep only the conversation's topic (brief context) and the learner's own sentences, which are what feedback, progress, and replay need (§6.8). The same rule applies to prompted and manual recordings, automatically; the learner never has to manage it. |
+| DAT-03 | Beyond the topic and the learner's sentences, retain only learning outputs and the minimum information needed to support them. |
+| DAT-04 | Let the learner delete any conversation. Deleting it removes its topic, the learner's sentences, and every learning output from it (Learn, flashcards, Practice, Insights), after one confirmation. |
+| DAT-05 | Tell the learner, in onboarding, Settings, and each conversation, that audio and complete transcripts are deleted, and that only the topic and their own sentences are kept until they delete the conversation. |
 
 Retained data may include:
 
-- The transcript of each conversation the learner recorded, until they delete it.
+- The topic of each conversation and the learner's own sentences in it, until they delete the conversation.
 
 - Relevant excerpts of original sentences (for example, the sentence an improvement point quotes).
 - Brief conversation context (for example, "Coffee chat with Sam, casual").
@@ -261,21 +261,21 @@ Retained data may include:
 - Suggested alternatives and feedback.
 - Skill assessment results and the supporting learning evidence.
 
-Confirmed November 13: audio is deleted after analysis, and transcripts are kept. This replaces the November 12 decision to delete full transcripts. The reason is that keeping them lets the learner replay a real conversation in practice. Every kept transcript comes from a conversation the learner chose to record (by accepting a prompt or starting a recording), never from always-on capture. A transcript still includes what other people said; this raises the participant-consent questions below. This document does not claim that no conversation content is retained.
+Confirmed November 15: audio and complete transcripts are deleted after analysis, for prompted and manual recordings alike. On November 13 the team had decided to keep transcripts so that a conversation could be replayed; on November 15 it found that the topic and the learner's own sentences are enough for replay, feedback, and progress, so other people's words are no longer kept. One rule for both recording modes keeps it simple: the learner does not have to think about what is stored. Expressions other people said are kept only as short extracted learning items. This document does not claim that no conversation content is retained.
 
 **Proposed safeguards for retained learning outputs (pending validation)**
 
-Kept transcripts, excerpts, and feedback can all contain sensitive information.
+The learner's kept sentences, excerpts, and feedback can still contain sensitive information.
 
 | ID | Proposed safeguard |
 | --- | --- |
 | SAF-01 | Minimize unnecessary personal names, company details, medical details, and other sensitive context in retained learning outputs and in what replay practice shows. |
 | SAF-02 | Keep enough context for feedback to stay useful, without retaining conversation details the feedback does not need. |
-| SAF-03 | Let the learner delete data by conversation (DAT-04) or all at once ("Delete all my data" in Settings: conversations, transcripts, learning outputs, AI practice history). Individual items are not deleted one by one: "I know this" hides an item from review, which kept it from looking like a second delete button (Nov 15 team review). |
+| SAF-03 | Let the learner delete data by conversation (DAT-04) or all at once ("Delete all my data" in Settings: conversations, the learner's kept sentences, learning outputs, AI practice history). Individual items are not deleted one by one: "I know this" hides an item from review, which kept it from looking like a second delete button (Nov 15 team review). |
 
 The product cannot guarantee that sensitive information is always detected or removed. Detection methods, whether learners review outputs before they are kept, and how conversation and full deletion behave are TBD.
 
-TBD: exact audio deletion timing, how long transcripts are kept by default (until deleted, or for a set period), what happens when processing fails, storage location and processor behavior, participant notice/consent now that transcripts are kept, and bulk deletion. Whether AI practice chat transcripts are kept is also TBD. No privacy or compliance claim beyond these requirements is made.
+TBD: exact audio deletion timing, how long topics and the learner's sentences are kept by default (until deleted, or for a set period), what happens when processing fails, storage location and processor behavior, participant notice/consent, and bulk deletion. Whether AI practice chat transcripts are kept is also TBD. No privacy or compliance claim beyond these requirements is made.
 
 ### 6.5 Conversation Feedback
 
@@ -358,7 +358,7 @@ Because captured audio is deleted after analysis, the product does not offer pla
 | PRA-02 | Offer practice based on improvement points from real conversations, or on stated learning needs for AI-only learners. The learner's saved items are worked into the chat when there are any. |
 | PRA-06 | Let the learner pick what to talk about: Work, School, Friends, or Family, or Surprise me (one of them at random). Topics that match the learner's onboarding contexts are marked. |
 | PRA-07 | Match the AI partner's tone to the topic: Friends and Family are casual and use everyday slang the learner can follow; Work and School stay polished, with little slang. |
-| PRA-08 | Let the learner replay a real conversation they recorded: the AI plays the other person in the same situation so the learner can try a better way to say it. Offered only while that conversation's transcript is kept (DAT-04). |
+| PRA-08 | Let the learner replay a real conversation they recorded: the AI recreates the situation from the conversation's topic and the learner's own sentences, plays the other person, and lets the learner try a better way to say it. The complete transcript is not needed (DAT-02). Offered until the learner deletes the conversation (DAT-04). |
 | PRA-09 | When a conversation is deleted, it no longer appears for replay, and its saved items are gone too (DAT-04). |
 | PRA-03 | Let learners choose whether and when to practice. |
 | PRA-04 | Do not require daily practice tasks. |
@@ -440,7 +440,7 @@ TBD: the supported languages, the capabilities available for each, known dialect
 2. Before a conversation, the learner accepts a recording prompt from a notification, or starts a recording from Control Center or the in-app Record button. Nothing is recorded before that. For a class discussion or their own presentation, they use manual quick-record.
 3. A prompted recording runs for its set length unless stopped early; the lock screen shows the countdown, where the learner can add a minute or stop. A manual recording runs until the learner stops it. Recording is always clearly shown.
 4. Once they reach their prompts-a-day number of usable captures, proactive prompts stop for that day; manual recording stays available. Days with fewer captures, or none, carry no penalty.
-5. The capture is analyzed, assessing only the learner's own speech. Audio is deleted; the transcript and learning outputs are kept, and the learner can delete the conversation (with everything learned from it) or all their data.
+5. The capture is analyzed, assessing only the learner's own speech. Audio and the complete transcript are deleted; the topic, the learner's own sentences, and learning outputs are kept, and the learner can delete the conversation (with everything learned from it) or all their data.
 6. The learner gets a feedback-ready notification if enabled and opens the feedback when convenient.
 7. For each of up to three top points, the learner sees brief context, what they said, and what to try. Additional points appear below when relevant.
 8. The learner saves useful items to Learn, or starts an optional related practice.
@@ -475,7 +475,7 @@ The prototype should make these requirements reviewable without claiming unbuilt
 | No daily quota | No required daily count or duration, no penalty for declined or ignored prompts, and no "recordings left today" messaging anywhere. | Built |
 | Manual quick-record | A one-tap entry starts recording; the learner stops it manually; active recording is clearly shown; available even with prompts off; fits conversations, classes, and the learner's own presentations. | Built (simulated) |
 | Calendar | Calendar connection is optional and never starts recording. | Built (simulated) |
-| Data retention | The prototype says audio is deleted and transcripts are kept; the learner can delete a conversation's transcript, which removes its replay. | Built (notes in onboarding, Settings, and each conversation; delete per conversation) |
+| Data retention | The prototype says audio and complete transcripts are deleted and only the topic and the learner's sentences are kept; the learner can delete a conversation or all data. | Built (notes in onboarding, Settings, and each conversation; delete per conversation) |
 | Learning-output safeguards (proposed) | A learner can delete a conversation with everything learned from it, or all data; sample outputs avoid unnecessary names, company, or medical details. | Partly: conversation delete and "Delete all my data" built; sensitive-detail minimizing not built |
 | Feedback | Up to three points, each as brief context → original wording → suggested alternative, with more points when relevant; no "Why?" field required. | Built |
 | Learn | Expressions, Pronunciation, and Speaking Tips, each in its own format; suggested vs saved is clear; saving does not start practice. | Built (flashcards kept as an optional review) |
@@ -502,7 +502,7 @@ Use representative sample conversations where backend functions are unavailable,
 - How do privacy expectations differ across speaking contexts (everyday conversations, classes, work, presentations)?
 - Do users read the prompts-a-day setting as a goal they must meet? Do most keep the recommended 2?
 - Do learners find the recording entry points outside the app (notification, lock screen, Control Center)?
-- Do learners understand that transcripts are kept, and are they comfortable with it? Do they delete them?
+- Do learners understand what is kept (topic and their own sentences) and what is deleted? Is replay from that enough for them?
 - Do the four topics (Work, School, Friends, Family) cover what learners want to practice? Do they use replay of a real conversation?
 - Does the tone change between casual and polished topics feel right?
 - Do recurring mistakes feel helpful rather than discouraging?
@@ -527,7 +527,7 @@ Where possible, test with realistic interactions, including conversations the pa
 - Prompt timing and acceptance; quick-record entry points on each platform.
 - Speaker attribution and transcription quality on short captures and long multi-speaker recordings (classes, presentations), including mixed-language conversations.
 - Coverage and accuracy for each supported language, dialect, and accent.
-- Deleting audio reliably after analysis, and deleting a transcript reliably when the learner asks.
+- Deleting audio reliably after analysis, and deleting complete transcripts reliably after analysis.
 - Whether each platform allows a lock-screen countdown and a Control Center button.
 - Whether unnecessary sensitive details can be reduced in retained outputs while keeping feedback useful (proposed safeguards SAF-01 and SAF-02).
 - Future capabilities: whether intonation, pausing, and speech chunking can be assessed reliably.
@@ -565,7 +565,7 @@ The prototype at the site root follows this PRD (updated Nov 13, 2026). What it 
 - **Language support:** the capabilities shown in onboarding are sample values; real coverage is TBD (§6.12).
 - **AI-only mode:** turned on from Settings; shown as empty states on Home and Insights; Learn and Practice still use the sample content.
 - **Level:** a test score sets a level from approximate bands; connecting a learning app shows a simulated permission step and returns a sample level.
-- **Transcripts:** "kept" is a label; deleting one hides its replay.
+- **Retention:** "audio and complete transcript deleted, topic and your sentences kept" is a label; replay uses the sample summary.
 - **Practice:** topic chats and replays use the live AI when available, otherwise a fixed script. The AI partner is called "Coach" until the team picks a name.
 - **Proposed safeguards:** deleting a conversation and deleting all data work; minimizing sensitive details is not built.
 - **Sample data:** conversations, suggestions, weekly picks, skill levels, recurring mistakes and earlier periods.
@@ -579,7 +579,7 @@ The prototype at the site root follows this PRD (updated Nov 13, 2026). What it 
 | Language support | Supported languages; capabilities available for each; known dialect and accent limitations; how limited coverage is shown. |
 | Retained-output safeguards | Sensitive-detail detection methods; whether learners review outputs before they are kept; behavior of conversation and full deletion. |
 | Calendar | Timing rules; permissions requested; how suitable and excluded events are identified and handled. |
-| Data retention | Exact audio deletion timing; how long transcripts are kept by default; failure handling; storage location and processor behavior; bulk deletion. |
+| Data retention | Exact deletion timing for audio and complete transcripts; how long topics and the learner's sentences are kept by default; failure handling; storage location and processor behavior; bulk deletion. |
 | AI practice data | Whether AI chat transcripts are kept. |
 | Level inputs | Which learning apps can share level data; how test scores map to a starting level. |
 | Naming | Confirming the product name (tentatively Afterchat, Nov 15) and choosing the AI partner's name. |
@@ -602,7 +602,7 @@ The prototype at the site root follows this PRD (updated Nov 13, 2026). What it 
 | Recording | Two opt-in modes, prompted (default 2–3 minutes, stop early, prompts a day chosen by the learner, 2 recommended, which is not a daily goal; extend from the lock screen) and manual quick-record for conversations, classes, and presentations. No always-on or automatic recording. |
 | Language support | Supported languages, per-language capabilities, and dialect or accent limits are shown; no confident assessment of unsupported varieties. |
 | Calendar | Optional connection to time prompts; never starts recording. |
-| Data | Audio deleted after analysis; transcripts kept for replay and deletable (changed in v2.4, see §14). Proposed: minimize sensitive details in outputs; learners delete a conversation or all data. |
+| Data | Audio and complete transcripts deleted after analysis; only the topic and the learner's own sentences kept, deletable by conversation (see §14). Proposed: minimize sensitive details in outputs; learners delete a conversation or all data. |
 | Feedback | Up to three points as brief context → original wording → suggested alternative; more when relevant; no required "Why?". |
 | Learn | Separate tab with Expressions, Pronunciation, and Speaking Tips, each in its own format; suggested vs saved clear; two weekly picks. |
 | Pronunciation | Tap-to-play model pronunciation and text cues; no playback of the learner's own audio. |
@@ -621,11 +621,11 @@ The prototype at the site root follows this PRD (updated Nov 13, 2026). What it 
 | Onboarding | Level on its own page: a test score or learning app sets it; otherwise pick from Beginner to Advanced, each with its CEFR range (ONB-09). | Something more objective than "I'm comfortable" helps match feedback to the learner, while most learners have no recent score. |
 | Recording | No +1 minute button in the app; prompted recordings end at their set length; length set as minutes in Settings (REC-02, REC-03). | Learners will not reach for the phone mid-conversation, and a pop-up asking to extend would interrupt. |
 | Recording | Lock-screen countdown with +1 minute and Stop; Control Center button; prompt as a notification (REC-16, REC-17). | The main ways in are outside the app; the in-app Record button stays. |
-| Data | Transcripts are kept; audio is still deleted; learners can delete a transcript (DAT-02, DAT-04, DAT-05). | Learners record by choice, and replaying a real conversation needs its transcript. |
+| Data | Audio and complete transcripts are deleted after analysis; only the topic and the learner's own sentences are kept, for prompted and manual recordings alike, and learners can delete a conversation or all data (DAT-02 to DAT-05, SAF-03). | The Nov 13 review kept transcripts for replay; on Nov 15 the team found the topic and the learner's sentences are enough, and other people's words should not be stored. |
 | Practice | One AI partner; topics Work, School, Friends, Family, Surprise me; tone follows the topic; replay of recorded conversations; no persona cast or learner-made personas (PRA-01, PRA-06 to PRA-09). | Named characters implied the app knew who the learner talked to, and custom personas would be too much work and clutter. |
 | Insights | Cultural context merged into natural expressions/slang; order is pronunciation, grammar, sentence structure, natural expressions; each skill shows up to three improvements, then what to work on to grow further (RPT-10). | The team could not tell cultural context and natural expressions apart; learners want to see what keeps going wrong, framed as what would help them improve. |
 | Insights | Natural expressions defined as natural phrasing (including slang) instead of textbook phrasing, judged by fit with the situation and shown with examples rather than as right or wrong (§6.9). | The team asked how this skill could be measured; it was described in the review as the use of everyday expressions and slang you would not learn in a classroom. |
 | Learn | Kept as its own tab. Flashcards for expressions and slang show the phrase first and the meaning on the back; no per-item delete (SAF-03). | Insights shows up to three examples per skill; Learn holds everything. Slang has many possible answers when you start from the meaning, and a trash icon next to "I know this" looked like the same action (Nov 15 team review). |
 | Naming | Product name tentatively **Afterchat** (feedback arrives after a chat; no app with that exact name was found in a quick search, while "Speak Easy" is taken by several AI English apps). The AI partner's name is still TBD. The sample friend "Maya" is renamed "Sam". | Many class projects' AI defaulted to "Maya", so the name read as the AI rather than a friend. |
 
-**Source basis:** team discussion transcript dated November 10, 2026; recommendation slides 10–13; confirmed team decisions of November 12, 2026, which replace earlier conflicting requirements (including always-on recording, persistent playback of user audio, and keeping full transcripts); additions from the follow-up team discussion of November 12, 2026 (language support, manual-recording use cases, audience, no daily quota, retained-output safeguards, validation); and the prototype review of November 13, 2026 (§14), which replaces the November 12 decision to delete full transcripts.
+**Source basis:** team discussion transcript dated November 10, 2026; recommendation slides 10–13; confirmed team decisions of November 12, 2026, which replace earlier conflicting requirements (including always-on recording, persistent playback of user audio, and keeping full transcripts); additions from the follow-up team discussion of November 12, 2026 (language support, manual-recording use cases, audience, no daily quota, retained-output safeguards, validation); the prototype review of November 13, 2026 (§14); and the team discussion of November 15, 2026 (retention, flashcards, deletion).

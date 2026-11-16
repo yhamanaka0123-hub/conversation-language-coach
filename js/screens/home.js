@@ -152,7 +152,7 @@ function capturedNote() {
   const c = UI.captured;
   if (!c || UI.rec) return "";
   const note = c.usable
-    ? `<strong>Captured ${clock(c.sec)}.</strong> Feedback will appear here. The audio is deleted after analysis; the transcript is kept for replay.`
+    ? `<strong>Captured ${clock(c.sec)}.</strong> Feedback will appear here. Audio and the full transcript are deleted after analysis.`
     : `<strong>That was too short to analyze</strong>, so it wasn't kept.`;
   const promptsDone = c.usable && S.prompts && (S.captures || 0) === perDay()
     ? `<br><span class="captured-sub">No more prompts today. Record still works.</span>` : "";
@@ -183,9 +183,9 @@ function settingsPanel() {
       </span></div>
     ${toggle("setNotify", S.notify, "Feedback-ready notifications", "No quotes on the lock screen")}
     ${toggle("setCalendar", S.calendar, "Calendar (optional)", S.calendar ? "Connected (simulated). Never starts recording." : "Never starts recording")}
-    <p class="set-data">${icon("lock", 14)} Audio is deleted after analysis. Transcripts are kept so you can replay a chat. Delete a conversation from its page, or everything here.</p>
+    <p class="set-data">${icon("lock", 14)} Audio and full transcripts are deleted after analysis. Only the topic and what you said are kept. Delete a conversation from its page, or everything here.</p>
     ${UI.confirmWipe
-      ? `<div class="del-confirm"><p>Delete all your conversations, transcripts, learning points and practice history? This can't be undone.</p>
+      ? `<div class="del-confirm"><p>Delete all your conversations, what you said in them, learning points and practice history? This can't be undone.</p>
           <button class="button button-danger" type="button" data-act="wipeAll">Delete everything</button>
           <button class="button button-quiet" type="button" data-act="wipeAsk" data-v="0">Cancel</button></div>`
       : `<button class="text-link danger" type="button" data-act="wipeAsk" data-v="1">${icon("trash", 13)} Delete all my data</button>`}
@@ -304,7 +304,7 @@ ACTIONS.setPrompts = () => { S.prompts = !S.prompts; save(); render(); };
 ACTIONS.setPerDay = el => { S.perDay = Number(el.dataset.v); save(); render(); };
 ACTIONS.setDuration = el => { S.duration = Math.max(1, Math.min(10, Number(el.dataset.v))); save(); render(); };
 ACTIONS.setNotify = () => { S.notify = !S.notify; save(); render(); };
-// Delete all my data (SAF-03): every conversation with its transcript and learning points, every
+// Delete all my data (SAF-03): every conversation with what was kept from it, every
 // learning point from elsewhere, and AI practice history. Settings stay.
 ACTIONS.wipeAsk = el => { UI.confirmWipe = el.dataset.v === "1"; render(); };
 ACTIONS.wipeAll = () => {
