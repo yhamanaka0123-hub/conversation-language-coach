@@ -183,7 +183,12 @@ function settingsPanel() {
       </span></div>
     ${toggle("setNotify", S.notify, "Feedback-ready notifications", "No quotes on the lock screen")}
     ${toggle("setCalendar", S.calendar, "Calendar (optional)", S.calendar ? "Connected (simulated). Never starts recording." : "Never starts recording")}
-    <p class="set-data">${icon("lock", 14)} Audio is deleted after analysis. Transcripts are kept so you can replay a chat; delete one from its conversation page. Delete any saved item in Learn.</p>
+    <p class="set-data">${icon("lock", 14)} Audio is deleted after analysis. Transcripts are kept so you can replay a chat. Delete a conversation from its page, or everything here.</p>
+    ${UI.confirmWipe
+      ? `<div class="del-confirm"><p>Delete all your conversations, transcripts, learning points and practice history? This can't be undone.</p>
+          <button class="button button-danger" type="button" data-act="wipeAll">Delete everything</button>
+          <button class="button button-quiet" type="button" data-act="wipeAsk" data-v="0">Cancel</button></div>`
+      : `<button class="text-link danger" type="button" data-act="wipeAsk" data-v="1">${icon("trash", 13)} Delete all my data</button>`}
     <button class="text-link" type="button" data-act="go" data-to="phone">See the lock screen and Control Center ${icon("next", 14)}</button>
   </section>`;
 }
@@ -206,9 +211,9 @@ function notification(c) {
 // The first line on Home: a warm, factual note about today; a cheer only at milestones.
 // The sample conversations all fall in the current week.
 function cheerLine() {
-  const today = CONVOS.filter(c => c.when.startsWith("Today"));
+  const today = liveConvos().filter(c => c.when.startsWith("Today"));
   const mins = today.reduce((a, c) => a + parseInt(c.length, 10), 0);
-  if (CONVOS.length && CONVOS.length % 5 === 0) return { html: `Wow, ${CONVOS.length} conversations this week! 🎉`, milestone: true };
+  if (liveConvos().length && liveConvos().length % 5 === 0) return { html: `Wow, ${liveConvos().length} conversations this week! 🎉`, milestone: true };
   if (mins >= 60) return { html: `Wow, ${mins} minutes of conversation today! 🎉`, milestone: true };
   if (today.length === 1) return { html: `You talked with ${esc(today[0].partner)} for <strong>${mins} minutes</strong> today.` };
   if (today.length > 1) return { html: `<strong>${today.length} conversations</strong> today, ${mins} minutes in all.` };
@@ -217,7 +222,7 @@ function cheerLine() {
 
 // What the coach says, in order, as you tap it. Lines are trusted markup.
 function coachLines(fresh, cheer) {
-  const first = cheer ? cheer.html : fresh ? "Feedback from your day is ready." : CONVOS.length ? "All caught up." : "Ready when you are.";
+  const first = cheer ? cheer.html : fresh ? "Feedback from your day is ready." : liveConvos().length ? "All caught up." : "Ready when you are.";
   if (fresh) return [first, esc(`${fresh.summary.split(". ")[0].replace(/\.$/, "")}.`),
     "Your Top 3 are the best place to start.", "Recording only starts when you tap Record."];
   return [first, "New feedback shows up after your next conversation."];
@@ -226,9 +231,10 @@ function coachLines(fresh, cheer) {
 SCREENS.home = () => {
   // Settings open: show only Settings (and an active recording, which stays visible, REC-08).
   if (UI.settings) return `${recordingBar()}${settingsPanel()}`;
-  const fresh = CONVOS.find(c => itemsWith(c.id, "new").length);
-  const featured = fresh || CONVOS[0];
-  const rest = CONVOS.filter(c => c !== featured);
+  const convos = liveConvos();
+  const fresh = convos.find(c => itemsWith(c.id, "new").length);
+  const featured = fresh || convos[0];
+  const rest = convos.filter(c => c !== featured);
   const cheer = aiOnly() ? null : cheerLine();
   const lines = aiOnly() ? ["Ready when you are.", "Practice is optional, whenever you like."] : coachLines(fresh, cheer);
   const wave = !UI.waved;
@@ -298,6 +304,15 @@ ACTIONS.setPrompts = () => { S.prompts = !S.prompts; save(); render(); };
 ACTIONS.setPerDay = el => { S.perDay = Number(el.dataset.v); save(); render(); };
 ACTIONS.setDuration = el => { S.duration = Math.max(1, Math.min(10, Number(el.dataset.v))); save(); render(); };
 ACTIONS.setNotify = () => { S.notify = !S.notify; save(); render(); };
+// Delete all my data (SAF-03): every conversation with its transcript and learning points, every
+// learning point from elsewhere, and AI practice history. Settings stay.
+ACTIONS.wipeAsk = el => { UI.confirmWipe = el.dataset.v === "1"; render(); };
+ACTIONS.wipeAll = () => {
+  S.goneConvos = Object.fromEntries(CONVOS.map(c => [c.id, true]));
+  ITEMS.forEach(i => { S.status[i.id] = "deleted"; });
+  S.history = {}; S.chats = {}; S.sessions = 0; S.cards = {}; S.seen = {};
+  UI.confirmWipe = false; UI.settings = false; save(); go({ name: "home" });
+};
 ACTIONS.setLevel = el => { S.profile = { ...S.profile, level: el.dataset.v, levelFrom: null }; save(); render(); };
 ACTIONS.setContext = el => {
   const list = S.profile.contexts || [], v = el.dataset.v;
